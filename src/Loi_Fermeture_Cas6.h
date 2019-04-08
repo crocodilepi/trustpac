@@ -45,8 +45,9 @@ public :
 protected :
   // matrix of diffusion coefficient multi-species (3x3)
   Champ_Fonc diffu_;
-  // diffusion coefficient in the electrolyte phase Di, Source term Si
+  // diffusion coefficient in the electrolyte phase Di
   Champ_Don Di_;
+  // champ for the source term Si
   Champ_Don Si_;
   Champ_Don epsilon_;
   // champ of the ionic flux Ii = -kappa.grad(phi)
