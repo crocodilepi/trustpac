@@ -1,0 +1,27 @@
+parameters
+{
+   title "Anisotropic diffusion coefficient using champ_fonc_xyz"
+   description "In this 2D test case, the directions of the anisotropic diffusivity coefficient are parallel to X and Y axes. This diffusion coefficient is constant in all the domain. Its value is 100 along the X axis and 1 along the Y axis. We can represent it by the following matrix \latex_($$ \left( \begin{matrix} 100 & 0 \\ 0 & 1 \end{matrix} \right) $$\latex_) A thermal conduction problem is then solved using this anisotropic diffusion coefficient."
+   author "Van quang DINH"
+   testcase .    PEMFC_anisotrope_fonc_xyz.data
+}
+
+
+chapter
+{
+   title "Temperature"
+   description "Here is the visualization of the temperature."
+      Visu {
+	Title "Temperature field located at elements"
+	pseudocolor anisotrope_fonc_xyz.lata dom TEMPERATURE ELEM
+	cycles -1
+	width 15cm
+    }
+      Visu {
+	Title "Temperature field located at vertices"
+	pseudocolor anisotrope_fonc_xyz.lata dom TEMPERATURE SOM
+	cycles -1
+	width 15cm
+    }
+}
+

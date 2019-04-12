@@ -1,0 +1,68 @@
+-------------------------------------------------------------------
+ 
+                          TRUST
+                      version : 1.7.6 
+                          CEA - DEN
+ 
+ ------------------------------------------------------------------
+ 
+  Vous traitez le cas DEC_anisotrope_pac
+ 
+Reading data file 
+
+16 MBytes of RAM taken by the calculation.
+ Runtime parameters:
+   Objective type: METIS_OBJTYPE_CUT
+   Coarsening type: METIS_CTYPE_SHEM
+   Initial partitioning type: METIS_IPTYPE_GROW
+   Refinement type: METIS_RTYPE_FM
+   Perform a 2-hop matching: No
+   Number of balancing constraints: 1
+   Number of refinement iterations: 10
+   Random number seed: -1
+   Number of partitions: 2
+   Number of cuts: 1
+   User-supplied ufactor: 1
+   Target partition weights: 
+        0=[5.00e-01]   1=[5.00e-01]
+   Allowed maximum load imbalance: 1.001 
+
+      6958      20444      20444 [20] [      521:    6958 ]
+      3805      14138      14138 [20] [      521:    6958 ]
+      2081       9434      10690 [20] [      521:    6958 ]
+      1135       5594       8126 [20] [      521:    6958 ]
+       612       3116       6040 [20] [      521:    6958 ]
+       329       1668       4482 [20] [      521:    6958 ]
+       178        858       3314 [20] [      521:    6958 ]
+        99        444       2402 [20] [      521:    6958 ]
+        55        224       1710 [20] [      521:    6958 ]
+        32        116       1212 [20] [      521:    6958 ]
+        21         64       1010 [20] [      521:    6958 ]
+        20         60       1008 [20] [      521:    6958 ]
+
+Timing Information -------------------------------------------------
+ Multilevel: 		   0.004
+     Coarsening: 		   0.004
+            Matching: 			   0.000
+            Contract: 			   0.004
+     Initial Partition: 	   0.000
+     Uncoarsening: 		   0.000
+          Refinement: 			   0.000
+          Projection: 			   0.000
+     Splitting: 		   0.000
+********************************************************************
+
+ gk_mcore statistics
+           coresize:        83688         nmops:         2048  cmop:      0
+        num_callocs:          134   num_hallocs:            0
+       size_callocs:       414368  size_hallocs:            0
+        cur_callocs:            0   cur_hallocs:            0
+        max_callocs:        83512   max_hallocs:            0
+ nbrpool statistics
+        nbrpoolsize:            0   nbrpoolcpos:            0
+    nbrpoolreallocs:            0
+
+23 MBytes of RAM taken by the calculation.
+
+--------------------------------------------
+clock: Total execution: 0.066292 s

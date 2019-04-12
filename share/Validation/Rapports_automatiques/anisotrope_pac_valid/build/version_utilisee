@@ -1,0 +1,15 @@
+Petsc initialization succeeded.
+Parallel engine initialized : Comm_Group_Noparallel with 1 processors
+Executable: /nobackup/vd256574/TRUST/TRUST-1.7.6/exec/TRUST_mpi_opt
+Data file name = ver
+Sequential calculation
+feenableexcept enabled.
+Data file : ver
+Localisation etude: /home/vd256574/workspace/pemfc/share/Validation/Rapports_automatiques/anisotrope_pac_valid/build
+Nom du cas ver
+ code : /nobackup/vd256574/TRUST/TRUST-1.7.6/exec/TRUST_mpi_opt
+ version : 1.7.6 
+Debut de l'execution 
+MAIN: Reading and executing data file
+MAIN: End of data file
+Arret des processes.

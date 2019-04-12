@@ -1,0 +1,7 @@
+Journal logging started
+JDD interpreted: 
+dimension 2 domaine dom pb_conduction pb Scatter dom.Zones dom vefprep1b dis Scheme_euler_implicit scheme Read scheme { tinit 0 facsec 1000 facsec_max 5000 dt_impr 1e-3 dt_sauv 1e-3 tmax 10.0 max_iter_implicite 50 seuil_statio_relatif_deconseille 1 seuil_statio 1e-5 Solveur Implicite { Solveur petsc cholesky { quiet } } } solide sol read sol { rho champ_uniforme 4 1. 1. 1. 1. lambda champ_fonc_med last_time prepare_0000.med dom diffu_anisotrope elem 0 Cp champ_uniforme 4 1. 1. 1. 1. } associate pb dom associate pb scheme associate pb sol discretize pb dis read pb { conduction { diffusion { Tensor } initial_conditions { temperature champ_fonc_med last_time prepare_0000.med dom temperature elem 0 } boundary_conditions { Gauche paroi_flux_impose champ_front_uniforme 1 0. Droit paroi_flux_impose champ_front_uniforme 1 0. Haut paroi_echange_externe_impose h_imp champ_front_fonc_xyz 1 (x[4.)*0.+(x>4.)*(x<6.)*10.*0.5*(1.+SIN(0.5*Pi*(x-5.)))+(x]6.)*(10.) T_ext champ_front_uniforme 1 1. Bas paroi_temperature_imposee champ_front_uniforme 1 0. } } post_processing { definition_champs { gradT gradient { source refchamp { Pb_champ pb temperature } } } probes { sonde_temperature temperature periode 0.01 segment 501 0. 1. 10. 0. } format lata fields dt_post 0.1 { temperature elem temperature som gradT som diffusivite_thermique elem capacite_calorifique elem masse_volumique elem } } } solve pb end 
+
+=========================================
+TRUST has caused an error and will stop.
+Unexpected error during TRUST calculation.

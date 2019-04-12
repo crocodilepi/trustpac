@@ -1,0 +1,156 @@
+Journal logging started
+JDD interpreted: 
+dimension 2 domaine dom Pb_conduction pb Lire_med family_names_from_group_names dom Mesh_1 Mesh_1.med vefprep1b dis scheme_euler_implicit scheme Read scheme { tinit 0. tmax 10. dt_min 1e-7 dt_max 1. dt_impr 1. dt_sauv 1. seuil_statio 1.e-6 facsec 1e6 facsec_max 1e8 Solveur Implicite { Solveur petsc cholesky { quiet } } } solide sol read sol { rho champ_uniforme 1 1.0 lambda champ_uniforme 1 1. Cp champ_uniforme 1 1.0 } associate pb dom associate pb scheme associate pb sol discretize pb dis read pb { conduction { diffusion { } initial_conditions { temperature champ_uniforme 1 1. } boundary_conditions { Gauche paroi_flux_impose champ_front_uniforme 1 0. Droit paroi_flux_impose champ_front_uniforme 1 0. Haut paroi_temperature_imposee champ_front_uniforme 1 1. Bas paroi_temperature_imposee champ_front_uniforme 1 0. } } post_processing { definition_champs { gradT gradient { source refchamp { Pb_champ pb temperature } } ux transformation { methode composante numero 0 sources_reference { gradT } } uy transformation { methode composante numero 1 sources_reference { gradT } } cos transformation { sources_reference { ux , uy } methode formule expression 1 uy/(sqrt(ux*ux+uy*uy)+1e-38) } sin transformation { sources_reference { ux , uy } methode formule expression 1 ux/(sqrt(ux*ux+uy*uy)+1e-38) } ca transformation { sources_reference { ux } methode formule expression 1 100. } cb transformation { sources_reference { ux } methode formule expression 1 1. } diffu_anisotrope transformation { sources_reference { ca , cb , cos , sin } methode vecteur expression 4 ca*cos*cos+cb*sin*sin cos*sin*(cb-ca) cos*sin*(cb-ca) ca*sin*sin+cb*cos*cos } diffu_constant transformation { sources_reference { ca , cb , cos , sin } methode vecteur expression 4 101. -99. -99. 101. } } fichier prepare format med_major fields dt_post 1. { temperature elem gradT elem ux elem uy elem cos elem sin elem ca elem cb elem diffu_anisotrope elem diffu_constant elem } } } solve pb end 
+
+6958 elements of kind 203 has been found.
+Element TRUST kind: Triangle
+We find 430 faces of kind 102
+Number of families: 5
+ Family of name FAM_-6_Bas , number -6
+ Family of name FAM_-7_Droit , number -7
+ Family of name FAM_-8_Haut , number -8
+ Family of name FAM_-9_Gauche , number -9
+ Family of name FAMILLE_ZERO , number 0
+FAMILLE_ZERO is not seen as a boundary 0
+grp{
+Bas ,
+Droit ,
+Haut ,
+Gauche
+}
+
+Zone::fixer_premieres_faces_frontiere()
+Le bord Bas commence a la face : 0
+Le bord Droit commence a la face : 200
+Le bord Haut commence a la face : 210
+Le bord Gauche commence a la face : 410
+Zone::fixer_premieres_faces_frontiere()
+Le bord Bas commence a la face : 0
+Le bord Droit commence a la face : 200
+Le bord Haut commence a la face : 210
+Le bord Gauche commence a la face : 410
+Zone::fixer_premieres_faces_frontiere()
+Le bord Bas commence a la face : 0
+Le bord Droit commence a la face : 200
+Le bord Haut commence a la face : 210
+Le bord Gauche commence a la face : 410
+Zone::fixer_premieres_faces_frontiere()
+Le bord Bas commence a la face : 0
+Le bord Droit commence a la face : 200
+Le bord Haut commence a la face : 210
+Le bord Gauche commence a la face : 410
+Zone::fixer_premieres_faces_frontiere()
+Le bord Bas commence a la face : 0
+Le bord Droit commence a la face : 200
+Le bord Haut commence a la face : 210
+Le bord Gauche commence a la face : 410
+Zone::fixer_premieres_faces_frontiere()
+Le bord Bas commence a la face : 0
+Le bord Droit commence a la face : 200
+Le bord Haut commence a la face : 210
+Le bord Gauche commence a la face : 410
+Scatter::calculer_espace_distant type_item=2
+ News joints created : (ArrOfInt) 0
+
+Reading the boundary condition Gauche
+Construction of a Entree_complete with : Neumann_Paroi
+Reading the boundary condition Droit
+Construction of a Entree_complete with : Neumann_Paroi
+Reading the boundary condition Haut
+Construction of a Entree_complete with : temperature_imposee_paroi
+Reading the boundary condition Bas
+Construction of a Entree_complete with : temperature_imposee_paroi
+Reading data for a Tparoi_VEF field.
+Reading a source type refChamp
+Reading data for a refChamp field.
+Reading data for a Gradient field.
+Reading a source type refchamp
+Reading data for a refChamp field.
+Reading data for a Transformation field.
+Construction of a Entree_complete with :  Champ_Post_refChamp { Pb_champ pb temperature }
+Reading data for a refChamp field.
+Reading data for a Transformation field.
+Construction of a Entree_complete with :  Champ_Post_refChamp { Pb_champ pb temperature }
+Reading data for a refChamp field.
+Reading data for a Transformation field.
+Construction of a Entree_complete with :  Champ_Post_refChamp { Pb_champ pb temperature }
+Reading data for a refChamp field.
+ Name of source UX
+ Name of source UY
+Reading data for a Transformation field.
+Construction of a Entree_complete with :  Champ_Post_refChamp { Pb_champ pb temperature }
+Reading data for a refChamp field.
+ Name of source UX
+ Name of source UY
+Reading data for a Transformation field.
+Construction of a Entree_complete with :  Champ_Post_refChamp { Pb_champ pb temperature }
+Reading data for a refChamp field.
+ Name of source UX
+Reading data for a Transformation field.
+Construction of a Entree_complete with :  Champ_Post_refChamp { Pb_champ pb temperature }
+Reading data for a refChamp field.
+ Name of source UX
+Reading data for a Transformation field.
+Construction of a Entree_complete with :  Champ_Post_refChamp { Pb_champ pb temperature }
+Reading data for a refChamp field.
+ Name of source CA
+ Name of source CB
+ Name of source COS
+ Name of source SIN
+ Name of source CA
+ Name of source CB
+ Name of source COS
+ Name of source SIN
+ Name of source CA
+ Name of source CB
+ Name of source COS
+ Name of source SIN
+ Name of source CA
+ Name of source CB
+ Name of source COS
+ Name of source SIN
+Reading data for a Transformation field.
+Construction of a Entree_complete with :  Champ_Post_refChamp { Pb_champ pb temperature }
+Reading data for a refChamp field.
+ Name of source CA
+ Name of source CB
+ Name of source COS
+ Name of source SIN
+ Name of source CA
+ Name of source CB
+ Name of source COS
+ Name of source SIN
+ Name of source CA
+ Name of source CB
+ Name of source COS
+ Name of source SIN
+ Name of source CA
+ Name of source CB
+ Name of source COS
+ Name of source SIN
+Construction of a Entree_complete with : Interpolation { localisation ELEM source  refChamp { Pb_champ pb TEMPERATURE }  } 
+Reading data for a Interpolation field.
+Reading a source type refChamp
+Reading data for a refChamp field.
+Construction of a Entree_complete with : Interpolation { localisation ELEM sources_reference { GRADT } }
+Reading data for a Interpolation field.
+Construction of a Entree_complete with : Interpolation { localisation ELEM sources_reference { UX } }
+Reading data for a Interpolation field.
+Construction of a Entree_complete with : Interpolation { localisation ELEM sources_reference { UY } }
+Reading data for a Interpolation field.
+Construction of a Entree_complete with : Interpolation { localisation ELEM sources_reference { COS } }
+Reading data for a Interpolation field.
+Construction of a Entree_complete with : Interpolation { localisation ELEM sources_reference { SIN } }
+Reading data for a Interpolation field.
+Construction of a Entree_complete with : Interpolation { localisation ELEM sources_reference { CA } }
+Reading data for a Interpolation field.
+Construction of a Entree_complete with : Interpolation { localisation ELEM sources_reference { CB } }
+Reading data for a Interpolation field.
+Construction of a Entree_complete with : Interpolation { localisation ELEM sources_reference { DIFFU_ANISOTROPE } }
+Reading data for a Interpolation field.
+Construction of a Entree_complete with : Interpolation { localisation ELEM sources_reference { DIFFU_CONSTANT } }
+Reading data for a Interpolation field.
+Zone_VEF::Modifier_pour_Cl
+ Zone_VF::marquer_faces_double_contrib
+41 MBytes of RAM taken by the processor 0
+End of Journal logging

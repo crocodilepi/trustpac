@@ -1,0 +1,16 @@
+@nb_pas_dt_max@ 50
+@facsec@ 1
+@K00@ 100
+@K01@ 0
+@K10@ 0
+@K11@ 100
+@K@ 100
+@A@ 0
+@B@ 0
+@C@ 0
+@D@ 1
+@E@ 1
+@initial_conditions@ champ_fonc_xyz dom 1 x+y
+@erreur_periode@ 1e-8
+@utilisation_operateur_tensoriel@ true
+@Maillage@ carre_grossier

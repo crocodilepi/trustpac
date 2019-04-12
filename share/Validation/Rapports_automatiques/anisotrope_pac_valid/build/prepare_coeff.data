@@ -1,0 +1,141 @@
+# dimension #
+dimension 2
+
+# domaine #
+domaine dom
+
+# probleme de condution de la chaleur #
+Pb_conduction pb
+
+# BEGIN MESH #
+Lire_med family_names_from_group_names dom Mesh_1 Mesh_1.med
+# END MESH #
+
+# discretisation VEF #
+vefprep1b dis
+
+# time scheme #
+scheme_euler_implicit scheme
+
+Read scheme
+{
+    tinit 0.
+    tmax 10.
+    dt_min 1e-7
+    dt_max 1.
+    dt_impr 1.
+    dt_sauv 1.
+    seuil_statio 1.e-6
+    facsec 1e6
+    facsec_max 1e8
+    Solveur Implicite
+    {
+      Solveur petsc cholesky { quiet }
+    }
+}
+
+# physics properties of medium  #
+solide sol
+read sol
+{
+    rho champ_uniforme 1 1.0
+    lambda champ_uniforme 1 1.
+    Cp champ_uniforme 1 1.0
+}
+
+# associate the problem with the geometry, the time scheme and the physic properties #
+associate pb dom
+associate pb scheme
+associate pb sol
+
+# meshing the geometry with the given discretisation method #
+discretize pb dis
+
+# definition of the problem #
+read pb
+{
+	# Resolution div (-grad u) = 0 donc sans source, sans coefficient, steady state #
+	conduction
+	{
+		diffusion { }
+		initial_conditions {
+			temperature champ_uniforme 1 1.
+		}
+		boundary_conditions {
+			Gauche paroi_flux_impose champ_front_uniforme 1 0.
+			Droit paroi_flux_impose champ_front_uniforme 1 0.
+			Haut paroi_temperature_imposee champ_front_uniforme 1 1.
+			Bas paroi_temperature_imposee champ_front_uniforme 1 0.
+		}
+	}
+
+	# post traitement  #
+	post_processing
+	{
+		# define the champs for exporting the coefficient anisotrope #
+		definition_champs 
+		{
+			# gradient of temperature grad(u) = [ux uy]^T #
+			gradT gradient {
+				source refchamp { Pb_champ pb temperature }
+			}
+			# x-composante of vector gradT #
+			ux transformation {
+				methode composante numero 0				
+				sources_reference { gradT }
+			}
+			# y-composante of vector gradT #
+			uy transformation {
+				methode composante numero 1				
+				sources_reference { gradT }
+			}
+			# constant cosinus gradT c = uy /sqrt(ux*ux+uy*uy) #
+			cos transformation {
+				sources_reference { ux , uy }
+				methode formule expression 1 uy/(sqrt(ux*ux+uy*uy)+1e-38)
+			}
+			# constant sinus gradT s = ux /sqrt(ux*ux+uy*uy) #
+			sin transformation {
+				sources_reference { ux , uy }
+				methode formule expression 1 ux/(sqrt(ux*ux+uy*uy)+1e-38)
+			}
+			ca transformation { 
+				sources_reference { ux }
+				methode formule expression 1 100.
+			}
+			cb transformation { 
+				sources_reference { ux }
+				methode formule expression 1 1.
+			}
+			# Coefficient anisotrope #
+			diffu_anisotrope transformation {
+				sources_reference { ca , cb , cos , sin }
+				methode vecteur expression 4 ca*cos*cos+cb*sin*sin cos*sin*(cb-ca) cos*sin*(cb-ca) ca*sin*sin+cb*cos*cos
+			}
+			# coefficient constant pour tester MED #
+			diffu_constant transformation {
+				sources_reference { ca , cb , cos , sin }
+				methode vecteur expression 4 101. -99. -99. 101.
+			}
+		}
+
+		fichier prepare format med_major fields dt_post 1.
+		{
+			temperature elem
+			gradT elem
+			ux elem
+			uy elem
+			cos elem
+			sin elem
+			ca elem
+			cb elem
+			diffu_anisotrope elem
+			diffu_constant elem
+		}
+	}
+}
+
+# solve the problem #
+solve pb
+
+end

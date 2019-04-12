@@ -1,0 +1,176 @@
+# dimension #
+dimension 3
+
+# domaine #
+domaine dom
+
+# probleme de condution de la chaleur #
+Pb_conduction pb
+
+# BEGIN MESH #
+# Read_med family_names_from_group_names dom Mesh_4 MeshGDLAnode_100K.med #
+Read_med family_names_from_group_names dom Mesh_4 Mesh_4_750K.med
+Read_file dom_ssz.geo ;
+VerifierCoin dom {  }
+# END MESH #
+
+# BEGIN PARTITION
+Partition dom
+{
+	Partition_tool metis { nb_parts 6  }
+	Larg_joint 2
+	zones_name dom
+}
+End
+END PARTITION #
+
+# BEGIN SCATTER
+Scatter dom.Zones dom
+END SCATTER #
+
+# discretisation VEF #
+vefprep1b dis
+
+# time scheme #
+scheme_euler_implicit sch
+
+Read sch
+{
+    tinit 0.
+    tmax 5.
+    # dt_min 1e-7 #
+    # dt_max 1. #
+    dt_impr 0.1
+    dt_sauv 0.1
+    max_iter_implicite 30  
+    seuil_statio_relatif_deconseille 1 
+    seuil_statio 0.01 
+    facsec 1000
+    facsec_max 1e8
+    Solveur Implicite
+    {
+      # Solveur petsc cholesky { impr } #
+      seuil_convergence_implicite 1.
+      solveur gmres { diag impr nb_it_max 3 seuil 1.e-8 }
+    }
+}
+
+# physics properties of medium  #
+# D'apres la base de donnees Graphite ATTENTION: deux cas: ecrase et non ecrase | deux axes: ep (orthogonal à l'ecrase) et pl (parallel à l'ecrase) #
+Solide gdl
+Read gdl
+{
+	# Masse volumique kg/m^3 #
+	rho Champ_Uniforme 1 2250
+	# Conductivité thermique (W/m/K) #
+	# lambda Champ_Uniforme 1 8.3 #
+	lambda Champ_Uniforme 1 0.1
+	# Chaleur massique (J/kg/K) #
+	Cp Champ_Uniforme 1 708
+}
+
+# associate the problem with the geometry, the time scheme and the physic properties #
+associate pb dom
+associate pb sch
+associate pb gdl
+
+# meshing the geometry with the given discretisation method #
+discretize pb dis
+
+# definition of the problem #
+read pb
+{
+	# Resolution div (-grad u) = 0 donc sans source, sans coefficient, steady state #
+	conduction
+	{
+		diffusion { }
+		initial_conditions {
+			temperature champ_uniforme 1 1.
+		}
+		boundary_conditions {
+			ycotes paroi_flux_impose champ_front_uniforme 1 0.
+			yplus paroi_temperature_imposee champ_front_uniforme 1 1.
+			ymoins paroi_temperature_imposee champ_front_uniforme 1 0.
+		}
+	}
+
+	# post traitement  #
+	post_processing
+	{
+		# define the champs for exporting the coefficient anisotrope #
+		definition_champs 
+		{
+			# gradient of temperature grad(u) = [ux uy uz]^T #
+			gradT gradient {
+				source refchamp { Pb_champ pb temperature }
+			}
+			# x-composante of vector gradT #
+			ux transformation {
+				methode composante numero 0				
+				sources_reference { gradT }
+			}
+			# y-composante of vector gradT #
+			uy transformation {
+				methode composante numero 1				
+				sources_reference { gradT }
+			}
+			# z-composante of vector gradT #
+			uz transformation {
+				methode composante numero 2				
+				sources_reference { gradT }
+			}
+			# constant cosinus gradT c = uy /sqrt(ux*ux+uy*uy+uz*uz) #
+			cos transformation {
+				sources_reference { ux , uy , uz }
+				methode formule expression 1 uy/(sqrt(ux*ux+uy*uy+uz*uz)+1e-38)
+			}
+			# constant sinus gradT s = ux /sqrt(ux*ux+uy*uy+uz*uz) #
+			sin transformation {
+				sources_reference { ux , uy , uz }
+				methode formule expression 1 ux/(sqrt(ux*ux+uy*uy+uz*uz)+1e-38)
+			}
+			# Diffusion coefficient in x, y, z direction m/s D = [3x3] = diag(100,1,100) # 
+			cx transformation { 
+				sources_reference { ux }
+				methode formule expression 1 15 # moyen #
+			}
+			cy transformation { 
+				sources_reference { ux }
+				methode formule expression 1 0.1
+			}
+			cz transformation { 
+				sources_reference { ux }
+				methode formule expression 1 15
+			}
+			# Coefficient anisotrope M.D.invM avec M = [cos, sin, 0; -sin, cos, 0; 0, 0, 1] (rotation autour Oz) #
+			diffu_anisotrope transformation {
+				sources_reference { cx , cy , cz , cos , sin }
+				methode vecteur expression 9 cx*cos*cos+cy*sin*sin cos*sin*(cy-cx) 0 cos*sin*(cy-cx) cx*sin*sin+cy*cos*cos 0 0 0 cz 
+			}
+		}
+		fichier diffu_gdl_anode format med_major fields dt_post 1.
+		# fichier prepare format lata fields dt_post 1. #
+		{
+			temperature elem
+			gradT elem
+			ux elem
+			uy elem
+			uz elem
+			cos elem
+			sin elem
+			cx elem
+			cy elem
+			cz elem
+			diffu_anisotrope elem
+			conductivite elem
+			diffusivite_thermique elem
+			capacite_calorifique elem
+			masse_volumique elem
+		}
+	}
+}
+
+# solve the problem #
+solve pb
+
+end

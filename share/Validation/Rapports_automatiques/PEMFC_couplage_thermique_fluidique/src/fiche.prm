@@ -1,0 +1,14 @@
+parameters
+{
+   title "3D thermal fluid coupled problem "
+   description "Here is a single straight cooling channel heated by a plate."
+   author "Van quang DINH"
+   testcase .  PAR_PEMFC_couplage_thermique_fluidique 6
+}
+
+chapter
+{
+    title "to be completed"
+    description "..."
+}
+

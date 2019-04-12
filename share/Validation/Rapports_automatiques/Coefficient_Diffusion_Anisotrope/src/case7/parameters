@@ -1,0 +1,18 @@
+@nb_pas_dt_max@ 1000
+@facsec@ 0.01
+@K00@ 2
+@K01@ 5
+@K10@ 6
+@K11@ 2
+@K@ 100
+@A@ 0
+@B@ 0
+@C@ 0
+@D@ 1
+@E@ 1
+@initial_conditions@ champ_fonc_xyz dom 1 x+y
+@erreur_periode@ 1e-8
+@utilisation_operateur_tensoriel@ true
+@Maillage@ carre_grossier
+
+chapter ExtraCoeffs

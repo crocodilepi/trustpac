@@ -1,0 +1,32 @@
+dir=$project_directory/share/Validation/Rapports_automatiques/Coefficient_Diffusion_Anisotrope/src
+
+# Nettoyage ( certains fichiers contiennent des donnees ajoutees )
+rm -rf *.error
+rm -rf *.err
+rm -rf *.e
+
+# Dans initialization on ajoute des chapitres (des fois)
+# donc il faut que la fiche prm soit deja creee
+#
+# Creation de la fiche prm
+#
+python GenerateFichePrm.py
+
+#
+# Copie des fichiers dans chaque sous repertoire caseXX
+#
+for rep in $(find . -maxdepth 1 -type d)
+do
+    if [ $rep != "." ] && [ $rep != "./python_solution_analytique" ] && [ $rep != "./.tmp" ] 
+    then
+	cp $dir/generic.data $rep
+	cp $dir/carre* $rep
+	cp $dir/*.py $rep
+	cp $dir/*.sh $rep
+	cd $rep
+	# python -m pdb ./initialization.py $rep
+	python  initialization.py $rep
+	cd ..
+    fi 
+done
+

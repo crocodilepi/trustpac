@@ -1,0 +1,18 @@
+@nb_pas_dt_max@ 1000
+@facsec@ 0.01
+@K00@ 1
+@K01@ 1e-0
+@K10@ 2e-0
+@K11@ 1
+@K@ 100
+@A@ 0
+@B@ 0
+@C@ 0
+@D@ 1
+@E@ 1
+@initial_conditions@ champ_fonc_xyz dom 1 x+y
+@erreur_periode@ 1e-8
+@utilisation_operateur_tensoriel@ true
+@Maillage@ carre_grossier
+
+error_in_function_of 1 @K01@ my_error.error

@@ -1,0 +1,174 @@
+# Anisotropic diffusion coefficient in VEF #
+# PARALLEL OK 4 #
+Dimension 2 
+
+
+Domaine dom  
+
+#  physic problem: heat conduction  #
+pb_conduction pb
+
+# BEGIN MESH #
+system "gmsh -2 -order 1 -clscale 1 -format med @Maillage@.geo||echo .gmshrc old ?"
+Lire_med family_names_from_group_names dom @Maillage@ @Maillage@.med
+# END MESH #
+
+# BEGIN PARTITION
+Partition dom
+{
+   /* Choose Nb_parts so to have ~ 25000 cells per processor */
+   Partition_tool metis { nb_parts 2 }
+   Larg_joint 2
+   zones_name DOM
+}
+End
+END PARTITION #
+
+# BEGIN SCATTER
+Scatter DOM.Zones dom
+END SCATTER #
+
+# discretisation #
+vefprep1b dis
+
+# time scheme #
+Scheme_euler_explicit scheme
+Read scheme
+{
+  nb_pas_dt_max @nb_pas_dt_max@
+  tinit 0
+  tmax 1.3e-2
+  facsec @facsec@
+  seuil_statio 1e-6
+}
+
+
+
+# physics properties of medium  #
+solide sol
+read sol
+{
+  rho champ_uniforme 1 1.0
+  lambda @lambda@
+  Cp champ_uniforme 1 1.0
+}
+
+# associate the physic problem with the geometry, the time scheme and the physic properties #
+associate pb dom
+associate pb scheme
+associate pb sol
+
+# meshing the geometry with the given discretisation method #
+discretize pb dis
+
+# definition of the physic problem: heat conduction #
+read pb
+{
+  conduction
+  {
+    diffusion { Tensor }
+    # initial_conditions { temperature champ_uniforme 1 0. } #
+    # initial_conditions { temperature champ_fonc_xyz dom 1 2.5*x*x+4*y*y+8.6*x*y } #
+    initial_conditions { temperature @initial_conditions@ }
+    boundary_conditions 
+    {
+	gauche paroi_temperature_imposee champ_front_fonc_xyz 1 @A@*x*x+@B@*y*y+@C@*x*y+@D@*x+@E@*y
+	droit  paroi_temperature_imposee champ_front_fonc_xyz 1 @A@*x*x+@B@*y*y+@C@*x*y+@D@*x+@E@*y
+	haut   paroi_temperature_imposee champ_front_fonc_xyz 1 @A@*x*x+@B@*y*y+@C@*x*y+@D@*x+@E@*y
+	bas    paroi_temperature_imposee champ_front_fonc_xyz 1 @A@*x*x+@B@*y*y+@C@*x*y+@D@*x+@E@*y
+    }
+    sources { puissance_thermique champ_Uniforme 1  @puissance@  }
+  }
+
+  post_processing
+  {
+
+    definition_champs
+    {
+      solution  Transformation { methode formule expression 1 @A@*x*x+@B@*y*y+@C@*x*y+@D@*x+@E@*y localisation Faces }
+      difference 
+        Transformation { 
+      	  methode formule expression 1 abs(temp-(@A@*x*x+@B@*y*y+@C@*x*y+@D@*x+@E@*y)) 
+	  source refChamp { Pb_Champ pb temperature nom_source temp } 
+	  localisation Faces 
+	}
+      erreur_absolue reduction_0D { 
+      	     methode l2_norm source transformation { 
+      	     	methode formule expression 1 difference 
+      	     	sources_reference { difference } 
+		localisation Faces 
+	        }
+             }
+
+      norme_solution reduction_0D {
+             methode l2_norm source transformation {
+               methode formule expression 1 @A@*x*x+@B@*y*y+@C@*x*y+@D@*x+@E@*y
+	       localisation Faces
+               }
+             }
+
+      erreur_relative transformation { 
+      		      		       methode formule expression 1 erreur_absolue/norme_solution  
+      		      		       sources_reference { erreur_absolue , norme_solution }  
+				       localisation Faces 
+      				     }
+
+    }
+
+
+    probes
+    {
+     erreur_absolue erreur_absolue periode @erreur_periode@ numero_elem_sur_maitre 0
+     erreur_relative erreur_relative periode @erreur_periode@ numero_elem_sur_maitre 0
+    }
+
+    format lata 
+    fields dt_post 1e-3
+    {
+       temperature som
+       diffusivite_thermique elem
+       difference som
+       solution som
+    }
+
+  }
+}
+
+# solve the problem #
+solve pb
+
+end
+
+
+
+
+    # Flux avec Tenseur 100 80 50 20 #
+    boundary_conditions 
+    {
+	gauche paroi_flux_impose champ_front_fonc_xyz 1 -1500*y-1188*x
+	droit  paroi_flux_impose champ_front_fonc_xyz 1  1500*y+1188*x
+	haut   paroi_flux_impose champ_front_fonc_xyz 1  422*x+590*y
+	bas    paroi_flux_impose champ_front_fonc_xyz 1 -422*x-590*y
+    }
+
+# Scheme_euler_implicit scheme
+Read scheme
+{
+  nb_pas_dt_max 20
+  tinit 0
+  tmax 3
+  facsec 1
+  max_iter_implicite 20 
+  dt_impr 10
+  seuil_statio 1e-10
+  Solveur Implicite { Solveur petsc cholesky { quiet } }
+} #
+
+
+    probes 
+    {
+	sonde_T_droit temperature periode 1 segment 30 0.99 1.0 0.99 0.0 
+	sonde_S_droit solution periode 1 position_like sonde_T_droit
+	sonde_T temperature periode 1 segment 30 0.0 1.0 1.0 0.0 
+	sonde_S solution periode 1 position_like sonde_T
+    }

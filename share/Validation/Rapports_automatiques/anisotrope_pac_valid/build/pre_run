@@ -1,0 +1,7 @@
+trust prepare_coeff.data &> .pre_run.out
+if [ $? = 0 ]
+then
+  echo "prepare_coeff ok"
+else
+  echo "there was a problem during the run of prepare_coeff. See .pre_run.out file"
+fi

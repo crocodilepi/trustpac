@@ -1,0 +1,43 @@
+Cette fiche de validation se genere automatiquement en fonction des repertoires presents dans src/ et surtout du fichier parameters
+En effet, le point de depart est un jeu de donnees generique qui contient des balises au niveau des parametres que l'on souhaite ajuster
+Un script python calcule l'erreur commise par rapport a une solution analytique qui elle aussi peut etre definie dans le fichier parameters
+
+Mode de fonctionnement :
+
+L'utilisateur cree un répertoire (par exemple MyCase) et edite un fichier "parameters" 
+Ce fichier contient les valeurs des parametres qui sont pris lors du calcul et qui sont reperes via les balises @ @
+Les parametres suivants sont disponibles :
+
+@nb_pas_dt_max@ 
+@facsec@ 
+@K00@ 
+@K01@ 
+@K10@ 
+@K11@ 
+@K@ 
+@A@ 
+@B@ 
+@C@ 
+@D@ 
+@E@ 
+@initial_conditions@ 
+@erreur_periode@ 
+@utilisation_operateur_tensoriel@ true
+@Maillage@ 
+
+Les parametres A B C D et E concernent la solution analytique qui s'exprime sous la forme :
+Ax^2 + By^2 + Cxy + Dx + Ey
+
+Les parametres K00 K01 K10 et K11 sont les coefficients du coefficient de diffusion
+
+Le coefficient K n'est utilise que si on a "@utilisation_operateur_tensoriel@ false" et dans ce cas on se ramene a un coefficient classique
+
+Le parametre @initial_conditions@ contient la condition initiale, par exemple, dans le cas ou la solution est x+y : champ_fonc_xyz dom 1 x+y
+
+Le parametre @erreur_periode@ defini la frequence d'impression de l'erreur (absolue et relative) dans le fichiers :
+- mydata_ERREUR_ABSOLUE.son 
+- mydata_ERREUR_RELATIVE.son
+
+Le maillage est donne par @Maillage@ qui peut prendre les valeurs suivantes :
+- carre_grossier
+- carre_moyen

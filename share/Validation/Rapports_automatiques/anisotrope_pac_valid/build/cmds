@@ -1,0 +1,2 @@
+( echo;echo "-> Running the calculation of the anisotrope_pac data file in the . directory ...";cd . ;  [ -f pre_run ] && chmod +x pre_run && echo "-> Running the pre_run script in the . directory ..." && ./pre_run anisotrope_pac; trust anisotrope_pac     1>anisotrope_pac.out 2>anisotrope_pac.err ; extract_perf anisotrope_pac; [ -f post_run ] && chmod +x post_run && echo "-> Running the post_run script in the . directory ..." && ./post_run anisotrope_pac)
+get_total_time ./anisotrope_pac.perf

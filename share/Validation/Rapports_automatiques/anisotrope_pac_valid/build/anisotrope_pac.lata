@@ -1,0 +1,146 @@
+LATA_V2.1 Trio_U Version1.6 or later
+anisotrope_pac
+Trio_U verbosity=0
+Format BINAIRE,LITTLE_ENDIAN,INT32,F_INDEXING,C_ORDERING,F_MARKERS_SINGLE,REAL32
+GEOM dom type_elem=TRIANGLE
+CHAMP SOMMETS anisotrope_pac.lata.dom.0.0 geometrie=dom size=3695 composantes=2
+CHAMP ELEMENTS anisotrope_pac.lata.dom.0.0.elem geometrie=dom size=6958 composantes=3 format=INT32
+GEOM dom_boundaries_Bas type_elem=SEGMENT
+CHAMP SOMMETS anisotrope_pac.lata.dom_boundaries_Bas.0.0 geometrie=dom_boundaries_Bas size=201 composantes=2
+CHAMP ELEMENTS anisotrope_pac.lata.dom_boundaries_Bas.0.0.elem geometrie=dom_boundaries_Bas size=200 composantes=2 format=INT32
+GEOM dom_boundaries_Droit type_elem=SEGMENT
+CHAMP SOMMETS anisotrope_pac.lata.dom_boundaries_Droit.0.0 geometrie=dom_boundaries_Droit size=11 composantes=2
+CHAMP ELEMENTS anisotrope_pac.lata.dom_boundaries_Droit.0.0.elem geometrie=dom_boundaries_Droit size=10 composantes=2 format=INT32
+GEOM dom_boundaries_Haut type_elem=SEGMENT
+CHAMP SOMMETS anisotrope_pac.lata.dom_boundaries_Haut.0.0 geometrie=dom_boundaries_Haut size=201 composantes=2
+CHAMP ELEMENTS anisotrope_pac.lata.dom_boundaries_Haut.0.0.elem geometrie=dom_boundaries_Haut size=200 composantes=2 format=INT32
+GEOM dom_boundaries_Gauche type_elem=SEGMENT
+CHAMP SOMMETS anisotrope_pac.lata.dom_boundaries_Gauche.0.0 geometrie=dom_boundaries_Gauche size=21 composantes=2
+CHAMP ELEMENTS anisotrope_pac.lata.dom_boundaries_Gauche.0.0.elem geometrie=dom_boundaries_Gauche size=20 composantes=2 format=INT32
+TEMPS 0.00000000e+00
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.ELEM.dom.0.0000000000 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=TEMPERATURE_ELEM_dom0 composantes=1
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.SOM.dom.0.0000000000 geometrie=dom localisation=SOM size=3695 nature=scalar noms_compo=TEMPERATURE_SOM_dom0 composantes=1
+Champ GRADT anisotrope_pac.lata.GRADT.SOM.dom.0.0000000000 geometrie=dom localisation=SOM size=3695 nature=vector noms_compo=GRADT0_som_dom,GRADT1_som_dom composantes=2
+Champ DIFFUSIVITE_THERMIQUE anisotrope_pac.lata.DIFFUSIVITE_THERMIQUE.ELEM.dom.0.0000000000 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=diffusivite_thermique_0_elem_dom,diffusivite_thermique_1_elem_dom,diffusivite_thermique_2_elem_dom,diffusivite_thermique_3_elem_dom composantes=4
+Champ CAPACITE_CALORIFIQUE anisotrope_pac.lata.CAPACITE_CALORIFIQUE.ELEM.dom.0.0000000000 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=capacite_calorifique_0_elem_dom,capacite_calorifique_1_elem_dom,capacite_calorifique_2_elem_dom,capacite_calorifique_3_elem_dom composantes=4
+Champ MASSE_VOLUMIQUE anisotrope_pac.lata.MASSE_VOLUMIQUE.ELEM.dom.0.0000000000 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=masse_volumique_0_elem_dom,masse_volumique_1_elem_dom,masse_volumique_2_elem_dom,masse_volumique_3_elem_dom composantes=4
+TEMPS 1.00355295e-01
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.ELEM.dom.0.1003552953 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=TEMPERATURE_ELEM_dom0 composantes=1
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.SOM.dom.0.1003552953 geometrie=dom localisation=SOM size=3695 nature=scalar noms_compo=TEMPERATURE_SOM_dom0 composantes=1
+Champ GRADT anisotrope_pac.lata.GRADT.SOM.dom.0.1003552953 geometrie=dom localisation=SOM size=3695 nature=vector noms_compo=GRADT0_som_dom,GRADT1_som_dom composantes=2
+Champ DIFFUSIVITE_THERMIQUE anisotrope_pac.lata.DIFFUSIVITE_THERMIQUE.ELEM.dom.0.1003552953 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=diffusivite_thermique_0_elem_dom,diffusivite_thermique_1_elem_dom,diffusivite_thermique_2_elem_dom,diffusivite_thermique_3_elem_dom composantes=4
+Champ CAPACITE_CALORIFIQUE anisotrope_pac.lata.CAPACITE_CALORIFIQUE.ELEM.dom.0.1003552953 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=capacite_calorifique_0_elem_dom,capacite_calorifique_1_elem_dom,capacite_calorifique_2_elem_dom,capacite_calorifique_3_elem_dom composantes=4
+Champ MASSE_VOLUMIQUE anisotrope_pac.lata.MASSE_VOLUMIQUE.ELEM.dom.0.1003552953 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=masse_volumique_0_elem_dom,masse_volumique_1_elem_dom,masse_volumique_2_elem_dom,masse_volumique_3_elem_dom composantes=4
+TEMPS 2.01233284e-01
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.ELEM.dom.0.2012332841 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=TEMPERATURE_ELEM_dom0 composantes=1
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.SOM.dom.0.2012332841 geometrie=dom localisation=SOM size=3695 nature=scalar noms_compo=TEMPERATURE_SOM_dom0 composantes=1
+Champ GRADT anisotrope_pac.lata.GRADT.SOM.dom.0.2012332841 geometrie=dom localisation=SOM size=3695 nature=vector noms_compo=GRADT0_som_dom,GRADT1_som_dom composantes=2
+Champ DIFFUSIVITE_THERMIQUE anisotrope_pac.lata.DIFFUSIVITE_THERMIQUE.ELEM.dom.0.2012332841 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=diffusivite_thermique_0_elem_dom,diffusivite_thermique_1_elem_dom,diffusivite_thermique_2_elem_dom,diffusivite_thermique_3_elem_dom composantes=4
+Champ CAPACITE_CALORIFIQUE anisotrope_pac.lata.CAPACITE_CALORIFIQUE.ELEM.dom.0.2012332841 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=capacite_calorifique_0_elem_dom,capacite_calorifique_1_elem_dom,capacite_calorifique_2_elem_dom,capacite_calorifique_3_elem_dom composantes=4
+Champ MASSE_VOLUMIQUE anisotrope_pac.lata.MASSE_VOLUMIQUE.ELEM.dom.0.2012332841 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=masse_volumique_0_elem_dom,masse_volumique_1_elem_dom,masse_volumique_2_elem_dom,masse_volumique_3_elem_dom composantes=4
+TEMPS 3.00791641e-01
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.ELEM.dom.0.3007916414 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=TEMPERATURE_ELEM_dom0 composantes=1
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.SOM.dom.0.3007916414 geometrie=dom localisation=SOM size=3695 nature=scalar noms_compo=TEMPERATURE_SOM_dom0 composantes=1
+Champ GRADT anisotrope_pac.lata.GRADT.SOM.dom.0.3007916414 geometrie=dom localisation=SOM size=3695 nature=vector noms_compo=GRADT0_som_dom,GRADT1_som_dom composantes=2
+Champ DIFFUSIVITE_THERMIQUE anisotrope_pac.lata.DIFFUSIVITE_THERMIQUE.ELEM.dom.0.3007916414 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=diffusivite_thermique_0_elem_dom,diffusivite_thermique_1_elem_dom,diffusivite_thermique_2_elem_dom,diffusivite_thermique_3_elem_dom composantes=4
+Champ CAPACITE_CALORIFIQUE anisotrope_pac.lata.CAPACITE_CALORIFIQUE.ELEM.dom.0.3007916414 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=capacite_calorifique_0_elem_dom,capacite_calorifique_1_elem_dom,capacite_calorifique_2_elem_dom,capacite_calorifique_3_elem_dom composantes=4
+Champ MASSE_VOLUMIQUE anisotrope_pac.lata.MASSE_VOLUMIQUE.ELEM.dom.0.3007916414 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=masse_volumique_0_elem_dom,masse_volumique_1_elem_dom,masse_volumique_2_elem_dom,masse_volumique_3_elem_dom composantes=4
+TEMPS 4.01549494e-01
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.ELEM.dom.0.4015494937 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=TEMPERATURE_ELEM_dom0 composantes=1
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.SOM.dom.0.4015494937 geometrie=dom localisation=SOM size=3695 nature=scalar noms_compo=TEMPERATURE_SOM_dom0 composantes=1
+Champ GRADT anisotrope_pac.lata.GRADT.SOM.dom.0.4015494937 geometrie=dom localisation=SOM size=3695 nature=vector noms_compo=GRADT0_som_dom,GRADT1_som_dom composantes=2
+Champ DIFFUSIVITE_THERMIQUE anisotrope_pac.lata.DIFFUSIVITE_THERMIQUE.ELEM.dom.0.4015494937 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=diffusivite_thermique_0_elem_dom,diffusivite_thermique_1_elem_dom,diffusivite_thermique_2_elem_dom,diffusivite_thermique_3_elem_dom composantes=4
+Champ CAPACITE_CALORIFIQUE anisotrope_pac.lata.CAPACITE_CALORIFIQUE.ELEM.dom.0.4015494937 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=capacite_calorifique_0_elem_dom,capacite_calorifique_1_elem_dom,capacite_calorifique_2_elem_dom,capacite_calorifique_3_elem_dom composantes=4
+Champ MASSE_VOLUMIQUE anisotrope_pac.lata.MASSE_VOLUMIQUE.ELEM.dom.0.4015494937 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=masse_volumique_0_elem_dom,masse_volumique_1_elem_dom,masse_volumique_2_elem_dom,masse_volumique_3_elem_dom composantes=4
+TEMPS 5.00901517e-01
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.ELEM.dom.0.5009015174 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=TEMPERATURE_ELEM_dom0 composantes=1
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.SOM.dom.0.5009015174 geometrie=dom localisation=SOM size=3695 nature=scalar noms_compo=TEMPERATURE_SOM_dom0 composantes=1
+Champ GRADT anisotrope_pac.lata.GRADT.SOM.dom.0.5009015174 geometrie=dom localisation=SOM size=3695 nature=vector noms_compo=GRADT0_som_dom,GRADT1_som_dom composantes=2
+Champ DIFFUSIVITE_THERMIQUE anisotrope_pac.lata.DIFFUSIVITE_THERMIQUE.ELEM.dom.0.5009015174 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=diffusivite_thermique_0_elem_dom,diffusivite_thermique_1_elem_dom,diffusivite_thermique_2_elem_dom,diffusivite_thermique_3_elem_dom composantes=4
+Champ CAPACITE_CALORIFIQUE anisotrope_pac.lata.CAPACITE_CALORIFIQUE.ELEM.dom.0.5009015174 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=capacite_calorifique_0_elem_dom,capacite_calorifique_1_elem_dom,capacite_calorifique_2_elem_dom,capacite_calorifique_3_elem_dom composantes=4
+Champ MASSE_VOLUMIQUE anisotrope_pac.lata.MASSE_VOLUMIQUE.ELEM.dom.0.5009015174 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=masse_volumique_0_elem_dom,masse_volumique_1_elem_dom,masse_volumique_2_elem_dom,masse_volumique_3_elem_dom composantes=4
+TEMPS 6.00253541e-01
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.ELEM.dom.0.6002535412 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=TEMPERATURE_ELEM_dom0 composantes=1
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.SOM.dom.0.6002535412 geometrie=dom localisation=SOM size=3695 nature=scalar noms_compo=TEMPERATURE_SOM_dom0 composantes=1
+Champ GRADT anisotrope_pac.lata.GRADT.SOM.dom.0.6002535412 geometrie=dom localisation=SOM size=3695 nature=vector noms_compo=GRADT0_som_dom,GRADT1_som_dom composantes=2
+Champ DIFFUSIVITE_THERMIQUE anisotrope_pac.lata.DIFFUSIVITE_THERMIQUE.ELEM.dom.0.6002535412 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=diffusivite_thermique_0_elem_dom,diffusivite_thermique_1_elem_dom,diffusivite_thermique_2_elem_dom,diffusivite_thermique_3_elem_dom composantes=4
+Champ CAPACITE_CALORIFIQUE anisotrope_pac.lata.CAPACITE_CALORIFIQUE.ELEM.dom.0.6002535412 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=capacite_calorifique_0_elem_dom,capacite_calorifique_1_elem_dom,capacite_calorifique_2_elem_dom,capacite_calorifique_3_elem_dom composantes=4
+Champ MASSE_VOLUMIQUE anisotrope_pac.lata.MASSE_VOLUMIQUE.ELEM.dom.0.6002535412 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=masse_volumique_0_elem_dom,masse_volumique_1_elem_dom,masse_volumique_2_elem_dom,masse_volumique_3_elem_dom composantes=4
+TEMPS 7.01971089e-01
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.ELEM.dom.0.7019710893 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=TEMPERATURE_ELEM_dom0 composantes=1
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.SOM.dom.0.7019710893 geometrie=dom localisation=SOM size=3695 nature=scalar noms_compo=TEMPERATURE_SOM_dom0 composantes=1
+Champ GRADT anisotrope_pac.lata.GRADT.SOM.dom.0.7019710893 geometrie=dom localisation=SOM size=3695 nature=vector noms_compo=GRADT0_som_dom,GRADT1_som_dom composantes=2
+Champ DIFFUSIVITE_THERMIQUE anisotrope_pac.lata.DIFFUSIVITE_THERMIQUE.ELEM.dom.0.7019710893 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=diffusivite_thermique_0_elem_dom,diffusivite_thermique_1_elem_dom,diffusivite_thermique_2_elem_dom,diffusivite_thermique_3_elem_dom composantes=4
+Champ CAPACITE_CALORIFIQUE anisotrope_pac.lata.CAPACITE_CALORIFIQUE.ELEM.dom.0.7019710893 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=capacite_calorifique_0_elem_dom,capacite_calorifique_1_elem_dom,capacite_calorifique_2_elem_dom,capacite_calorifique_3_elem_dom composantes=4
+Champ MASSE_VOLUMIQUE anisotrope_pac.lata.MASSE_VOLUMIQUE.ELEM.dom.0.7019710893 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=masse_volumique_0_elem_dom,masse_volumique_1_elem_dom,masse_volumique_2_elem_dom,masse_volumique_3_elem_dom composantes=4
+TEMPS 8.01323113e-01
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.ELEM.dom.0.8013231130 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=TEMPERATURE_ELEM_dom0 composantes=1
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.SOM.dom.0.8013231130 geometrie=dom localisation=SOM size=3695 nature=scalar noms_compo=TEMPERATURE_SOM_dom0 composantes=1
+Champ GRADT anisotrope_pac.lata.GRADT.SOM.dom.0.8013231130 geometrie=dom localisation=SOM size=3695 nature=vector noms_compo=GRADT0_som_dom,GRADT1_som_dom composantes=2
+Champ DIFFUSIVITE_THERMIQUE anisotrope_pac.lata.DIFFUSIVITE_THERMIQUE.ELEM.dom.0.8013231130 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=diffusivite_thermique_0_elem_dom,diffusivite_thermique_1_elem_dom,diffusivite_thermique_2_elem_dom,diffusivite_thermique_3_elem_dom composantes=4
+Champ CAPACITE_CALORIFIQUE anisotrope_pac.lata.CAPACITE_CALORIFIQUE.ELEM.dom.0.8013231130 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=capacite_calorifique_0_elem_dom,capacite_calorifique_1_elem_dom,capacite_calorifique_2_elem_dom,capacite_calorifique_3_elem_dom composantes=4
+Champ MASSE_VOLUMIQUE anisotrope_pac.lata.MASSE_VOLUMIQUE.ELEM.dom.0.8013231130 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=masse_volumique_0_elem_dom,masse_volumique_1_elem_dom,masse_volumique_2_elem_dom,masse_volumique_3_elem_dom composantes=4
+TEMPS 9.00675137e-01
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.ELEM.dom.0.9006751368 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=TEMPERATURE_ELEM_dom0 composantes=1
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.SOM.dom.0.9006751368 geometrie=dom localisation=SOM size=3695 nature=scalar noms_compo=TEMPERATURE_SOM_dom0 composantes=1
+Champ GRADT anisotrope_pac.lata.GRADT.SOM.dom.0.9006751368 geometrie=dom localisation=SOM size=3695 nature=vector noms_compo=GRADT0_som_dom,GRADT1_som_dom composantes=2
+Champ DIFFUSIVITE_THERMIQUE anisotrope_pac.lata.DIFFUSIVITE_THERMIQUE.ELEM.dom.0.9006751368 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=diffusivite_thermique_0_elem_dom,diffusivite_thermique_1_elem_dom,diffusivite_thermique_2_elem_dom,diffusivite_thermique_3_elem_dom composantes=4
+Champ CAPACITE_CALORIFIQUE anisotrope_pac.lata.CAPACITE_CALORIFIQUE.ELEM.dom.0.9006751368 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=capacite_calorifique_0_elem_dom,capacite_calorifique_1_elem_dom,capacite_calorifique_2_elem_dom,capacite_calorifique_3_elem_dom composantes=4
+Champ MASSE_VOLUMIQUE anisotrope_pac.lata.MASSE_VOLUMIQUE.ELEM.dom.0.9006751368 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=masse_volumique_0_elem_dom,masse_volumique_1_elem_dom,masse_volumique_2_elem_dom,masse_volumique_3_elem_dom composantes=4
+TEMPS 1.00002716e+00
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.ELEM.dom.1.0000271605 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=TEMPERATURE_ELEM_dom0 composantes=1
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.SOM.dom.1.0000271605 geometrie=dom localisation=SOM size=3695 nature=scalar noms_compo=TEMPERATURE_SOM_dom0 composantes=1
+Champ GRADT anisotrope_pac.lata.GRADT.SOM.dom.1.0000271605 geometrie=dom localisation=SOM size=3695 nature=vector noms_compo=GRADT0_som_dom,GRADT1_som_dom composantes=2
+Champ DIFFUSIVITE_THERMIQUE anisotrope_pac.lata.DIFFUSIVITE_THERMIQUE.ELEM.dom.1.0000271605 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=diffusivite_thermique_0_elem_dom,diffusivite_thermique_1_elem_dom,diffusivite_thermique_2_elem_dom,diffusivite_thermique_3_elem_dom composantes=4
+Champ CAPACITE_CALORIFIQUE anisotrope_pac.lata.CAPACITE_CALORIFIQUE.ELEM.dom.1.0000271605 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=capacite_calorifique_0_elem_dom,capacite_calorifique_1_elem_dom,capacite_calorifique_2_elem_dom,capacite_calorifique_3_elem_dom composantes=4
+Champ MASSE_VOLUMIQUE anisotrope_pac.lata.MASSE_VOLUMIQUE.ELEM.dom.1.0000271605 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=masse_volumique_0_elem_dom,masse_volumique_1_elem_dom,masse_volumique_2_elem_dom,masse_volumique_3_elem_dom composantes=4
+TEMPS 1.10174471e+00
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.ELEM.dom.1.1017447086 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=TEMPERATURE_ELEM_dom0 composantes=1
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.SOM.dom.1.1017447086 geometrie=dom localisation=SOM size=3695 nature=scalar noms_compo=TEMPERATURE_SOM_dom0 composantes=1
+Champ GRADT anisotrope_pac.lata.GRADT.SOM.dom.1.1017447086 geometrie=dom localisation=SOM size=3695 nature=vector noms_compo=GRADT0_som_dom,GRADT1_som_dom composantes=2
+Champ DIFFUSIVITE_THERMIQUE anisotrope_pac.lata.DIFFUSIVITE_THERMIQUE.ELEM.dom.1.1017447086 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=diffusivite_thermique_0_elem_dom,diffusivite_thermique_1_elem_dom,diffusivite_thermique_2_elem_dom,diffusivite_thermique_3_elem_dom composantes=4
+Champ CAPACITE_CALORIFIQUE anisotrope_pac.lata.CAPACITE_CALORIFIQUE.ELEM.dom.1.1017447086 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=capacite_calorifique_0_elem_dom,capacite_calorifique_1_elem_dom,capacite_calorifique_2_elem_dom,capacite_calorifique_3_elem_dom composantes=4
+Champ MASSE_VOLUMIQUE anisotrope_pac.lata.MASSE_VOLUMIQUE.ELEM.dom.1.1017447086 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=masse_volumique_0_elem_dom,masse_volumique_1_elem_dom,masse_volumique_2_elem_dom,masse_volumique_3_elem_dom composantes=4
+TEMPS 1.20109673e+00
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.ELEM.dom.1.2010967324 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=TEMPERATURE_ELEM_dom0 composantes=1
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.SOM.dom.1.2010967324 geometrie=dom localisation=SOM size=3695 nature=scalar noms_compo=TEMPERATURE_SOM_dom0 composantes=1
+Champ GRADT anisotrope_pac.lata.GRADT.SOM.dom.1.2010967324 geometrie=dom localisation=SOM size=3695 nature=vector noms_compo=GRADT0_som_dom,GRADT1_som_dom composantes=2
+Champ DIFFUSIVITE_THERMIQUE anisotrope_pac.lata.DIFFUSIVITE_THERMIQUE.ELEM.dom.1.2010967324 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=diffusivite_thermique_0_elem_dom,diffusivite_thermique_1_elem_dom,diffusivite_thermique_2_elem_dom,diffusivite_thermique_3_elem_dom composantes=4
+Champ CAPACITE_CALORIFIQUE anisotrope_pac.lata.CAPACITE_CALORIFIQUE.ELEM.dom.1.2010967324 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=capacite_calorifique_0_elem_dom,capacite_calorifique_1_elem_dom,capacite_calorifique_2_elem_dom,capacite_calorifique_3_elem_dom composantes=4
+Champ MASSE_VOLUMIQUE anisotrope_pac.lata.MASSE_VOLUMIQUE.ELEM.dom.1.2010967324 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=masse_volumique_0_elem_dom,masse_volumique_1_elem_dom,masse_volumique_2_elem_dom,masse_volumique_3_elem_dom composantes=4
+TEMPS 1.30044876e+00
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.ELEM.dom.1.3004487561 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=TEMPERATURE_ELEM_dom0 composantes=1
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.SOM.dom.1.3004487561 geometrie=dom localisation=SOM size=3695 nature=scalar noms_compo=TEMPERATURE_SOM_dom0 composantes=1
+Champ GRADT anisotrope_pac.lata.GRADT.SOM.dom.1.3004487561 geometrie=dom localisation=SOM size=3695 nature=vector noms_compo=GRADT0_som_dom,GRADT1_som_dom composantes=2
+Champ DIFFUSIVITE_THERMIQUE anisotrope_pac.lata.DIFFUSIVITE_THERMIQUE.ELEM.dom.1.3004487561 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=diffusivite_thermique_0_elem_dom,diffusivite_thermique_1_elem_dom,diffusivite_thermique_2_elem_dom,diffusivite_thermique_3_elem_dom composantes=4
+Champ CAPACITE_CALORIFIQUE anisotrope_pac.lata.CAPACITE_CALORIFIQUE.ELEM.dom.1.3004487561 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=capacite_calorifique_0_elem_dom,capacite_calorifique_1_elem_dom,capacite_calorifique_2_elem_dom,capacite_calorifique_3_elem_dom composantes=4
+Champ MASSE_VOLUMIQUE anisotrope_pac.lata.MASSE_VOLUMIQUE.ELEM.dom.1.3004487561 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=masse_volumique_0_elem_dom,masse_volumique_1_elem_dom,masse_volumique_2_elem_dom,masse_volumique_3_elem_dom composantes=4
+TEMPS 1.40216630e+00
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.ELEM.dom.1.4021663042 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=TEMPERATURE_ELEM_dom0 composantes=1
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.SOM.dom.1.4021663042 geometrie=dom localisation=SOM size=3695 nature=scalar noms_compo=TEMPERATURE_SOM_dom0 composantes=1
+Champ GRADT anisotrope_pac.lata.GRADT.SOM.dom.1.4021663042 geometrie=dom localisation=SOM size=3695 nature=vector noms_compo=GRADT0_som_dom,GRADT1_som_dom composantes=2
+Champ DIFFUSIVITE_THERMIQUE anisotrope_pac.lata.DIFFUSIVITE_THERMIQUE.ELEM.dom.1.4021663042 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=diffusivite_thermique_0_elem_dom,diffusivite_thermique_1_elem_dom,diffusivite_thermique_2_elem_dom,diffusivite_thermique_3_elem_dom composantes=4
+Champ CAPACITE_CALORIFIQUE anisotrope_pac.lata.CAPACITE_CALORIFIQUE.ELEM.dom.1.4021663042 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=capacite_calorifique_0_elem_dom,capacite_calorifique_1_elem_dom,capacite_calorifique_2_elem_dom,capacite_calorifique_3_elem_dom composantes=4
+Champ MASSE_VOLUMIQUE anisotrope_pac.lata.MASSE_VOLUMIQUE.ELEM.dom.1.4021663042 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=masse_volumique_0_elem_dom,masse_volumique_1_elem_dom,masse_volumique_2_elem_dom,masse_volumique_3_elem_dom composantes=4
+TEMPS 1.50151833e+00
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.ELEM.dom.1.5015183280 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=TEMPERATURE_ELEM_dom0 composantes=1
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.SOM.dom.1.5015183280 geometrie=dom localisation=SOM size=3695 nature=scalar noms_compo=TEMPERATURE_SOM_dom0 composantes=1
+Champ GRADT anisotrope_pac.lata.GRADT.SOM.dom.1.5015183280 geometrie=dom localisation=SOM size=3695 nature=vector noms_compo=GRADT0_som_dom,GRADT1_som_dom composantes=2
+Champ DIFFUSIVITE_THERMIQUE anisotrope_pac.lata.DIFFUSIVITE_THERMIQUE.ELEM.dom.1.5015183280 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=diffusivite_thermique_0_elem_dom,diffusivite_thermique_1_elem_dom,diffusivite_thermique_2_elem_dom,diffusivite_thermique_3_elem_dom composantes=4
+Champ CAPACITE_CALORIFIQUE anisotrope_pac.lata.CAPACITE_CALORIFIQUE.ELEM.dom.1.5015183280 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=capacite_calorifique_0_elem_dom,capacite_calorifique_1_elem_dom,capacite_calorifique_2_elem_dom,capacite_calorifique_3_elem_dom composantes=4
+Champ MASSE_VOLUMIQUE anisotrope_pac.lata.MASSE_VOLUMIQUE.ELEM.dom.1.5015183280 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=masse_volumique_0_elem_dom,masse_volumique_1_elem_dom,masse_volumique_2_elem_dom,masse_volumique_3_elem_dom composantes=4
+TEMPS 1.60087035e+00
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.ELEM.dom.1.6008703517 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=TEMPERATURE_ELEM_dom0 composantes=1
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.SOM.dom.1.6008703517 geometrie=dom localisation=SOM size=3695 nature=scalar noms_compo=TEMPERATURE_SOM_dom0 composantes=1
+Champ GRADT anisotrope_pac.lata.GRADT.SOM.dom.1.6008703517 geometrie=dom localisation=SOM size=3695 nature=vector noms_compo=GRADT0_som_dom,GRADT1_som_dom composantes=2
+Champ DIFFUSIVITE_THERMIQUE anisotrope_pac.lata.DIFFUSIVITE_THERMIQUE.ELEM.dom.1.6008703517 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=diffusivite_thermique_0_elem_dom,diffusivite_thermique_1_elem_dom,diffusivite_thermique_2_elem_dom,diffusivite_thermique_3_elem_dom composantes=4
+Champ CAPACITE_CALORIFIQUE anisotrope_pac.lata.CAPACITE_CALORIFIQUE.ELEM.dom.1.6008703517 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=capacite_calorifique_0_elem_dom,capacite_calorifique_1_elem_dom,capacite_calorifique_2_elem_dom,capacite_calorifique_3_elem_dom composantes=4
+Champ MASSE_VOLUMIQUE anisotrope_pac.lata.MASSE_VOLUMIQUE.ELEM.dom.1.6008703517 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=masse_volumique_0_elem_dom,masse_volumique_1_elem_dom,masse_volumique_2_elem_dom,masse_volumique_3_elem_dom composantes=4
+TEMPS 1.63398769e+00
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.ELEM.dom.1.6339876930 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=TEMPERATURE_ELEM_dom0 composantes=1
+Champ TEMPERATURE anisotrope_pac.lata.TEMPERATURE.SOM.dom.1.6339876930 geometrie=dom localisation=SOM size=3695 nature=scalar noms_compo=TEMPERATURE_SOM_dom0 composantes=1
+Champ GRADT anisotrope_pac.lata.GRADT.SOM.dom.1.6339876930 geometrie=dom localisation=SOM size=3695 nature=vector noms_compo=GRADT0_som_dom,GRADT1_som_dom composantes=2
+Champ DIFFUSIVITE_THERMIQUE anisotrope_pac.lata.DIFFUSIVITE_THERMIQUE.ELEM.dom.1.6339876930 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=diffusivite_thermique_0_elem_dom,diffusivite_thermique_1_elem_dom,diffusivite_thermique_2_elem_dom,diffusivite_thermique_3_elem_dom composantes=4
+Champ CAPACITE_CALORIFIQUE anisotrope_pac.lata.CAPACITE_CALORIFIQUE.ELEM.dom.1.6339876930 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=capacite_calorifique_0_elem_dom,capacite_calorifique_1_elem_dom,capacite_calorifique_2_elem_dom,capacite_calorifique_3_elem_dom composantes=4
+Champ MASSE_VOLUMIQUE anisotrope_pac.lata.MASSE_VOLUMIQUE.ELEM.dom.1.6339876930 geometrie=dom localisation=ELEM size=6958 nature=scalar noms_compo=masse_volumique_0_elem_dom,masse_volumique_1_elem_dom,masse_volumique_2_elem_dom,masse_volumique_3_elem_dom composantes=4
+FIN

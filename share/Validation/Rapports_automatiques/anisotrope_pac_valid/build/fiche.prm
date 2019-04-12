@@ -1,0 +1,88 @@
+parameters
+{
+   title "Anisotropic pac"
+   description "Put here the description of the validation form. Here is only an example of a validation form."
+   description "Validation forms are important to maintain non-regression because it contains some explanations about the physical phenomenon studied."
+   author "Van quang DINH"
+   testcase .    anisotrope_pac.data
+}
+
+chapter
+{
+   title "Thermal diffusivity"
+   description "Here is the visualization of all components of the thermal diffusivity located at elements."
+   Visu {
+	Title "component 0"
+	pseudocolor anisotrope_pac.lata dom DIFFUSIVITE_THERMIQUE_0 ELEM
+	cycles -1
+	width 15cm
+    }
+   Visu {
+	Title "component 1"
+	pseudocolor anisotrope_pac.lata dom DIFFUSIVITE_THERMIQUE_1 ELEM
+	cycles -1
+	width 15cm
+    }
+   Visu {
+	Title "component 2"
+	pseudocolor anisotrope_pac.lata dom DIFFUSIVITE_THERMIQUE_2 ELEM
+	cycles -1
+	width 15cm
+    }
+   Visu {
+	Title "component 3"
+	pseudocolor anisotrope_pac.lata dom DIFFUSIVITE_THERMIQUE_3 ELEM
+	cycles -1
+	width 15cm
+    }
+    
+    description "Here can be added some comments"
+}
+
+chapter
+{
+   title "Temperature"
+   description "Here is the visualization of the temperature."
+      Visu {
+	Title "Temperature field located at vertices"
+	pseudocolor anisotrope_pac.lata dom TEMPERATURE SOM
+	cycles -1
+	width 15cm
+    }
+}
+
+
+chapter
+{
+   title "Comparison of temperature between Comsol and TRUST on the segment [P1,P2] with P1=(0;1) and P2=(10;0) "
+   figure
+   {
+      dimension 2
+      include_description_curves 0
+      labelx "Position"
+      labely "Temperature"
+      width  12cm
+      curve
+      {
+        legend "TRUST"
+	file trust_sonde.txt
+	columns $1 $2
+	style linespoints
+      }
+      curve
+      {
+        legend "Comsol"
+	file comsol_sonde.txt
+	columns $1 $2
+	style linespoints
+      }
+   }
+}
+
+chapter
+{
+    title "More information"
+    description "Helpful information to create validation forms can be found here : "
+    description "TRUST_ROOT/Validation/Outils/Genere_courbe/doc/manuel.xhtml"
+    description "This page is to open with a web browser"
+}

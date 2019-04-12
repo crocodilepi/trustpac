@@ -1,0 +1,15 @@
+/nobackup/vd256574/TRUST/TRUST-1.7.6/lib/src/LIBMPI/mpich/bin/mpirun -np 1 /nobackup/vd256574/TRUST/TRUST-1.7.6/exec/TRUST_mpi_opt anisotrope_pac 1
+-------------------------------------------------------------------
+ 
+                          TRUST
+                      version : 1.7.6 
+                          CEA - DEN
+ 
+ ------------------------------------------------------------------
+ 
+  Vous traitez le cas anisotrope_pac
+ 
+Reading data file 
+
+17 MBytes of RAM taken by the calculation.
+The resumption time is 7

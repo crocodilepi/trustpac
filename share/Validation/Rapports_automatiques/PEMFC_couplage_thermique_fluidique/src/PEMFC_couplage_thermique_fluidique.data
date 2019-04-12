@@ -1,0 +1,204 @@
+# dimension 3D #
+dimension 3
+
+# domaine global #
+domaine dom
+
+# domaine thermique = plaque en metal #
+domaine dom_solide
+# domaine fluidique = eau de refroidissement #
+domaine dom_fluide 
+
+
+# BEGIN MESH #
+Read_med family_names_from_group_names dom Mesh_1 MeshAll.med 
+Read_file dom_ssz.geo ;
+VerifierCoin dom {  } 
+Create_domain_from_sous_zone { domaine_final dom_solide par_sous_zone vol_solid domaine_init dom }
+Create_domain_from_sous_zone { domaine_final dom_fluide par_sous_zone vol_eau domaine_init dom }
+Postraiter_domaine { format lata fichier dom.lata domaines { dom_solide dom_fluide } }
+# END MESH #
+ 
+ 
+
+/* Choose Nb_parts so to have ~ 25000 cells per processor */
+
+# BEGIN PARTITION
+Partition dom_fluide
+{
+	Partition_tool metis { nb_parts 16  }
+	Larg_joint 2
+	zones_name dom_fluide
+}
+Partition dom_solide
+{
+	Partition_tool metis { nb_parts 16  }
+	Larg_joint 2
+	zones_name dom_solide
+}
+End
+END PARTITION #
+
+# BEGIN SCATTER
+Scatter dom_fluide.Zones dom_fluide
+Scatter dom_solide.Zones dom_solide
+
+END SCATTER #
+
+
+# Discretisation #
+VEFPreP1B dis
+
+# Time scheme #
+Scheme_euler_implicit sch
+Read sch
+{
+  tinit 0
+  facsec 100
+  facsec_max 1e8	
+  dt_impr 1.e-3 
+  dt_sauv 100
+  tmax 1.7e-1
+  max_iter_implicite 30  
+  seuil_statio_relatif_deconseille 1 
+  seuil_statio 0.01 
+  Solveur Implicite
+  {
+      seuil_convergence_implicite 1.
+      solveur petsc gmres { precond diag { } nb_it_max 3 } 
+  }
+
+}
+
+# Problem Navier Stokes Standard #
+Pb_Thermohydraulique pb1
+
+# Problem Conduction de la chaleur #
+Pb_conduction pb2
+
+# eau #
+Fluide_Incompressible eau
+Read eau
+{
+    # hydraulic problem #
+    # Dynamic viscosity [kg/m/s] #
+    # mu Champ_Uniforme 1 0.5470e-3 # # water 0.547e-3, air 18.27e-6, nitrogen 17.81e-6, hydrogen 8.76e-6, oxygen 20.18e-6 #
+    mu Champ_Fonc_Tabule 1 Temperature 
+    {
+	11
+	0    10    20    30    40    50    60    70    80    90   100
+	1.7920e-03   1.3080e-03   1.0030e-03   7.9800e-04   6.5300e-04   5.4700e-04   4.6700e-04   4.0400e-04   3.5500e-04   3.1500e-04   2.8200e-04
+    }
+    # Volumic mass [kg/m3] #
+    rho Champ_Uniforme 1 1000 # water 1e3 # 
+    lambda Champ_Uniforme 1 0.65  # W/m/K #
+    Cp Champ_Uniforme 1 4190   # J/mol/K #
+    beta_th Champ_Uniforme 1 207.e-6   # /K #
+}
+
+# plate inox #
+Solide plaque
+Read plaque
+{
+	rho Uniform_Field 1 8000.
+	lambda Champ_Uniforme 1 16.1    
+	Cp Champ_Uniforme 1 500.
+}
+
+Associate pb1 dom_fluide
+Associate pb1 eau
+
+Associate pb2 dom_solide
+Associate pb2 plaque
+
+Probleme_Couple pbc
+Associate pbc pb1
+Associate pbc pb2
+Associate pbc sch
+Discretize pbc dis
+
+# hydraulic problem #
+Read pb1
+{
+  Navier_Stokes_standard
+  {
+       solveur_pression petsc gmres { precond diag { } nb_it_max 10 }
+       convection { negligeable }
+       diffusion { }
+
+       initial_conditions { vitesse Champ_Uniforme 3 0. 0. 0. }
+       boundary_conditions 
+       {
+          i_eau_plaque 	paroi_fixe
+       	  eau_entree 	frontiere_ouverte_pression_imposee Champ_front_Uniforme 1 20 # Pa #
+       	  eau_sortie 	frontiere_ouverte_pression_imposee Champ_front_Uniforme 1 0.
+       }
+  }
+  Convection_Diffusion_Temperature
+  {
+      diffusion { }
+      convection { amont }
+      boundary_conditions 
+      {
+	  i_eau_plaque  paroi_contact pb2 i_eau_plaque
+	  eau_entree frontiere_ouverte_temperature_imposee Champ_front_Uniforme 1 20
+	  eau_sortie Frontiere_ouverte T_ext Champ_Front_Uniforme 1 20
+      }
+      initial_conditions { Temperature Champ_Uniforme 1 20 }
+  }
+  Post_processing
+  {
+     Probes 
+     {
+        temperature_fluide_xz temperature periode 1.e-9  plan 30 30 0.0046 0.0 0.0 0.0046 0.0 0.02 0.0062 0.0 0.0 
+     }
+     format lata 
+     fields dt_post 1e-3  
+     {
+      	pression_pa som
+	vitesse som
+	temperature elem
+	temperature som
+     }
+  }
+}
+
+# thermal problem #
+Read pb2
+{
+  Conduction
+  {
+     diffusion { }
+     initial_conditions {
+	temperature champ_uniforme 1 20 # C #
+     }
+     boundary_conditions 
+     {
+	i_plaque_gdl_c paroi_flux_impose champ_front_uniforme 1 10000 # W/m2 #
+	i_plaque_gdl_a paroi_flux_impose champ_front_uniforme 1 2000 # W/m2 #
+	i_eau_plaque paroi_contact pb1 i_eau_plaque
+	i_plaque_gaz_h2 paroi_echange_externe_impose h_imp Champ_Front_Uniforme 1 10. t_ext Champ_Front_Uniforme 1 20.
+	i_plaque_gaz_o2 paroi_echange_externe_impose h_imp Champ_Front_Uniforme 1 10. t_ext Champ_Front_Uniforme 1 20.
+	plaque_cotes paroi_adiabatique
+     }
+  }
+  Post_processing
+  {
+      Probes 
+      {
+         temperature_solide_xz temperature periode 1.e-9  plan 30 30 0.00363 0.0 0.0 0.00363 0.0 0.02 0.00718 0.0 0.0 
+      }
+      format lata # lata for VisIt tool #
+      fields dt_post 1e-3  # Note: Warning to memory space if dt_post too small #
+      {
+	temperature elem
+	temperature som
+      }
+  }
+}
+
+Solve pbc
+
+End
+
+

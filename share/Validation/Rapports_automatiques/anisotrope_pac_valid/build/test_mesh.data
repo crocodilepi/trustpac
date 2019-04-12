@@ -1,0 +1,20 @@
+# dimension #
+dimension 2
+
+# domaine #
+domaine dom
+
+# probleme de condution de la chaleur #
+Pb_conduction pb
+
+# BEGIN MESH #
+# Lire_med family_names_from_group_names dom Mesh_1 Mesh_1.med #
+# END MESH #
+
+# BEGIN SCATTER #
+Scatter dom.Zones dom
+# END SCATTER #
+
+Discretiser_domaine dom
+Postraiter_domaine { domaine dom fichier mesh format lata }
+end

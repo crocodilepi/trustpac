@@ -1,0 +1,67 @@
+>> make_PAR.data anisotrope_pac.data 2 2>&1 | tee output.log
+Usage: make_PAR.data datafile [NB_CPUs]
+Wait for partitionning...End.
+To run the parallel calculation on 2 CPUs:
+trust PAR_anisotrope_pac 2
+
+>> ~/workspace/pemfc/pemfc-exec PAR_anisotrope_pac.data 2 2>&1 | tee -a output.log
+Initialized MPI with MPI_COMM_WORLD (using all processors)
+Petsc initialization succeeded.
+Parallel engine initialized : Comm_Group_MPI with 1 processors
+Executable: /home/vd256574/workspace/pemfc/pemfc-exec
+Data file name = PAR_anisotrope_pac.data
+Running in parallel with 2 processors
+feenableexcept enabled.
+Error: nproc on command line does not match mpirun parameter.
+ Use same number or -mpi parameter instead.
+usage:
+TRUST_EXECUTABLE [CASE[.data]] [options]
+ CASE is the basename of the trust data file (must have .data extension)
+   If no CASE given, the current directory name is used
+ -help_trust => print options
+ -mpi => run in parallel with MPI (must run with mpirun)
+ -check_enabled=0|1  => enables or disables runtime checking of parallel messages
+ -debugscript=SCRIPT => execute "SCRIPT n" after parallel initialisation, n=processor rank
+ -petsc=0            => disable call to PetscInitialize
+ -journal=0..9       => select journal level (0=disable, 9=maximum verbosity)
+ -journal_master     => only master processor writes a journal
+ -disable_ieee       => Disable the detection of NaNs.
+ -no_verify          => Disable the call to verifie function (from Type_Verifie) to catch outdated keywords while reading data file.
+
+=========================================
+TRUST has caused an error and will stop.
+Unexpected error during TRUST calculation.
+=========================================
+TRUST has caused an error and will stop.
+Unexpected error during TRUST calculation.
+
+>> ~/workspace/pemfc/pemfc-exec_opt PAR_anisotrope_pac.data 2 2>&1 | tee -a output.log
+Initialized MPI with MPI_COMM_WORLD (using all processors)
+Petsc initialization succeeded.
+Parallel engine initialized : Comm_Group_MPI with 1 processors
+Executable: /home/vd256574/workspace/pemfc/pemfc-exec_opt
+Data file name = PAR_anisotrope_pac.data
+Running in parallel with 2 processors
+feenableexcept enabled.
+Error: nproc on command line does not match mpirun parameter.
+ Use same number or -mpi parameter instead.
+usage:
+TRUST_EXECUTABLE [CASE[.data]] [options]
+ CASE is the basename of the trust data file (must have .data extension)
+   If no CASE given, the current directory name is used
+ -help_trust => print options
+ -mpi => run in parallel with MPI (must run with mpirun)
+ -check_enabled=0|1  => enables or disables runtime checking of parallel messages
+ -debugscript=SCRIPT => execute "SCRIPT n" after parallel initialisation, n=processor rank
+ -petsc=0            => disable call to PetscInitialize
+ -journal=0..9       => select journal level (0=disable, 9=maximum verbosity)
+ -journal_master     => only master processor writes a journal
+ -disable_ieee       => Disable the detection of NaNs.
+ -no_verify          => Disable the call to verifie function (from Type_Verifie) to catch outdated keywords while reading data file.
+
+=========================================
+TRUST has caused an error and will stop.
+Unexpected error during TRUST calculation.
+=========================================
+TRUST has caused an error and will stop.
+Unexpected error during TRUST calculation.

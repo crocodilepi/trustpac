@@ -1,0 +1,81 @@
+Petsc initialization succeeded.
+Parallel engine initialized : Comm_Group_Noparallel with 1 processors
+Executable: /nobackup/vd256574/TRUST/TRUST-1.7.6/exec/TRUST_mpi_opt
+Data file name = DEC_anisotrope_pac
+feenableexcept enabled.
+Data file : DEC_anisotrope_pac
+Localisation etude: /home/vd256574/workspace/pemfc/share/Validation/Rapports_automatiques/anisotrope_pac_valid/src
+Nom du cas DEC_anisotrope_pac
+ code : /nobackup/vd256574/TRUST/TRUST-1.7.6/exec/TRUST_mpi_opt
+ version : 1.7.6 
+Debut de l'execution 
+MAIN: Reading and executing data file
+Dimension::interpreter : dimension = 2
+Execution of the interpreter Lire_MED
+Syntax: Lire_MED [ vef ] [ family_names_from_group_names | short_family_names ] domaine_name mesh_name filename.med
+Association of the domain on which the interpreter applies Lire_MED
+Try to read the domain dom into the file prepare_0000.med in order to affect to domain dom...
+PAS_NOMME is not seen as a boundary -1000
+FAMILLE_ZERO is seen to be empty 0
+reading of the joint informations 
+End of the reading of the joint informations 
+Elimination of 0 unnecessary nodes in the domain dom
+Reading of the domain ended
+Decouper : Splitting of a domain
+ Domain name to split : dom
+==============================================
+The extreme coordinates of the domain dom are:
+x is between 0 and 10
+y is between 0 and 1
+==============================================
+==============================================
+The volume cells of the domain dom are:
+sum(volume cells)= 7.5
+mean(volume cells)= 0.0010779
+min(volume cells)= 0.000805895
+max(volume cells)= 0.00159055
+==============================================
+domaine = dom
+ Creation of a partitioner of type: Partitionneur_metis
+Reading parameters of Partitionneur_Metis
+Partitionneur_Metis::construire_partition
+ Construction of graph connectivity...
+ Construction of the som_elem connectivity
+ Construction of the elem_elem connectivity
+===============
+Call for PMETIS
+===============
+===============
+Partitioning quality : edgecut = 26
+-> It is roughly the total number of edges (faces) which will be shared by the processors.
+-> The lesser this number is, the lesser the total volume of communication between processors.
+-> You can increase nb_essais option (default 1) to try to reduce (but at a higher CPU cost) this number.
+===============
+Correction elem0 on processor 0
+Correction of the splitting to put the element 0 on processor 0.
+ Exchange of parts 0 and 1
+The partitioner has generated 2 parts.
+Search of neighboring elements of boundary faces
+Construction of lists of elements per subdomain
+Generation of 2 parts:
+ Construction of part number 0
+  Number of nodes    : 1882
+  Number of elements : 3479
+  Number of joints   : 1
+  Joint 0 PeVoisin 1 NbSommets 27 NbFaces 26 NbElemDist 103
+               Total:    NbSommets 27 NbFaces 26 NbElemDist 103
+Writing part 0 into the binary file dom_0000.Zones
+Writing of 1882 nodes.
+Writing of 3479 elements.
+ Construction of part number 1
+  Number of nodes    : 1840
+  Number of elements : 3479
+  Number of joints   : 1
+  Joint 0 PeVoisin 0 NbSommets 27 NbFaces 26 NbElemDist 100
+               Total:    NbSommets 27 NbFaces 26 NbElemDist 100
+Writing part 1 into the binary file dom_0001.Zones
+Writing of 1840 nodes.
+Writing of 3479 elements.
+End of the interpreter Decouper
+MAIN: End of data file
+Arret des processes.

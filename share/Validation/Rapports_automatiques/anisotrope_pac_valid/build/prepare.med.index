@@ -1,0 +1,94 @@
+Trio_U Version 1
+prepare_coeff
+Trio_U
+dimension: 2
+domaine: dom
+nb_proc: 1
+TEMPS 0.00000000e+00
+champ: TEMPERATURE dom ELEM
+champ: GRADT dom ELEM
+champ: UX dom ELEM
+champ: UY dom ELEM
+champ: COS dom ELEM
+champ: SIN dom ELEM
+champ: CA dom ELEM
+champ: CB dom ELEM
+champ: DIFFU_ANISOTROPE dom ELEM
+champ: DIFFU_CONSTANT dom ELEM
+TEMPS 1.00000000e+00
+champ: TEMPERATURE dom ELEM
+champ: GRADT dom ELEM
+champ: UX dom ELEM
+champ: UY dom ELEM
+champ: COS dom ELEM
+champ: SIN dom ELEM
+champ: CA dom ELEM
+champ: CB dom ELEM
+champ: DIFFU_ANISOTROPE dom ELEM
+champ: DIFFU_CONSTANT dom ELEM
+TEMPS 2.00000000e+00
+champ: TEMPERATURE dom ELEM
+champ: GRADT dom ELEM
+champ: UX dom ELEM
+champ: UY dom ELEM
+champ: COS dom ELEM
+champ: SIN dom ELEM
+champ: CA dom ELEM
+champ: CB dom ELEM
+champ: DIFFU_ANISOTROPE dom ELEM
+champ: DIFFU_CONSTANT dom ELEM
+TEMPS 3.00000000e+00
+champ: TEMPERATURE dom ELEM
+champ: GRADT dom ELEM
+champ: UX dom ELEM
+champ: UY dom ELEM
+champ: COS dom ELEM
+champ: SIN dom ELEM
+champ: CA dom ELEM
+champ: CB dom ELEM
+champ: DIFFU_ANISOTROPE dom ELEM
+champ: DIFFU_CONSTANT dom ELEM
+TEMPS 4.00000000e+00
+champ: TEMPERATURE dom ELEM
+champ: GRADT dom ELEM
+champ: UX dom ELEM
+champ: UY dom ELEM
+champ: COS dom ELEM
+champ: SIN dom ELEM
+champ: CA dom ELEM
+champ: CB dom ELEM
+champ: DIFFU_ANISOTROPE dom ELEM
+champ: DIFFU_CONSTANT dom ELEM
+TEMPS 5.00000000e+00
+champ: TEMPERATURE dom ELEM
+champ: GRADT dom ELEM
+champ: UX dom ELEM
+champ: UY dom ELEM
+champ: COS dom ELEM
+champ: SIN dom ELEM
+champ: CA dom ELEM
+champ: CB dom ELEM
+champ: DIFFU_ANISOTROPE dom ELEM
+champ: DIFFU_CONSTANT dom ELEM
+TEMPS 6.00000000e+00
+champ: TEMPERATURE dom ELEM
+champ: GRADT dom ELEM
+champ: UX dom ELEM
+champ: UY dom ELEM
+champ: COS dom ELEM
+champ: SIN dom ELEM
+champ: CA dom ELEM
+champ: CB dom ELEM
+champ: DIFFU_ANISOTROPE dom ELEM
+champ: DIFFU_CONSTANT dom ELEM
+TEMPS 7.00000000e+00
+champ: TEMPERATURE dom ELEM
+champ: GRADT dom ELEM
+champ: UX dom ELEM
+champ: UY dom ELEM
+champ: COS dom ELEM
+champ: SIN dom ELEM
+champ: CA dom ELEM
+champ: CB dom ELEM
+champ: DIFFU_ANISOTROPE dom ELEM
+champ: DIFFU_CONSTANT dom ELEM

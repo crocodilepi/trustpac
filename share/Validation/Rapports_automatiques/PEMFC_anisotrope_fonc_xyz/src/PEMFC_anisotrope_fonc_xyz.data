@@ -1,0 +1,110 @@
+# PARALLEL OK #
+# Heat Conduction 2D anisotrope #
+dimension 2
+
+# domain name #
+domaine dom
+
+#  physic problem: heat conduction  #
+pb_conduction pb
+
+# BEGIN MESH #
+system "gmsh -2 -order 1 -clscale 1 -format med carre.geo||echo .gmshrc old ?"
+Lire_med family_names_from_group_names dom carre carre.med
+# END MESH #
+
+# BEGIN PARTITION
+Partition dom
+{
+        /* Choose Nb_parts so to have ~ 25000 cells per processor */
+	Partition_tool metis { nb_parts 2 }
+	Larg_joint 2
+	zones_name DOM
+}
+End
+END PARTITION #
+
+# BEGIN SCATTER
+Scatter DOM.Zones dom
+END SCATTER #
+
+# discretisation #
+vefprep1b dis
+
+# time scheme #
+Scheme_euler_implicit scheme
+Read scheme
+{
+  tinit 0
+  tmax 1000.0
+  # dt_min 1e-9 #
+  # dt_max 1. #
+  # facsec maximal possible value for the heat transfer #
+  facsec 1e5
+  facsec_max 1e8
+  # .out files printing period #
+  dt_impr 0.1 # Note: small value to print at each time step #
+  # .sauv files printing period #
+  dt_sauv 0.1
+  # max number of implicit solver #
+  max_iter_implicite 50 
+  # Convergence threshold (see .dt_ev file) #
+  seuil_statio_relatif_deconseille 1
+  seuil_statio 1e-5
+  Solveur Implicite
+  {
+      Solveur petsc cholesky { quiet }
+  }
+}
+
+# physics properties of medium  #
+solide sol
+read sol
+{
+	rho champ_uniforme 1 1.0
+    	lambda champ_fonc_xyz dom 4 100. 0. 0. 1.
+	Cp champ_uniforme 1 1.0
+}
+
+# associate the physic problem with the geometry, the time scheme and the physic properties #
+associate pb dom
+associate pb scheme
+associate pb sol
+
+# meshing the geometry with the given discretisation method #
+discretize pb dis
+
+# definition of the physic problem: heat conduction #
+read pb
+{
+	# Resolution of the laplacien equation modifying the heat equation #
+	conduction
+	{
+		diffusion { Tensor }
+		initial_conditions {
+			# temperature champ_fonc_xyz dom 1 Y #
+			temperature champ_uniforme 1 0.
+		}
+		boundary_conditions {
+			INT paroi_temperature_imposee champ_front_uniforme 1 1.
+			EXT paroi_temperature_imposee champ_front_uniforme 1 0.
+		}
+	}
+
+	# post traitement  #
+	post_processing
+	{
+		format lata 		# lata for VisIt tool #
+		fields dt_post 0.1
+		{
+			temperature elem
+			temperature som
+			diffusivite_thermique elem
+		}
+	}
+}
+
+# solve the problem #
+solve pb
+
+end

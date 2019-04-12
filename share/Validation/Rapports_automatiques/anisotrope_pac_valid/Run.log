@@ -1,0 +1,24 @@
+========================================================
+-> Copy src directory files to the build directory... OK
+========================================================
+
+-> Binary and version used:
+-> /nobackup/vd256574/TRUST/TRUST-1.7.6/exec/TRUST_mpi_opt
+-> 1.7.6
+================================================
+-> Running commands in the ./build/cmds file ...
+================================================
+
+-> Running the calculation of the anisotrope_pac data file in the . directory ...
+-> Running the pre_run script in the . directory ...
+prepare_coeff ok
+-> Calculation anisotrope_pac produced an error !
+-> Look at the /home/vd256574/workspace/pemfc/share/Validation/Rapports_automatiques/anisotrope_pac_valid/build/anisotrope_pac.err file.
+-> Running the post_run script in the . directory ...
+
+
+ erreur_calcul_1
+
+
+-> Error in: python /nobackup/vd256574/TRUST/TRUST-1.7.6/Validation/Outils/Genere_courbe/src/genererCourbes.py -p fiche.prm 
+-> Search and fix all the previous errors.

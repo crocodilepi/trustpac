@@ -1,0 +1,402 @@
+/nobackup/vd256574/TRUST/TRUST-1.7.6/lib/src/LIBMPI/mpich/bin/mpirun -np 1 /nobackup/vd256574/TRUST/TRUST-1.7.6/exec/TRUST_mpi_opt prepare_coeff 1
+Petsc initialization succeeded.
+Parallel engine initialized : Comm_Group_Noparallel with 1 processors
+Executable: /nobackup/vd256574/TRUST/TRUST-1.7.6/exec/TRUST_mpi_opt
+Data file name = prepare_coeff
+Sequential calculation
+feenableexcept enabled.
+Data file : prepare_coeff
+Localisation etude: /home/vd256574/workspace/pemfc/share/Validation/Rapports_automatiques/anisotrope_pac_valid/build
+Nom du cas prepare_coeff
+ code : /nobackup/vd256574/TRUST/TRUST-1.7.6/exec/TRUST_mpi_opt
+ version : 1.7.6 
+-------------------------------------------------------------------
+ 
+                          TRUST
+                      version : 1.7.6 
+                          CEA - DEN
+ 
+ ------------------------------------------------------------------
+ 
+  Vous traitez le cas prepare_coeff
+ 
+Reading data file 
+Debut de l'execution 
+MAIN: Reading and executing data file
+
+Dimension::interpreter : dimension = 2
+Execution of the interpreter Lire_MED
+17 MBytes of RAM taken by the calculation.
+Syntax: Lire_MED [ vef ] [ family_names_from_group_names | short_family_names ] domaine_name mesh_name filename.med
+Association of the domain on which the interpreter applies Lire_MED
+Try to read the domain Mesh_1 into the file Mesh_1.med in order to affect to domain dom...
+FAMILLE_ZERO is not seen as a boundary 0
+reading of the joint informations 
+End of the reading of the joint informations 
+Elimination of 0 unnecessary nodes in the domain dom
+Reading of the domain ended
+Reading of data for a Schema_euler_implicite time scheme
+in the readOn of Solveur_Implicite
+******************************************************************************************
+Commands lines possible for Petsc Release Version 3.6.3, Dec, 03, 2015 :
+-ksp_view : to have some informations on the solver/preconditioner used by PETSc.
+-info : to have among other informations on storage of matrices of PETSc.
+-log_summary : to have at the end of the calculation, informations about performances and memory.
+-log_all : trace all PETSc calls.
+-malloc_dump : to have at the end of the calculation the memory not deallocated by PETSc.
+-help : to know all the commands lines of PETSc including those related to the solver/preconditioner selected.
+******************************************************************************************
+Option Petsc: -log_summary prepare_coeff_petsc.TU
+Option Petsc: -mat_mumps_icntl_14 35
+The next backup, by security, will take place after 23 hours of calculation.
+Reading of data for a Solide medium
+SolideMilieu_base::creer_alpha
+The chosen discretization is of type VEFPreP1B
+The chosen time scheme is of type Schema_euler_implicite
+We treat the problem pb of type Pb_Conduction
+Discretization of pb in progress...
+Discretization of the domain associated with the problem pb
+<<<<<< Discretization VF >>>>>>>>>>
+
+Histogram of the largest angle of each element found into the mesh dom :
+Between 60 degrees and 70 degrees : 6532 elements ( 93.8776 %)
+Between 70 degrees and 80 degrees : 273 elements ( 3.92354 %)
+Between 80 degrees and 90 degrees : 143 elements ( 2.05519 %)
+Between 90 degrees and 100 degrees : 10 elements ( 0.143719 %)
+Between 100 degrees and 110 degrees : 0 elements ( 0 %)
+Between 110 degrees and 120 degrees : 0 elements ( 0 %)
+Between 120 degrees and 130 degrees : 0 elements ( 0 %)
+Between 130 degrees and 140 degrees : 0 elements ( 0 %)
+Between 140 degrees and 150 degrees : 0 elements ( 0 %)
+Between 150 degrees and 160 degrees : 0 elements ( 0 %)
+Between 160 degrees and 170 degrees : 0 elements ( 0 %)
+Between 170 degrees and 180 degrees : 0 elements ( 0 %)
+
+Zone_VEF::reordonner les_faces 
+Scatter::calculer_espace_distant_faces : start
+Creating a surface domain named dom_boundaries_Bas for the boundary Bas of the domain dom
+Number of elements of the new domain : 200
+Elimination of 3494 unnecessary nodes in the domain dom_boundaries_Bas
+Creating a surface domain named dom_boundaries_Droit for the boundary Droit of the domain dom
+Number of elements of the new domain : 10
+Elimination of 3684 unnecessary nodes in the domain dom_boundaries_Droit
+Creating a surface domain named dom_boundaries_Haut for the boundary Haut of the domain dom
+Number of elements of the new domain : 200
+Elimination of 3494 unnecessary nodes in the domain dom_boundaries_Haut
+Creating a surface domain named dom_boundaries_Gauche for the boundary Gauche of the domain dom
+Number of elements of the new domain : 20
+Elimination of 3674 unnecessary nodes in the domain dom_boundaries_Gauche
+==============================================
+The extreme coordinates of the domain dom are:
+x is between 0 and 10
+y is between 0 and 1
+==============================================
+==============================================
+The volume cells of the domain dom are:
+sum(volume cells)= 7.5
+mean(volume cells)= 0.0010779
+min(volume cells)= 0.000805895
+max(volume cells)= 0.00159055
+==============================================
+==============================================
+The boundary areas of the domain dom are:
+Area of Bas  	= 10
+Area of Droit  	= 0.5
+Area of Haut  	= 10.0744
+Area of Gauche  	= 1
+==============================================
+Calculation of elements and nodes on dom :
+Total number of elements = 6958
+Total number of nodes = 3695
+Total number of faces = 10652
+200 of them on boundary Bas
+10 of them on boundary Droit
+200 of them on boundary Haut
+20 of them on boundary Gauche
+==============================================
+<<<<<< End of Discretization VF >>>>>>>>>>
+Informations of the Zone VEF of the domain dom : 
+Lowest cell size h=(Volume/max(Surface))= 0.0137565
+Average cell size <h>= 0.0212222
+==============================================
+La Zone_VEF_PreP1b a ete remplie avec succes
+Discretization of equations
+Conduction equation discretization
+Discretisation de la temperature
+Champs_compris::ajoute_champ temperature
+discretisation des conditions limites
+discretisation des conditions limites OK
+Medium discretization.
+Champs_compris::ajoute_champ conductivite
+Champs_compris::ajoute_champ diffusivite_thermique
+Champs_compris::ajoute_champ capacite_calorifique
+Champs_compris::ajoute_champ masse_volumique
+Reading of the problem pb
+Reading of the equations
+Reading of data for a Conduction equation
+Reading and typing of the diffusion operator : 
+Operateur_Diff::typer()
+We treat the diffusive operator of : Conduction
+The discretization used is : VEFPreP1B
+Op_Diff_VEF_const_P1NC
+Operateur_Diff_base::associer_diffusivite_pour_pas_de_temps
+ field name : diffusivite_thermique unit : m2/s
+Reading of initial conditions
+Reading of boundaries conditions
+Reading the Gauche boundary condition of the Conduction equation from the problem pb
+end reading condmimutil
+Reading the Droit boundary condition of the Conduction equation from the problem pb
+end reading condmimutil
+Reading the Haut boundary condition of the Conduction equation from the problem pb
+end reading condmimutil
+Reading the Bas boundary condition of the Conduction equation from the problem pb
+end reading condmimutil
+Reading guidelines of postprocessing
+ Building of temperature_physique  { temperature_physique Tparoi_VEF { source  refChamp { Pb_champ pb temperature } }  }
+Reading definition of field TEMPERATURE_PHYSIQUE
+Reading of data for a Postraitement post-processing object 
+Reading definition of field GRADT
+Construction of the gradient operator type : Op_Grad_P1NC_to_P0
+Reading definition of field UX
+sources have same location : elem
+Reading definition of field UY
+sources have same location : elem
+Reading definition of field COS
+sources have same location : elem
+Reading definition of field SIN
+sources have same location : elem
+Reading definition of field CA
+sources have same location : elem
+Reading definition of field CB
+sources have same location : elem
+Reading definition of field DIFFU_ANISOTROPE
+sources have same location : elem
+Reading definition of field DIFFU_CONSTANT
+sources have same location : elem
+Reading of fields to be postprocessed
+Solide : 4 conductivite diffusivite_thermique capacite_calorifique masse_volumique 
+
+Conduction : 2 volume_maille temperature 
+
+Solide : 4 conductivite diffusivite_thermique capacite_calorifique masse_volumique 
+
+Op_Diff_VEF_const_P1NC : 0 
+
+On passe dans Zone_Cl_VEFP1B::remplir_volumes_entrelaces
+Step verification of data being read in progress...
+The read data are coherent
+=====================================================
+Initialization of the problem pb (Resoudre) in progress ... 
+=====================================================
+SolideMilieu_base:::initialiser
+The physical properties of a Solide medium have been successfully checked.
+=====================================================
+Solving of the problem pb (Resoudre) in progress ... 
+=====================================================
+First postprocessing, this can take some minutes
+First postprocessing OK
+Opening the files of type EcrFicColl : prepare_coeff_pb.sauv
+Backup of problem pb
+Backup of the field temperature performed on time : 0.000000e+00
+ 
+=======================================================================================
+Schema_Euler_Implicite: Implicit iteration 1 on the Pb_Conduction problem pb :
+=======================================================================================
+Solving Conduction equation :
+Option Petsc: -log_summary prepare_coeff_petsc.TU not taken cause -log_summary already defined to prepare_coeff_petsc.TU
+Option Petsc: -mat_mumps_icntl_14 35 not taken cause -mat_mumps_icntl_14 already defined to 35
+The LU decomposition of a matrix with Cholesky from MUMPS may take several minutes, please wait...
+If the decomposition fails/crashes cause a lack of memory, then increase the number of CPUs for your calculation
+or use Cholesky_out_of_core keyword to write the decomposition on the disk, thus saving memory but with an extra CPU cost during solve.
+To see the RAM required by the decomposition in the .out file, add impr option to the solver: petsc cholesky { impr }
+If an error INFOG(1)=-8|-9|-17|-20 is returned, you can try to increase the ICNTL(14) parameter of MUMPS by using the -mat_mumps_icntl_14 command line option.
+Conduction is converged at the implicit iteration 1 ( ||uk-uk-1|| = 55.373 < implicit threshold 1e+38 )
+
+ 
+The Pb_Conduction problem pb has converged after 1 implicit iterations.
+
+-------------------------------------------------------------------
+We treat the time step number 1 , for the time scheme ...
+   dt = 1
+   time = 1
+ 
+Printing of the time steps for the equation: Conduction
+   diffusive time step : 4.73105e-05
+
+39 MBytes of RAM taken by the calculation.
+
+clock: Total time step: 0.365764 s
+
+Backup of problem pb
+Backup of the field temperature performed on time : 1.000000e+00
+ 
+=======================================================================================
+Schema_Euler_Implicite: Implicit iteration 1 on the Pb_Conduction problem pb :
+=======================================================================================
+Solving Conduction equation :
+Conduction is converged at the implicit iteration 1 ( ||uk-uk-1|| = 3.11009 < implicit threshold 1e+38 )
+
+ 
+The Pb_Conduction problem pb has converged after 1 implicit iterations.
+
+Estimated CPU time to finish the run (according to tmax value) : 0h0mn1s. Progress: 21
+
+-------------------------------------------------------------------
+We treat the time step number 2 , for the time scheme ...
+   dt = 1
+   time = 2
+ 
+Printing of the time steps for the equation: Conduction
+   diffusive time step : 4.73105e-05
+
+40 MBytes of RAM taken by the calculation.
+
+clock: Total time step: 0.380726 s
+
+Backup of problem pb
+Backup of the field temperature performed on time : 2.000000e+00
+ 
+=======================================================================================
+Schema_Euler_Implicite: Implicit iteration 1 on the Pb_Conduction problem pb :
+=======================================================================================
+Solving Conduction equation :
+Conduction is converged at the implicit iteration 1 ( ||uk-uk-1|| = 0.268662 < implicit threshold 1e+38 )
+
+ 
+The Pb_Conduction problem pb has converged after 1 implicit iterations.
+
+Estimated CPU time to finish the run (according to tmax value) : 0h0mn1s. Progress: 38
+
+-------------------------------------------------------------------
+We treat the time step number 3 , for the time scheme ...
+   dt = 1
+   time = 3
+ 
+Printing of the time steps for the equation: Conduction
+   diffusive time step : 4.73105e-05
+
+41 MBytes of RAM taken by the calculation.
+
+clock: Total time step: 0.391278 s
+
+Backup of problem pb
+Backup of the field temperature performed on time : 3.000000e+00
+ 
+=======================================================================================
+Schema_Euler_Implicite: Implicit iteration 1 on the Pb_Conduction problem pb :
+=======================================================================================
+Solving Conduction equation :
+Conduction is converged at the implicit iteration 1 ( ||uk-uk-1|| = 0.0241222 < implicit threshold 1e+38 )
+
+ 
+The Pb_Conduction problem pb has converged after 1 implicit iterations.
+
+Estimated CPU time to finish the run (according to tmax value) : 0.980296 s. Progress: 55
+
+-------------------------------------------------------------------
+We treat the time step number 4 , for the time scheme ...
+   dt = 1
+   time = 4
+ 
+Printing of the time steps for the equation: Conduction
+   diffusive time step : 4.73105e-05
+
+41 MBytes of RAM taken by the calculation.
+
+clock: Total time step: 0.379465 s
+
+Backup of problem pb
+Backup of the field temperature performed on time : 4.000000e+00
+ 
+=======================================================================================
+Schema_Euler_Implicite: Implicit iteration 1 on the Pb_Conduction problem pb :
+=======================================================================================
+Solving Conduction equation :
+Conduction is converged at the implicit iteration 1 ( ||uk-uk-1|| = 0.00217975 < implicit threshold 1e+38 )
+
+ 
+The Pb_Conduction problem pb has converged after 1 implicit iterations.
+
+Estimated CPU time to finish the run (according to tmax value) : 0.598635 s. Progress: 72
+
+-------------------------------------------------------------------
+We treat the time step number 5 , for the time scheme ...
+   dt = 1
+   time = 5
+ 
+Printing of the time steps for the equation: Conduction
+   diffusive time step : 4.73105e-05
+
+41 MBytes of RAM taken by the calculation.
+
+clock: Total time step: 0.362983 s
+
+Backup of problem pb
+Backup of the field temperature performed on time : 5.000000e+00
+ 
+=======================================================================================
+Schema_Euler_Implicite: Implicit iteration 1 on the Pb_Conduction problem pb :
+=======================================================================================
+Solving Conduction equation :
+Conduction is converged at the implicit iteration 1 ( ||uk-uk-1|| = 0.000197449 < implicit threshold 1e+38 )
+
+ 
+The Pb_Conduction problem pb has converged after 1 implicit iterations.
+
+Estimated CPU time to finish the run (according to tmax value) : 0.213222 s. Progress: 90
+
+-------------------------------------------------------------------
+We treat the time step number 6 , for the time scheme ...
+   dt = 1
+   time = 6
+ 
+Printing of the time steps for the equation: Conduction
+   diffusive time step : 4.73105e-05
+
+41 MBytes of RAM taken by the calculation.
+
+clock: Total time step: 0.375012 s
+
+Backup of problem pb
+Backup of the field temperature performed on time : 6.000000e+00
+ 
+=======================================================================================
+Schema_Euler_Implicite: Implicit iteration 1 on the Pb_Conduction problem pb :
+=======================================================================================
+Solving Conduction equation :
+Conduction is converged at the implicit iteration 1 ( ||uk-uk-1|| = 1.79114e-05 < implicit threshold 1e+38 )
+
+ 
+The Pb_Conduction problem pb has converged after 1 implicit iterations.
+
+Estimated CPU time to finish the run (according to tmax value) : -0.165015 s. Progress: 107
+
+-------------------------------------------------------------------
+We treat the time step number 7 , for the time scheme ...
+   dt = 1
+   time = 7
+ 
+Printing of the time steps for the equation: Conduction
+   diffusive time step : 4.73105e-05
+
+41 MBytes of RAM taken by the calculation.
+---------------------------------------------------------
+The problem pb has reached the steady state
+
+
+clock: Total time step: 0.360305 s
+
+Backup of problem pb
+Backup of the field temperature performed on time : 7.000000e+00
+Creation of prepare_coeff_pb.xyz (EcrFicPartageBin) for resumption of a calculation with a different number of processors.
+Backup of problem pb
+Backup of the field temperature performed on time : 7.000000e+00
+=====================================================
+End of solving of the problem pb (Resoudre)
+=====================================================
+MAIN: End of data file
+41 MBytes of RAM taken by the calculation.
+
+--------------------------------------------
+clock: Total execution: 3.22391 s
+Arret des processes.

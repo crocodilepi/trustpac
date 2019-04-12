@@ -1,0 +1,303 @@
+# dimension 3D #
+dimension 3
+
+# domaine global #
+domaine dom
+
+# plaque en metal #
+domaine dom_solide
+# fluide eau de refroidissement #
+domaine dom_fluide 
+# GDL cathode #
+domaine dom_gdl_cathode
+# gdl anode #
+domaine dom_gdl_anode
+
+# BEGIN MESH #
+Read_med family_names_from_group_names dom Mesh_1 mesh_125K.med 
+Read_file dom_ssz.geo ;
+VerifierCoin dom {  } 
+Create_domain_from_sous_zone { domaine_final dom_solide par_sous_zone vol_bp domaine_init dom }
+Create_domain_from_sous_zone { domaine_final dom_fluide par_sous_zone vol_eau domaine_init dom }
+Create_domain_from_sous_zone { domaine_final dom_gdl_cathode par_sous_zone vol_gdl_c domaine_init dom }
+Create_domain_from_sous_zone { domaine_final dom_gdl_anode par_sous_zone vol_gdl_a domaine_init dom }
+Postraiter_domaine { format lata fichier dom.lata domaines { dom_solide dom_fluide dom_gdl_cathode dom_gdl_anode } }
+# END MESH #
+
+# BEGIN PARTITION
+Partition dom_fluide
+{
+	Partition_tool metis { nb_parts 6  }
+	Larg_joint 2
+	zones_name dom_fluide
+}
+Partition dom_solide
+{
+	Partition_tool metis { nb_parts 6  }
+	Larg_joint 2
+	zones_name dom_solide
+}
+Partition dom_gdl_cathode
+{
+	Partition_tool metis { nb_parts 6  }
+	Larg_joint 2
+	zones_name dom_gdl_cathode
+}
+Partition dom_gdl_anode
+{
+	Partition_tool metis { nb_parts 6  }
+	Larg_joint 2
+	zones_name dom_gdl_anode
+}
+End
+END PARTITION #
+
+# BEGIN SCATTER
+Scatter dom_fluide.Zones dom_fluide
+Scatter dom_solide.Zones dom_solide
+Scatter dom_gdl_cathode.Zones dom_gdl_cathode
+Scatter dom_gdl_anode.Zones dom_gdl_anode
+END SCATTER #
+
+# Discretisation #
+VEFPreP1B dis
+
+# Time scheme #
+Scheme_euler_implicit sch
+Read sch
+{
+  tinit 0
+  facsec 1000
+  facsec_max 1e8	
+  dt_impr 0.1
+  dt_sauv 100
+  tmax 5.
+  max_iter_implicite 30  
+  seuil_statio_relatif_deconseille 1 
+  seuil_statio 0.001 
+  Solveur Implicite
+  {
+      seuil_convergence_implicite 1.
+      # solveur petsc gmres { precond diag { } nb_it_max 5 } #
+      solveur gmres { diag impr nb_it_max 3 seuil 1.e-8 }
+  }
+
+}
+
+# Problem Navier Stokes Standard in the cooling water circuit #
+Pb_Thermohydraulique pb1
+
+# Problem heat transfer in the bipolar plate #
+Pb_conduction pb2
+
+# Problem heat transfer  in the gas diffusion layer (cathode) #
+Pb_conduction pb3
+
+# Problem heat transfer in the gas diffusion layer (anode) #
+Pb_conduction pb4
+
+# eau #
+Fluide_Incompressible eau
+Read eau
+{
+    # Dynamic viscosity kg/m/s #
+    mu Champ_Fonc_Tabule 1 Temperature 
+    {
+	11
+	0    10    20    30    40    50    60    70    80    90   100
+	1.7920e-03   1.3080e-03   1.0030e-03   7.9800e-04   6.5300e-04   5.4700e-04   4.6700e-04   4.0400e-04   3.5500e-04   3.1500e-04   2.8200e-04
+    }
+    # Volumic mass kg/m3 #
+    rho Champ_Uniforme 1 1000
+    # thermal conductivity W/m/K #
+    lambda Champ_Uniforme 1 0.65
+    # thermal capacity J/kg/K #
+    Cp Champ_Uniforme 1 4190
+    # ??? #
+    beta_th Champ_Uniforme 1 207.e-6   # /K #
+}
+
+# D'apres la base de donnees Inox #
+Solide bipo
+Read bipo
+{
+    rho Uniform_Field 1 8000.
+    lambda Champ_Uniforme 1 16.1    
+    Cp Champ_Uniforme 1 500.
+}
+
+# D'apres la base de donnees Graphite #
+# D'apres la base de donnees Graphite ATTENTION: deux cas: ecrase et non ecrase | deux axes: ep (orthogonal à l'ecrase) et pl (parallel à l'ecrase) #
+Solide gdl_cathode
+Read gdl_cathode
+{
+	# Masse volumique kg/m^3 #
+	rho Champ_Uniforme 1 2250
+	# Conductivité thermique (W/m/K) #
+	# lambda Champ_Uniforme 1 8.3 #
+	lambda Champ_Uniforme 1 0.1
+	# Chaleur massique (J/kg/K) #
+	Cp Champ_Uniforme 1 708
+}
+
+# D'apres la base de donnees Graphite ATTENTION: deux cas: ecrase et non ecrase | deux axes: ep (orthogonal à l'ecrase) et pl (parallel à l'ecrase) #
+Solide gdl_anode
+Read gdl_anode
+{
+	# Masse volumique kg/m^3 #
+	rho Champ_Uniforme 1 2250
+	# Conductivité thermique (W/m/K) #
+	# lambda Champ_Uniforme 1 8.3 #
+	lambda Champ_Uniforme 1 0.1
+	# Chaleur massique (J/kg/K) #
+	Cp Champ_Uniforme 1 708
+}
+
+Associate pb1 dom_fluide
+Associate pb1 eau
+
+Associate pb2 dom_solide
+Associate pb2 bipo
+
+Associate pb3 dom_gdl_cathode
+Associate pb3 gdl_cathode
+
+Associate pb4 dom_gdl_anode
+Associate pb4 gdl_anode
+
+Probleme_Couple pbc
+Associate pbc pb1
+Associate pbc pb2
+Associate pbc pb3
+Associate pbc pb4
+
+Associate pbc sch
+Discretize pbc dis
+
+# thermo-hydraulic problem #
+Read pb1
+{
+  Navier_Stokes_standard
+  {
+       solveur_pression petsc gmres { precond diag { } nb_it_max 10 }
+       convection { negligeable }
+       diffusion { }
+
+       initial_conditions { vitesse Champ_Uniforme 3 0. 0. 0. }
+       boundary_conditions 
+       {
+          i_bp_eau 	paroi_fixe
+       	  # eau_entree 	frontiere_ouverte_vitesse_imposee Champ_front_Uniforme 3 0. 0. 0.1 #
+       	  eau_entree 	frontiere_ouverte_pression_imposee Champ_front_Uniforme 1 20. # Pa #
+       	  eau_sortie 	frontiere_ouverte_pression_imposee Champ_front_Uniforme 1 0.
+       }
+  }
+  Convection_Diffusion_Temperature
+  {
+      diffusion { }
+      convection { amont }
+      boundary_conditions 
+      {
+	  i_bp_eau  paroi_contact pb2 i_bp_eau
+	  eau_entree frontiere_ouverte_temperature_imposee Champ_front_Uniforme 1 20.
+	  eau_sortie frontiere_ouverte T_ext champ_front_uniforme 1 20.
+	  # eau_sortie frontiere_ouverte_temperature_imposee Champ_Front_Uniforme 1 20. #
+      }
+      initial_conditions { Temperature Champ_Uniforme 1 20. }
+  }
+  Post_processing
+  {
+     format lata 
+     fields dt_post 0.1  
+     {
+      	pression_pa som
+	vitesse som
+	temperature som
+     }
+  }
+}
+
+# thermal problem #
+Read pb2
+{
+  Conduction
+  {
+     diffusion { }
+     initial_conditions {
+	temperature champ_uniforme 1 20.
+     }
+     boundary_conditions 
+     {
+	i_bp_eau paroi_contact pb1 i_bp_eau
+	i_bp_gdl_c paroi_contact pb3 i_bp_gdl_c
+	i_bp_gdl_a paroi_contact pb4 i_bp_gdl_a
+	bp_adiabatique paroi_adiabatique
+     }
+  }
+  Post_processing
+  {
+      format lata
+      fields dt_post 0.1
+      {
+	temperature elem
+	temperature som
+      }
+  }
+}
+
+# thermal problem : anisotrope #
+Read pb3
+{
+  Conduction
+  {
+     diffusion { }
+     initial_conditions {
+	temperature champ_uniforme 1 20.
+     }
+     boundary_conditions 
+     {
+	i_bp_gdl_c paroi_contact pb2 i_bp_gdl_c
+	gdl_c_yplus paroi_flux_impose champ_front_uniforme 1 10000
+	gdl_c_adiabatique paroi_adiabatique
+     }
+  }
+  Post_processing
+  {
+      format lata
+      fields dt_post 0.1
+      {
+	temperature elem
+	temperature som
+      }
+  }
+}
+
+Read pb4
+{
+  Conduction
+  {
+     diffusion { }
+     initial_conditions {
+	temperature champ_uniforme 1 20.
+     }
+     boundary_conditions 
+     {
+	i_bp_gdl_a paroi_contact pb2 i_bp_gdl_a
+	gdl_a_ymoins paroi_flux_impose champ_front_uniforme 1 2000.
+	gdl_a_adiabatique paroi_adiabatique
+     }
+  }
+  Post_processing
+  {
+      format lata
+      fields dt_post 0.1
+      {
+	temperature elem
+	temperature som
+      }
+  }
+}
+
+Solve pbc
+
+End
