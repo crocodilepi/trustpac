@@ -60,19 +60,6 @@ Entree& Source_Term_pemfc_base::readOn( Entree& is )
 double Source_Term_pemfc_base::eval_f(double diffu, double Ci, double ci, double T) const
 {
   double R = 8.314;
-  double H; 			// H Henri constant (mol.m3/Pa)
-  if (nom_espece_ == "H2")
-    {
-      H = 1. / 4.5e3;
-    }
-  else if (nom_espece_ == "02")
-    {
-      H = 1. / 1.33e5 * exp(666/T);
-    }
-  else if (nom_espece_ == "N2")
-    {
-      H = 6.4e-6 * exp(1300*(1./T - 1/298.15));
-    }
   double Ceq;
   if (nom_espece_ == "H2O" || nom_espece_ == "vap")
     {
@@ -84,6 +71,19 @@ double Source_Term_pemfc_base::eval_f(double diffu, double Ci, double ci, double
     }
   else
     {
+      double H = 0.; 			// H Henri constant (mol.m3/Pa)
+      if (nom_espece_ == "H2")
+        {
+          H = 1. / 4.5e3;
+        }
+      else if (nom_espece_ == "02")
+        {
+          H = 1. / 1.33e5 * exp(666./T);
+        }
+      else if (nom_espece_ == "N2")
+        {
+          H = 6.4e-6 * exp(1300.*(1./T - 1./298.15));
+        }
       Ceq = ci * R * T * H;
     }
   return diffu * gamma_CL_ / thickness_ionomer_ * (Ceq - Ci);

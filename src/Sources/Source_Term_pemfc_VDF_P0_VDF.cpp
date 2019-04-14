@@ -19,31 +19,37 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 #include <Source_Term_pemfc_VDF_P0_VDF.h>
-#include <Zone_VF.h>
-#include <Zone_Cl_VEF.h>
+#include <Zone_VDF.h>
+#include <Zone_Cl_VDF.h>
+#include <Equation_base.h>
 
 Implemente_instanciable( Source_Term_pemfc_VDF_P0_VDF, "Source_Term_pemfc_VDF_P0_VDF", Source_Term_pemfc_base );
 
-Sortie& Source_Term_pemfc_VDF_P0_VDF::printOn(Sortie& os) const {
-	Source_Term_pemfc_base::printOn(os);
-	return os;
+Sortie& Source_Term_pemfc_VDF_P0_VDF::printOn(Sortie& os) const
+{
+  Source_Term_pemfc_base::printOn(os);
+  return os;
 }
 
-Entree& Source_Term_pemfc_VDF_P0_VDF::readOn(Entree& is) {
-	Source_Term_pemfc_base::readOn(is);
-	return is;
+Entree& Source_Term_pemfc_VDF_P0_VDF::readOn(Entree& is)
+{
+  Source_Term_pemfc_base::readOn(is);
+  return is;
 }
 
-void Source_Term_pemfc_VDF_P0_VDF::associer_zones(const Zone_dis& zone_dis, const Zone_Cl_dis& zcl_dis) {
-	la_zone_VDF = ref_cast(Zone_VDF,zone_dis.valeur());
-	la_zcl_VDF = ref_cast(Zone_Cl_VDF,zcl_dis.valeur());
+void Source_Term_pemfc_VDF_P0_VDF::associer_zones(const Zone_dis& zone_dis, const Zone_Cl_dis& zcl_dis)
+{
+  la_zone_VDF = ref_cast(Zone_VDF,zone_dis.valeur());
+  la_zcl_VDF = ref_cast(Zone_Cl_VDF,zcl_dis.valeur());
 }
 
-void Source_Term_pemfc_VDF_P0_VDF::associer_pb(const Probleme_base& pb) {
+void Source_Term_pemfc_VDF_P0_VDF::associer_pb(const Probleme_base& pb)
+{
 
 }
 
-void Source_Term_pemfc_VDF_P0_VDF::remplir_volumes() {
-	volumes_.ref(ref_cast(Zone_VF,equation().zone_dis().valeur()).volumes_entrelaces());
+void Source_Term_pemfc_VDF_P0_VDF::remplir_volumes()
+{
+  volumes_.ref(ref_cast(Zone_VF,equation().zone_dis().valeur()).volumes_entrelaces());
 }
 
