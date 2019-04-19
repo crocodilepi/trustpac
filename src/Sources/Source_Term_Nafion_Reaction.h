@@ -14,42 +14,55 @@
 *****************************************************************************/
 /////////////////////////////////////////////////////////////////////////////
 //
-// File      : Source_Term_pemfc_VDF_P0_VDF.h
+// File      : Source_Term_Nafion_Reaction.h
 // Directory : $PEMFC_ROOT/src/Sources
 //
 /////////////////////////////////////////////////////////////////////////////
 
-#ifndef Source_Term_pemfc_VDF_P0_VDF_included
-#define Source_Term_pemfc_VDF_P0_VDF_included
+#ifndef Source_Term_Nafion_Reaction_included
+#define Source_Term_Nafion_Reaction_included
 
-#include <Source_Term_pemfc_base.h>
-#include <Ref_Zone_VDF.h>
-#include <Ref_Zone_Cl_VDF.h>
+#include <Source_base.h>
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// .DESCRIPTION : class Source_Term_pemfc_VDF_P0_VDF
+// .DESCRIPTION : class Source_Term_Nafion_Reaction
 //
-// <Description of class Source_Term_pemfc_VDF_P0_VDF>
+// <Description of class Source_Term_Nafion_Reaction>
 //
 /////////////////////////////////////////////////////////////////////////////
 
-class Source_Term_pemfc_VDF_P0_VDF : public Source_Term_pemfc_base
+class Source_Term_Nafion_Reaction : public Source_base
 {
 
-  Declare_instanciable( Source_Term_pemfc_VDF_P0_VDF ) ;
+  Declare_instanciable( Source_Term_Nafion_Reaction ) ;
 
 public :
   DoubleTab& ajouter(DoubleTab& ) const;
-  void contribuer_a_avec(const DoubleTab&, Matrice_Morse&) const;
-  void completer();
-protected :
+  DoubleTab& calculer(DoubleTab& ) const;
+  void mettre_a_jour(double temps);
   void associer_zones(const Zone_dis& ,const Zone_Cl_dis& );
   void associer_pb(const Probleme_base& );
+  void completer();
+  void set_param(Param& param);
+protected :
   void remplir_volumes();
+  double eval_f(double jr, double jp) const;
+  REF(Zone_VEF) la_zone_VEF;
+  REF(Zone_Cl_VEF) la_zcl_VEF;
+  DoubleVect volumes_;
 
-  REF(Zone_VDF) la_zone_VDF;
-  REF(Zone_Cl_VDF) la_zcl_VDF;
+  Nom nom_espece_;
+  Nom nom_domaine_;
+  Nom nom_ssz_;
+  Nom nom_champ_jr_;
+  Nom nom_champ_jp_;
+  REF(Domaine) dom_;
+  REF(Sous_Zone) ssz_;
+  DoubleTab jr_, jp_;
+
+  Champ_Don ch_jr_;
+  Champ_Don ch_jp_;
 };
 
-#endif /* Source_Term_pemfc_VDF_P0_VDF_included */
+#endif /* Source_Term_Nafion_Reaction_included */

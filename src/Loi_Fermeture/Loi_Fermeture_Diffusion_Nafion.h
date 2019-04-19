@@ -14,42 +14,65 @@
 *****************************************************************************/
 /////////////////////////////////////////////////////////////////////////////
 //
-// File      : Source_Term_pemfc_VDF_P0_VDF.h
-// Directory : $PEMFC_ROOT/src/Sources
+// File      : Loi_Fermeture_Diffusion_Nafion.h
+// Directory : $PEMFC_ROOT/src/Loi_Fermeture
 //
 /////////////////////////////////////////////////////////////////////////////
 
-#ifndef Source_Term_pemfc_VDF_P0_VDF_included
-#define Source_Term_pemfc_VDF_P0_VDF_included
+#ifndef Loi_Fermeture_Diffusion_Nafion_included
+#define Loi_Fermeture_Diffusion_Nafion_included
 
-#include <Source_Term_pemfc_base.h>
-#include <Ref_Zone_VDF.h>
-#include <Ref_Zone_Cl_VDF.h>
+#include <Loi_Fermeture_base.h>
+#include <Ref_Champ_base.h>
+#include <Champ_Fonc.h>
+#include <Ref_Equation_base.h>
+#include <DoubleTab.h>
+#include <Param.h>
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// .DESCRIPTION : class Source_Term_pemfc_VDF_P0_VDF
+// .DESCRIPTION : class Loi_Fermeture_Diffusion_Nafion
 //
-// <Description of class Source_Term_pemfc_VDF_P0_VDF>
+// <Description of class Loi_Fermeture_Diffusion_Nafion>
 //
 /////////////////////////////////////////////////////////////////////////////
 
-class Source_Term_pemfc_VDF_P0_VDF : public Source_Term_pemfc_base
+class Loi_Fermeture_Diffusion_Nafion : public Loi_Fermeture_base
 {
 
-  Declare_instanciable( Source_Term_pemfc_VDF_P0_VDF ) ;
+  Declare_instanciable( Loi_Fermeture_Diffusion_Nafion ) ;
 
 public :
-  DoubleTab& ajouter(DoubleTab& ) const;
-  void contribuer_a_avec(const DoubleTab&, Matrice_Morse&) const;
+  // associer avec le probleme de diffusion
+  void associer_pb_base(const Probleme_base&);
+  // discretiser le champ diffusivite
+  void discretiser(const Discretisation_base& );
+  // recuperer tous Reference
   void completer();
+  // mettre a jour une fois avant du calcul iteratif
+  void preparer_calcul();
+  // mettre a jour le tableau de valeurs
+  void mettre_a_jour(double temps);
+  //
+  void set_param(Param& param);
 protected :
-  void associer_zones(const Zone_dis& ,const Zone_Cl_dis& );
-  void associer_pb(const Probleme_base& );
-  void remplir_volumes();
+  Champ_Fonc diffu_;						// champ P0
+  const Equation_base& equation() const
+  {
+    return ref_equation_.valeur();
+  } ;
+  REF(Equation_base) ref_equation_;
 
-  REF(Zone_VDF) la_zone_VDF;
-  REF(Zone_Cl_VDF) la_zcl_VDF;
+  // Motcles nom_especes_compris_ = {"H2", "O2", "H2O", "N2", "vap"};
+
+  Nom nom_espece_, nom_champ_T_, nom_champ_C_;	// pour readOn
+  double default_value_T_ = 353.15;				// dans le cas T constant
+  double CSO3_ = 2036.;							// au cas ou "H2O" ou "vap"
+
+  //REF(Champ_base) T_;			// champ reference pour temperature (optionnel) -> champ P0 avec meme support que diffu_
+  //REF(Champ_base) C_;			// champ reference pour concentration dissolue (optionnel) -> champ P0 avec meme support que diffu_
+  DoubleTab T_, C_;				// tableau des valeurs du champ T et C (P0)
+  double eval(double T, double C);
 };
 
-#endif /* Source_Term_pemfc_VDF_P0_VDF_included */
+#endif /* Loi_Fermeture_Diffusion_Nafion_included */

@@ -14,42 +14,35 @@
 *****************************************************************************/
 /////////////////////////////////////////////////////////////////////////////
 //
-// File      : Source_Term_pemfc_VDF_P0_VDF.h
-// Directory : $PEMFC_ROOT/src/Sources
+// File      : Op_Diff_VEF_Face_PEMFC_Nafion.h
+// Directory : $PEMFC_ROOT/src/Operateurs
 //
 /////////////////////////////////////////////////////////////////////////////
 
-#ifndef Source_Term_pemfc_VDF_P0_VDF_included
-#define Source_Term_pemfc_VDF_P0_VDF_included
+#ifndef Op_Diff_VEF_Face_PEMFC_Nafion_included
+#define Op_Diff_VEF_Face_PEMFC_Nafion_included
 
-#include <Source_Term_pemfc_base.h>
-#include <Ref_Zone_VDF.h>
-#include <Ref_Zone_Cl_VDF.h>
+#include <Op_Diff_VEF_Face.h>
+#include <Param.h>
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// .DESCRIPTION : class Source_Term_pemfc_VDF_P0_VDF
+// .DESCRIPTION : class Op_Diff_VEF_Face_PEMFC_Nafion
 //
-// <Description of class Source_Term_pemfc_VDF_P0_VDF>
+// <Description of class Op_Diff_VEF_Face_PEMFC_Nafion>
 //
 /////////////////////////////////////////////////////////////////////////////
 
-class Source_Term_pemfc_VDF_P0_VDF : public Source_Term_pemfc_base
+class Op_Diff_VEF_Face_PEMFC_Nafion : public Op_Diff_VEF_Face
 {
 
-  Declare_instanciable( Source_Term_pemfc_VDF_P0_VDF ) ;
+  Declare_instanciable( Op_Diff_VEF_Face_PEMFC_Nafion ) ;
 
 public :
-  DoubleTab& ajouter(DoubleTab& ) const;
-  void contribuer_a_avec(const DoubleTab&, Matrice_Morse&) const;
+  void set_param(Param& param);
   void completer();
 protected :
-  void associer_zones(const Zone_dis& ,const Zone_Cl_dis& );
-  void associer_pb(const Probleme_base& );
-  void remplir_volumes();
-
-  REF(Zone_VDF) la_zone_VDF;
-  REF(Zone_Cl_VDF) la_zcl_VDF;
+  Nom diffu_name_;
 };
 
-#endif /* Source_Term_pemfc_VDF_P0_VDF_included */
+#endif /* Op_Diff_VEF_Face_PEMFC_Nafion_included */

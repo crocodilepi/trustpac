@@ -14,42 +14,43 @@
 *****************************************************************************/
 /////////////////////////////////////////////////////////////////////////////
 //
-// File      : Source_Term_pemfc_VDF_P0_VDF.h
-// Directory : $PEMFC_ROOT/src/Sources
+// File      : Op_Diff_VEF_Face_PEMFC_Nafion.cpp
+// Directory : $PEMFC_ROOT/src/Operateurs
 //
 /////////////////////////////////////////////////////////////////////////////
 
-#ifndef Source_Term_pemfc_VDF_P0_VDF_included
-#define Source_Term_pemfc_VDF_P0_VDF_included
+#include <Op_Diff_VEF_Face_PEMFC_Nafion.h>
+#include <Champ_base.h>
+#include <Probleme_base.h>
 
-#include <Source_Term_pemfc_base.h>
-#include <Ref_Zone_VDF.h>
-#include <Ref_Zone_Cl_VDF.h>
+Implemente_instanciable( Op_Diff_VEF_Face_PEMFC_Nafion, "Op_Diff_VEFNAFION_const_P1NC", Op_Diff_VEF_Face ) ;
 
-/////////////////////////////////////////////////////////////////////////////
-//
-// .DESCRIPTION : class Source_Term_pemfc_VDF_P0_VDF
-//
-// <Description of class Source_Term_pemfc_VDF_P0_VDF>
-//
-/////////////////////////////////////////////////////////////////////////////
-
-class Source_Term_pemfc_VDF_P0_VDF : public Source_Term_pemfc_base
+Sortie& Op_Diff_VEF_Face_PEMFC_Nafion::printOn( Sortie& os ) const
 {
+  Op_Diff_VEF_Face::printOn( os );
+  return os;
+}
 
-  Declare_instanciable( Source_Term_pemfc_VDF_P0_VDF ) ;
+Entree& Op_Diff_VEF_Face_PEMFC_Nafion::readOn( Entree& is )
+{
+  Param param(que_suis_je());
+  set_param(param);
+  param.lire_avec_accolades_depuis(is);
 
-public :
-  DoubleTab& ajouter(DoubleTab& ) const;
-  void contribuer_a_avec(const DoubleTab&, Matrice_Morse&) const;
-  void completer();
-protected :
-  void associer_zones(const Zone_dis& ,const Zone_Cl_dis& );
-  void associer_pb(const Probleme_base& );
-  void remplir_volumes();
+  const Champ_base& diffu=equation().probleme().get_champ(diffu_name_);
+  associer_diffusivite ( diffu );
 
-  REF(Zone_VDF) la_zone_VDF;
-  REF(Zone_Cl_VDF) la_zcl_VDF;
-};
+  return is;
 
-#endif /* Source_Term_pemfc_VDF_P0_VDF_included */
+  return is;
+}
+
+void Op_Diff_VEF_Face_PEMFC_Nafion::set_param(Param& param)
+{
+  param.ajouter("diffusivity_fieldname",&diffu_name_,Param::REQUIRED); // XD_ADD_P chaine name of the diffusity field
+}
+
+void Op_Diff_VEF_Face_PEMFC_Nafion::completer()
+{
+  Op_Diff_VEF_Face::completer();
+}

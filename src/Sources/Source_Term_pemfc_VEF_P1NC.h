@@ -40,7 +40,9 @@ class Source_Term_pemfc_VEF_P1NC : public Source_Term_pemfc_base
   Declare_instanciable( Source_Term_pemfc_VEF_P1NC ) ;
 
 public :
-
+  DoubleTab& ajouter(DoubleTab& ) const;
+  void contribuer_a_avec(const DoubleTab&, Matrice_Morse&) const;
+  void completer();
 protected :
   void associer_zones(const Zone_dis& ,const Zone_Cl_dis& );
   void associer_pb(const Probleme_base& );

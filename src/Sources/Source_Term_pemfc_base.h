@@ -29,6 +29,8 @@
 #include <DoubleTab.h>
 #include <Zone_dis.h>
 #include <Zone_Cl_dis.h>
+#include <Param.h>
+#include <Ref_Domaine.h>
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -47,27 +49,40 @@ class Source_Term_pemfc_base : public Source_base
   Declare_base( Source_Term_pemfc_base ) ;
 
 public :
-  virtual DoubleTab& ajouter(DoubleTab& ) const;
+  virtual DoubleTab& ajouter(DoubleTab& ) const =0;
   virtual DoubleTab& calculer(DoubleTab& ) const;
   virtual void mettre_a_jour(double temps);
-  virtual void contribuer_a_avec(const DoubleTab&, Matrice_Morse&) const;
+  virtual void contribuer_a_avec(const DoubleTab&, Matrice_Morse&) const =0;
   //virtual void associer_zones(const Zone_dis& ,const Zone_Cl_dis& )=0;
   //virtual void associer_pb(const Probleme_base& )=0;
+  virtual void completer();
+  //void set_param(Param& param);
 protected :
+  //Motcles nom_especes_compris_;
+
   Nom nom_espece_;						// nom d'espece dans la liste { H2 O2 N2 vap H2O}
-  REF(Champ_base)  T_;   				// champ_inc Temperature du probleme couple T
-  REF(Champ_base) Da_;					// champ conductivite Da
-  REF(Champ_base)  C_;					// Champ_Inc dissolved concentration
-  REF(Champ_base)  c_;					// Champ_Inc concentration du problem couple c
+  Nom nom_domaine_;
+  Nom nom_ssz_;
+  Nom nom_champ_D_, nom_champ_T_, nom_champ_c_, nom_champ_C_;
+  //REF(Champ_base)  T_;   				// champ_inc Temperature du probleme couple T
+  //REF(Champ_base) Da_;				// champ conductivite Da
+  //REF(Champ_base)  C_;				// Champ_Inc dissolved concentration
+  //REF(Champ_base)  c_;				// Champ_Inc concentration du problem couple c
   double epsilon_ionomer_;				// ionomer proportion
   double epsilon_	; 					// porosity
   double gamma_CL_ ; 					// specific surface m2/m3
   double thickness_ionomer_;			// = (1-epsilon)*epsilon_ionomer / gamma_CL
-
+  DoubleTab diffu_;
+  DoubleTab C_;
+  DoubleTab c_;
+  DoubleTab T_;
   DoubleVect volumes_;
   virtual void remplir_volumes()=0;
   double eval_f(double diffu, double Ci, double ci, double T) const;
   double eval_derivee_f(double diffu) const;
+
+  REF(Domaine) dom_;
+  REF(Sous_Zone) ssz_;
 };
 
 #endif /* Source_Term_pemfc_base_included */

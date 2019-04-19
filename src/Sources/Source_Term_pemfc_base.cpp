@@ -25,6 +25,10 @@
 #include <Param.h>
 #include <Interprete.h>
 #include <Matrice_Morse.h>
+#include <Champ_base.h>
+#include <Champ_Inc.h>
+#include <Domaine.h>
+
 
 Implemente_base( Source_Term_pemfc_base, "Source_Term_pemfc_base", Source_base ) ;
 
@@ -36,24 +40,35 @@ Sortie& Source_Term_pemfc_base::printOn( Sortie& os ) const
 
 Entree& Source_Term_pemfc_base::readOn( Entree& is )
 {
-  Source_base::readOn( is );
+  //Source_base::readOn( is );
+  Cerr << " Source_Term_pemfc_base::readOn " << finl  ;
   Param param(que_suis_je());
-  Nom nom_champ_diffu, nom_pb_T, nom_pb_c, nom_champ_T, nom_champ_c;
   param.ajouter("nom_espece",&nom_espece_,Param::REQUIRED);
+  param.ajouter("nom_domaine",&nom_domaine_,Param::REQUIRED);		// pas necessaire ? dom_ = equation().problem().domaine() ?
+  param.ajouter("nom_ssz",&nom_ssz_,Param::REQUIRED);
   param.ajouter("epsilon", &epsilon_, Param::REQUIRED);
   param.ajouter("epsilon_ionomer", &epsilon_ionomer_, Param::REQUIRED);
   param.ajouter("gamma_CL", &gamma_CL_, Param::REQUIRED);
-  param.ajouter("gamma_CL", &gamma_CL_, Param::REQUIRED);
-  param.ajouter("champ_D", &nom_champ_diffu, Param::REQUIRED);
-  param.ajouter("champ_T", &nom_champ_T, Param::REQUIRED);
-  param.ajouter("pb_c", &nom_pb_c, Param::REQUIRED);
-  param.ajouter("champ_c", &nom_champ_T, Param::REQUIRED);
+  param.ajouter("champ_D", &nom_champ_D_, Param::REQUIRED);
+  param.ajouter("champ_T", &nom_champ_T_, Param::REQUIRED);
+  param.ajouter("champ_C", &nom_champ_C_, Param::REQUIRED);
+  param.ajouter("champ_ci", &nom_champ_c_, Param::REQUIRED);
   param.lire_avec_accolades(is);
-  REF(Probleme_base) pb_T = ref_cast(Probleme_base,interprete().objet(nom_pb_T));
-  REF(Probleme_base) pb_c = ref_cast(Probleme_base,interprete().objet(nom_pb_c));
-  T_ = pb_T.valeur().equation("Conduction").get_champ(nom_champ_T);								// TO-DO verify
-  c_ = pb_c.valeur().equation("Convection_Diffusion_Concentration").get_champ(nom_champ_c);  	// TO-DO verify
+
+  Motcles nom_especes_compris_(5);
+  nom_especes_compris_[0] = "H2";
+  nom_especes_compris_[1] = "O2";
+  nom_especes_compris_[2] = "H2O";
+  nom_especes_compris_[3] = "N2";
+  nom_especes_compris_[4] = "vap";
+  if(nom_especes_compris_.search(nom_espece_) == -1)
+    {
+      Cerr <<" unknown species in the list "<<finl;
+      Process::exit();
+    }
   thickness_ionomer_ = (1-epsilon_)*epsilon_ionomer_ / gamma_CL_;
+  dom_ = equation().probleme().domaine();
+  ssz_ = dom_.valeur().ss_zone(nom_ssz_);
   return is;
 }
 
@@ -63,7 +78,7 @@ double Source_Term_pemfc_base::eval_f(double diffu, double Ci, double ci, double
   double Ceq;
   if (nom_espece_ == "H2O" || nom_espece_ == "vap")
     {
-      double Psat = 1.5;	// Pa								// TO-DO:vefify this value!!!!!
+      double Psat = exp(23.1961-3816.44/(T-46.13));
       double activ = ci * R * T / Psat;
       double lambda_eq = 0.043+17.81*activ-39.85*activ*activ+36*activ*activ*activ;
       double CSO3 = 2036;
@@ -78,11 +93,11 @@ double Source_Term_pemfc_base::eval_f(double diffu, double Ci, double ci, double
         }
       else if (nom_espece_ == "02")
         {
-          H = 1. / 1.33e5 * exp(666./T);
+          H = 1. / 1.33e5 * exp(666/T);
         }
       else if (nom_espece_ == "N2")
         {
-          H = 6.4e-6 * exp(1300.*(1./T - 1./298.15));
+          H = 6.4e-6 * exp(1300*(1./T - 1/298.15));
         }
       Ceq = ci * R * T * H;
     }
@@ -95,29 +110,6 @@ double Source_Term_pemfc_base::eval_derivee_f(double diffu) const
   return (- diffu * gamma_CL_ / thickness_ionomer_);
 }
 
-DoubleTab& Source_Term_pemfc_base::ajouter(DoubleTab& resu) const
-{
-  assert(resu.dimension(0)==volumes_.size());
-  int size=resu.dimension(0);
-
-  const DoubleTab& T=T_.valeur().valeurs();
-  const DoubleTab& C=C_.valeur().valeurs();
-  const DoubleTab& D=Da_.valeur().valeurs();
-  const DoubleTab& c=c_.valeur().valeurs();
-
-  // check
-  assert(resu.dimension(0)==T.size());
-  assert(resu.dimension(0)==C.size());
-  assert(resu.dimension(0)==D.size());
-  assert(resu.dimension(0)==c.size());
-
-  for (int i=0; i<size; i++)
-    {
-      resu(i)+= volumes_(i) * eval_f(D(i,0), C(i,0), c(i,0), T(i,0));
-    }
-  return resu;
-}
-
 DoubleTab& Source_Term_pemfc_base::calculer(DoubleTab& resu) const
 {
   resu = 0;
@@ -127,19 +119,10 @@ DoubleTab& Source_Term_pemfc_base::calculer(DoubleTab& resu) const
 
 void Source_Term_pemfc_base::mettre_a_jour(double temps)
 {
-  // update the involving field
-  T_.valeur().mettre_a_jour(temps);
-  C_.valeur().mettre_a_jour(temps);
-  c_.valeur().mettre_a_jour(temps);
-  Da_.valeur().mettre_a_jour(temps);
+  // update the involving fields -> to-do: nothing
 }
 
-void Source_Term_pemfc_base::contribuer_a_avec(const DoubleTab& inco, Matrice_Morse& mat) const
+void Source_Term_pemfc_base::completer()
 {
-  int size=inco.dimension(0);
-  const DoubleTab& D=Da_.valeur().valeurs();
-  for (int i=0; i<size; i++)
-    {
-      mat.coef(i,i)+=volumes_(i) * eval_derivee_f(D(i,0));
-    }
+  Source_base::completer();
 }
