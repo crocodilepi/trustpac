@@ -29,7 +29,8 @@
 /////////////////////////////////////////////////////////////////////////////
 //
 // .DESCRIPTION : class Source_Term_pemfc_transport_ionique
-//
+// Cette classe represente le terme source dans le transport ionique dans
+// la couche active et la membrane de pemfc S = jr + jp
 // <Description of class Source_Term_pemfc_transport_ionique>
 //
 /////////////////////////////////////////////////////////////////////////////
@@ -50,43 +51,55 @@ public :
     void discretiser(const Discretisation_base& dis);
 protected :
 
-    void eval_erev(double T, double a_H2, double a_O2, double a_vap, double a_ionH = 1);
-    void eval_eta(double psi, double phi, double erev);
-    void eval_jo(double a_H2, double a_O2, double a_vap, double a_ionH = 1);
-    void eval_jr(double jo, double eta, double T);
+    double eval_erev(double T, double a_H2, double a_O2, double a_vap, double a_ionH=1);
+    double eval_eta(double psi, double phi, double erev);
+    double eval_jo(double T, double a_H2, double a_O2, double a_vap, double a_ionH=1);
+    double eval_jr(double jo, double eta, double T);
 
     void remplir_volumes();
-	double eval_f(double jr, double jp) const;
+
 	REF(Zone_VEF) la_zone_VEF;
 	REF(Zone_Cl_VEF) la_zcl_VEF;
 	DoubleVect volumes_;
 
-	Nom nom_domaine_;			// pas necessaire car associe a l'equation
-	Nom nom_ssz_;
-	Nom nom_pb_psi_;
-	Nom nom_champ_psi_;
-	Nom nom_pb_T_;
-	Nom nom_champ_T_;
-	Nom nom_pb_c_;
-	Nom nom_champ_a_;		// champ activite
+	Nom nom_domaine_;			// pas necessaire car le terme source est associe a l'equation
+	Nom nom_ssz_CLc_;			// le sous zone situant le terme source
+	Nom nom_ssz_CLa_;			// le sous zone situant le terme source
+	Nom nom_pb_psi_;			// transport electrique
+	Nom nom_champ_psi_;			// champ potentiel electrique
+	Nom nom_pb_T_;				// conduction de la chaleur
+	Nom nom_champ_T_;			// champ temperature
+	Nom nom_pb_dissolve_H2_;	// dissolve H2
+	Nom nom_champ_a_H2_;		// champ activite H2 a_H2 = C_H2 / (Henry_H2 * Pref)
+	Nom nom_pb_dissolve_O2_;	// dissolve 02
+	Nom nom_champ_a_O2_;		// champ activite 02 a_02 = C_02 / (Henry_O2 * Pref)
+	Nom nom_pb_dissolve_H20_;	// dissolve H2O
+	Nom nom_champ_a_H20_;		// champ activite H2O a_H2O = lambda / lambda_eq = C_H2O*R*T / P_sat
 
 	REF(Domaine) dom_;
-	REF(Sous_Zone) ssz_;
+	REF(Sous_Zone) CL_a_;
+	REF(Sous_Zone) CL_c_;
 	REF(Champ_base) ch_T_;
-	REF(Champ_base) ch_a_;
+	REF(Champ_base) ch_a_H2_;
+	REF(Champ_base) ch_a_O2_;
+	REF(Champ_base) ch_a_vap_;
 	REF(Champ_base) ch_phi_;
 	REF(Champ_base) ch_psi_;
 
 	DoubleTab T_;			// P0 pour VDF, P1NC pour VEF
-	DoubleTab a_;			// P0 pour VDF, P1NC pour VEF
+	DoubleTab a_H2_;		// P0 pour VDF, P1NC pour VEF
+	DoubleTab a_O2_;		// P0 pour VDF, P1NC pour VEF
+	DoubleTab a_vap_;		// P0 pour VDF, P1NC pour VEF
 	DoubleTab psi_;			// P0 pour VDF, P1NC pour VEF
-	DoubleTab& phi_;			// P0 pour VDF, P1NC pour VEF		// ionic potential
+	DoubleTab& phi_;		// P0 pour VDF, P1NC pour VEF		// ionic potential
 
-	Champ_Fonc ch_Erev_;		// P0 pour VDF, P1NC pour VEF reference potential
+	REF(Champ_Don) alpha;
+
+	Champ_Fonc ch_Erev_;	// P0 pour VDF, P1NC pour VEF reference potential
 	Champ_Fonc ch_eta_;		// P0 pour VDF, P1NC pour VEF eta
-	Champ_Fonc ch_jo_;			// P0 pour VDF, P1NC pour VEF exchange current density
+	Champ_Fonc ch_jo_;		// P0 pour VDF, P1NC pour VEF exchange current density
 	Champ_Fonc ch_jr_;		// P0 pour VDF, P1NC pour VEF champ electrochemique courant jr = jo.gamma_CL.[exp()-exp()]
-	Champ_Fonc ch_jp_;  	// P0 pour VDF, P1NC pour VEF champ electrochemique courant jp = N_H2.2.F/e_CL
+	//Champ_Fonc ch_jp_;  	// P0 pour VDF, P1NC pour VEF champ electrochemique courant jp = N_H2.2.F/e_CL
 };
 
 #endif /* Source_Term_pemfc_transport_ionique_included */
