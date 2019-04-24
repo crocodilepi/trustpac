@@ -24,6 +24,7 @@
 
 #include <Loi_Fermeture_base.h>
 #include <Ref_Champ_base.h>
+#include <Ref_Champ_Inc.h>
 #include <Champ_Fonc.h>
 #include <Ref_Equation_base.h>
 #include <DoubleTab.h>
@@ -32,7 +33,17 @@
 /////////////////////////////////////////////////////////////////////////////
 //
 // .DESCRIPTION : class Loi_Fermeture_Diffusion_Nafion
-//
+// Loi_Fermeture_Diffusion_Nafion permet de calculer et mettre a jour le coefficient
+// de diffusion 'effective' des especes dans Nafion par une formulation analytique:
+// D_i_eff = (1-por)epsilon_ionomer/tor^2*D_i_naf(T)
+// avec i = H2, O2, N2
+// ou
+// D_i_eff = -D_w avec H20
+// De plus, il cree, mets a jour des champs suivants:
+// D_i_naf(T) 							champ de diffusion des especes dans Nafion i = H2, O2, N2
+// I_i = -D_i_eff * grad(C_i)			champ de flux de diffusion des especes dans Nafion i = H2, O2, N2
+// Dw(T, C_H20)							champ de diffusion de H20 dans Nafion
+// I_H20 = nd/F*I_ion - Dw*grad(C_H20) 	champ de flux de diffusion de H20 dans Nafion
 // <Description of class Loi_Fermeture_Diffusion_Nafion>
 //
 /////////////////////////////////////////////////////////////////////////////
@@ -56,23 +67,31 @@ public :
   //
   void set_param(Param& param);
 protected :
-  Champ_Fonc diffu_;						// champ P0
+  Champ_Fonc diffu_;		// champ de diffusion 'effective' de l'espece
+  Champ_Fonc D_i_naf_;		// champ de diffusion de l'espece
+  Champ_Fonc N_i_naf_;		// champ de flux de diffusion de l'espece
+
+  REF(Equation_base) ref_equation_;
   const Equation_base& equation() const
   {
     return ref_equation_.valeur();
   } ;
-  REF(Equation_base) ref_equation_;
 
   // Motcles nom_especes_compris_ = {"H2", "O2", "H2O", "N2", "vap"};
 
-  Nom nom_espece_, nom_champ_T_, nom_champ_C_;	// pour readOn
-  double default_value_T_ = 353.15;				// dans le cas T constant
-  double CSO3_ = 2036.;							// au cas ou "H2O" ou "vap"
+  Nom nom_espece_, nom_pb_T_, nom_champ_T_, nom_pb_phi_, nom_champ_I_;	// pour readOn
+  double T_0_;				// dans le cas T constant
+  double CSO3_;				// au cas ou "H2O" ou "vap"
+  double por_naf_;			// porosite de Nafion
+  double eps_naf_;			// ionomer proportionnel de Nafion
+  double tor_naf_;			// tortuosite de Nafion
 
-  //REF(Champ_base) T_;			// champ reference pour temperature (optionnel) -> champ P0 avec meme support que diffu_
-  //REF(Champ_base) C_;			// champ reference pour concentration dissolue (optionnel) -> champ P0 avec meme support que diffu_
-  DoubleTab T_, C_;				// tableau des valeurs du champ T et C (P0)
-  double eval(double T, double C);
+  REF(Champ_base) ch_T_;		// champ reference pour temperature (optionnel)
+  REF(Champ_base) ch_I_;		// champ reference pour le courant ionique I = -kappa.grad(phi) (optionnel)
+  REF(Champ_Inc) ch_C_;			// champ reference du champ inconnu C
+  DoubleTab T_, C_, I_;			// tableau des valeurs du champ T, C, I (P0)
+  double eval_D_i_naf(double T, double C);
+  double eval_diffu_(double T, double C);
 };
 
 #endif /* Loi_Fermeture_Diffusion_Nafion_included */

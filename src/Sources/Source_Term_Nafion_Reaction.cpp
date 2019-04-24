@@ -20,12 +20,15 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include <Source_Term_Nafion_Reaction.h>
-#include <Zone_VEF.h>
-#include <Zone_Cl_VEF.h>
 #include <Probleme_base.h>
 #include <Equation_base.h>
 #include <Conduction.h>
 #include <Champ_P1NC.h>
+#include <Zone_VEF.h>
+#include <Zone_Cl_VEF.h>
+#include <Domaine.h>
+#include <Champ.h>
+#include <Champ_Generique_base.h>
 
 Implemente_instanciable( Source_Term_Nafion_Reaction, "Source_Term_Nafion_Reaction_VEF_P1NC", Source_base ) ;
 

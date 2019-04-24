@@ -22,7 +22,7 @@
 #include <Zone_VDF.h>
 #include <Zone_Cl_VDF.h>
 #include <Equation_base.h>
-#include <Champ_Generique_base.h>
+#include <Champ_P1NC.h>
 
 Implemente_instanciable( Source_Term_pemfc_VDF_P0_VDF, "Source_Term_pemfc_VDF_P0_VDF", Source_Term_pemfc_base );
 
@@ -71,14 +71,19 @@ DoubleTab& Source_Term_pemfc_VDF_P0_VDF::ajouter(DoubleTab& resu) const
   assert(resu.dimension(0)==T_.size());
   assert(resu.dimension(0)==C_.size());
   assert(resu.dimension(0)==diffu_.size());
-  assert(resu.dimension(0)==c_.size());
+  assert(resu.dimension(0)==ci_.size());
 
-  double inv_rhoCp = 1./((1-epsilon_)*epsilon_ionomer_);
-  int poly;
-  for (poly = 0; poly < ssz_.valeur().nb_elem_tot(); poly++)
+  double inv_rhoCp = 1./((1-por_naf_)*eps_naf_);
+
+  for (int poly = 0; poly < CL_a_.valeur().nb_elem_tot(); poly++)
     {
-      int elem = ssz_.valeur()(poly);
-      resu(elem) = eval_f(diffu_(elem), C_(elem), c_(elem), T_(elem)) * inv_rhoCp;
+      int elem = CL_a_.valeur()(poly);
+      resu(elem) = eval_f(diffu_(elem), C_(elem), ci_(elem), T_(elem)) * inv_rhoCp;
+    }
+  for (int poly = 0; poly < CL_c_.valeur().nb_elem_tot(); poly++)
+    {
+      int elem = CL_c_.valeur()(poly);
+      resu(elem) = eval_f(diffu_(elem), C_(elem), ci_(elem), T_(elem)) * inv_rhoCp;
     }
   return resu;
 }
@@ -88,11 +93,16 @@ void Source_Term_pemfc_VDF_P0_VDF::contribuer_a_avec(const DoubleTab& inco, Matr
   assert(inco.dimension(0)==volumes_.size());
   assert(inco.dimension(0)==diffu_.size());
 
-  double inv_rhoCp = 1./((1-epsilon_)*epsilon_ionomer_);
-  int poly;
-  for (poly = 0; poly < ssz_.valeur().nb_elem_tot(); poly++)
+  double inv_rhoCp = 1./((1-por_naf_)*eps_naf_);
+
+  for (int poly = 0; poly < CL_a_.valeur().nb_elem_tot(); poly++)
     {
-      int elem = ssz_.valeur()(poly);
+      int elem = CL_a_.valeur()(poly);
+      mat.coef(elem,elem) += volumes_(elem) * eval_derivee_f(diffu_(elem))*inv_rhoCp;
+    }
+  for (int poly = 0; poly < CL_c_.valeur().nb_elem_tot(); poly++)
+    {
+      int elem = CL_c_.valeur()(poly);
       mat.coef(elem,elem) += volumes_(elem) * eval_derivee_f(diffu_(elem))*inv_rhoCp;
     }
 }
@@ -101,41 +111,80 @@ void Source_Term_pemfc_VDF_P0_VDF::completer()
 {
   Source_Term_pemfc_base::completer();
 
-  // recuperer les references vers les champs
-  Champ stoT;
-  const Champ_base& ch_T = equation().probleme().get_champ_post(nom_champ_T_).get_champ(stoT);
-  assert(ch_T.que_suis_je().find("P0") !=-1);
-  T_.ref(ch_T.valeurs());
+  T_.resize(0, 1);			// scalaire
+  C_.resize(0, 1);			// scalaire
+  ci_.resize(0, 1);			// scalaire
+  diffu_.resize(0,1);		// scalaire
+  ir_.resize(0,1);			// scalaire
+  ip_.resize(0,1);			// scalaire
 
-  Champ stoc;
-  const Champ_base& ch_c = equation().probleme().get_champ_post(nom_champ_c_).get_champ(stoc);
-  assert(ch_c.que_suis_je().find("P0") !=-1);
-  c_.ref(ch_c.valeurs());
+  dom_.valeur().creer_tableau_elements(C_);
+  dom_.valeur().creer_tableau_elements(diffu_);
+  dom_.valeur().creer_tableau_elements(ci_);
+  dom_.valeur().creer_tableau_elements(T_);
+  dom_.valeur().creer_tableau_elements(ir_);
+  dom_.valeur().creer_tableau_elements(ip_);
 
-  Champ_base& ch_C = equation().inconnue();
-  if(ch_C.que_suis_je().find("P0") !=-1)
+  if(ch_C_.que_suis_je().find("P0") !=-1)
     {
-      C_.ref(ch_C.valeurs());
+      C_.ref(ch_C_.valeur().valeurs());
     }
   else
     {
-      Champ stoC;
-      const Champ_base& ch_C_post = equation().probleme().get_champ_post(nom_champ_C_).get_champ(stoC);
-      assert(ch_C_post.que_suis_je().find("P0") !=-1);
-      C_.ref(ch_C_post.valeurs());
+      Champ_P1NC& ch_C = ref_cast(Champ_P1NC, ch_C_);
+      const DoubleTab& xp=la_zone_VDF.valeur().xp(); // Recuperation des centre de gravite des elements pour P0
+      ch_C.valeur_aux(xp, C_);
     }
 
-  const Champ_base& ch_D = equation().probleme().get_champ("diffusion_nafion");
-  if(ch_D.que_suis_je().find("P0") !=-1)
+  if(ch_D_i_naf_.que_suis_je().find("P0") !=-1)
     {
-      diffu_.ref(ch_D.valeurs());
+      diffu_.ref(ch_D_i_naf_.valeur().valeurs());
     }
   else
     {
-      Champ stoD;
-      const Champ_base& ch_D_post = equation().probleme().get_champ_post(nom_champ_D_).get_champ(stoD);
-      assert(ch_D_post.que_suis_je().find("P0") !=-1);
-      diffu_.ref(ch_D_post.valeurs());
+      Champ_P1NC& ch_D = ref_cast(Champ_P1NC, ch_D_i_naf_);
+      const DoubleTab& xp=la_zone_VDF.valeur().xp(); // Recuperation des centre de gravite des elements pour P0
+      ch_D.valeur_aux(xp, diffu_);
+    }
+
+  if(ch_T_.non_nul())
+    {
+      const DoubleTab& xp=la_zone_VDF.valeur().xp(); // Recuperation des centre de gravite des elements pour P0
+      ch_T_.valeur().valeur_aux(xp, T_);
+    }
+  else
+    {
+      T_ = T_0_;
+    }
+
+  if(ch_ci_.non_nul())
+    {
+      const DoubleTab& xp=la_zone_VDF.valeur().xp(); // Recuperation des centre de gravite des elements pour P0
+      ch_ci_.valeur().valeur_aux(xp, ci_);
+    }
+  else
+    {
+      ci_ = 0.;
+    }
+
+  if(ch_ir_.non_nul())
+    {
+      const DoubleTab& xp=la_zone_VDF.valeur().xp(); // Recuperation des centre de gravite des elements pour P0
+      ch_ir_.valeur().valeur_aux(xp, ir_);
+    }
+  else
+    {
+      ir_ = 0.;
+    }
+
+  if(ch_ip_.non_nul())
+    {
+      const DoubleTab& xp=la_zone_VDF.valeur().xp(); // Recuperation des centre de gravite des elements pour P0
+      ch_ip_.valeur().valeur_aux(xp, ip_);
+    }
+  else
+    {
+      ip_ = 0.;
     }
 }
 

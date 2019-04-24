@@ -26,6 +26,7 @@
 #include <Conduction.h>
 #include <Champ_P1NC.h>
 #include <Champ_Generique_base.h>
+#include <Champ_P0_VEF.h>
 
 Implemente_instanciable( Source_Term_pemfc_VEF_P1NC, "Source_Term_pemfc_VEF_P1NC", Source_Term_pemfc_base );
 
@@ -75,28 +76,61 @@ DoubleTab& Source_Term_pemfc_VEF_P1NC::ajouter(DoubleTab& resu) const
   assert(resu.dimension(0)==T_.size());
   assert(resu.dimension(0)==C_.size());
   assert(resu.dimension(0)==diffu_.size());
-  assert(resu.dimension(0)==c_.size());
+  assert(resu.dimension(0)==ci_.size());
+
+  double inv_rhoCp = 1./((1-por_naf_)*eps_naf_);
 
   IntTab faces_ssz;	// faces belong to the sous_zone -> flag = 1, if not, flag = 0
   la_zone_VEF.valeur().creer_tableau_faces(faces_ssz);
-  faces_ssz = 0;
+  faces_ssz = 0;	// init with no flag (all faces are unchecked)
 
-  double inv_rhoCp = 1./((1-epsilon_)*epsilon_ionomer_);
-  int poly;
-  for (poly = 0; poly < ssz_.valeur().nb_elem_tot(); poly++)
+  if(CL_a_.non_nul())
     {
-      int elem = ssz_.valeur()(poly);
-      for (int f = 0; f < la_zone_VEF.valeur().zone().nb_faces_elem(0); ++f)
+      for (int poly = 0; poly < CL_a_.valeur().nb_elem_tot(); poly++)
         {
-          int face = la_zone_VEF.valeur().elem_faces(elem, f);
-          if(!faces_ssz(face))
+          int elem = CL_a_.valeur()(poly);
+          for (int f = 0; f < la_zone_VEF.valeur().zone().nb_faces_elem(0); ++f)
             {
-              resu(face) += eval_f(diffu_(face), C_(face), c_(face), T_(face)) * volumes_(face) * inv_rhoCp;
-              // necessaire (source*porosite_surf(num_face));
-              faces_ssz(face) = 1;		// marquer comme deja traite
+              int face = la_zone_VEF.valeur().elem_faces(elem, f);
+              if(!faces_ssz(face))
+                {
+                  resu(face) += eval_f(diffu_(face), C_(face), ci_(face), T_(face)) * volumes_(face) * inv_rhoCp;
+                  // necessaire (source*porosite_surf(num_face));
+                  faces_ssz(face) = 1;		// marquer comme deja traite
+                }
             }
         }
     }
+
+  faces_ssz = 0;		// init with no flag (all faces are unchecked)
+  if(CL_c_.non_nul())
+    {
+      for (int poly = 0; poly < CL_c_.valeur().nb_elem_tot(); poly++)
+        {
+          int elem = CL_c_.valeur()(poly);
+          for (int f = 0; f < la_zone_VEF.valeur().zone().nb_faces_elem(0); ++f)
+            {
+              int face = la_zone_VEF.valeur().elem_faces(elem, f);
+              if(!faces_ssz(face))
+                {
+                  resu(face) += eval_f(diffu_(face), C_(face), ci_(face), T_(face)) * volumes_(face) * inv_rhoCp;
+                  // necessaire (source*porosite_surf(num_face));
+                  faces_ssz(face) = 1;		// marquer comme deja traite
+                }
+            }
+        }
+    }
+
+  if(nom_espece_ == "H2O" || nom_espece_ == "vap")
+    {
+      int nb_faces = la_zone_VEF.valeur().nb_faces();
+      // ajouter un terme source de type: -nd/F*op avec op = div(kappa.grad(phi))
+      for (int face = 0; face < nb_faces; ++face)
+        {
+          resu(face) += -f_nd(C_(face))/F*op_(face);
+        }
+    }
+
   return resu;
 }
 
@@ -107,25 +141,45 @@ void Source_Term_pemfc_VEF_P1NC::contribuer_a_avec(const DoubleTab& inco, Matric
   assert(inco.dimension(0)==T_.size());
   assert(inco.dimension(0)==C_.size());
   assert(inco.dimension(0)==diffu_.size());
-  assert(inco.dimension(0)==c_.size());
+  assert(inco.dimension(0)==ci_.size());
 
   IntTab faces_ssz;	// faces belong to the sous_zone -> flag = 1, if not, flag = 0
   la_zone_VEF.valeur().creer_tableau_faces(faces_ssz);
-  faces_ssz = 0;
+  faces_ssz = 0;		// init with no flag (all faces are unchecked)
 
-  double inv_rhoCp = 1./((1-epsilon_)*epsilon_ionomer_);
-  int poly;
-  for (poly = 0; poly < ssz_.valeur().nb_elem_tot(); poly++)
+  double inv_rhoCp = 1./((1-por_naf_)*eps_naf_);
+  if(CL_a_.non_nul())
     {
-      int elem = ssz_.valeur()(poly);
-      for (int f = 0; f < la_zone_VEF.valeur().zone().nb_faces_elem(0); ++f)
+      for (int poly = 0; poly < CL_a_.valeur().nb_elem_tot(); poly++)
         {
-          int face = la_zone_VEF.valeur().elem_faces(elem, f);
-          if(!faces_ssz(face))
+          int elem = CL_a_.valeur()(poly);
+          for (int f = 0; f < la_zone_VEF.valeur().zone().nb_faces_elem(0); ++f)
             {
-              mat.coef(face,face) += volumes_(face) * eval_derivee_f(diffu_(face))*inv_rhoCp;
-              // necessaire (source*porosite_surf(num_face));
-              faces_ssz(face) = 1;		// marquer comme deja traite
+              int face = la_zone_VEF.valeur().elem_faces(elem, f);
+              if(!faces_ssz(face))
+                {
+                  mat.coef(face,face) += volumes_(face) * eval_derivee_f(diffu_(face))*inv_rhoCp;
+                  // necessaire (source*porosite_surf(num_face));
+                  faces_ssz(face) = 1;		// marquer comme deja traite
+                }
+            }
+        }
+    }
+  faces_ssz = 0;		// init with no flag (all faces are unchecked)
+  if(CL_c_.non_nul())
+    {
+      for (int poly = 0; poly < CL_c_.valeur().nb_elem_tot(); poly++)
+        {
+          int elem = CL_c_.valeur()(poly);
+          for (int f = 0; f < la_zone_VEF.valeur().zone().nb_faces_elem(0); ++f)
+            {
+              int face = la_zone_VEF.valeur().elem_faces(elem, f);
+              if(!faces_ssz(face))
+                {
+                  mat.coef(face,face) += volumes_(face) * eval_derivee_f(diffu_(face))*inv_rhoCp;
+                  // necessaire (source*porosite_surf(num_face));
+                  faces_ssz(face) = 1;		// marquer comme deja traite
+                }
             }
         }
     }
@@ -134,41 +188,96 @@ void Source_Term_pemfc_VEF_P1NC::contribuer_a_avec(const DoubleTab& inco, Matric
 void Source_Term_pemfc_VEF_P1NC::completer()
 {
   Source_Term_pemfc_base::completer();
-  Champ stoT;
-  const Champ_base& ch_T = equation().probleme().get_champ_post(nom_champ_T_).get_champ(stoT);
-  assert(ch_T.que_suis_je().find("P1NC") !=-1);
-  T_.ref(ch_T.valeurs());
 
-  Champ stoc;
-  const Champ_base& ch_c = equation().probleme().get_champ_post(nom_champ_c_).get_champ(stoc);
-  assert(ch_c.que_suis_je().find("P1NC") !=-1);
-  c_.ref(ch_c.valeurs());
+  T_.resize(0, 1);			// scalaire
+  C_.resize(0, 1);			// scalaire
+  ci_.resize(0, 1);			// scalaire
+  diffu_.resize(0,1);		// scalaire
+  ir_.resize(0,1);			// scalaire
+  ip_.resize(0,1);			// scalaire
+  op_.resize(0,1);			// scalaire
 
-  Champ_base& ch_C = equation().inconnue();
-  if(ch_C.que_suis_je().find("P1NC") !=-1)
+  la_zone_VEF.valeur().creer_tableau_faces(C_);
+  la_zone_VEF.valeur().creer_tableau_faces(diffu_);
+  la_zone_VEF.valeur().creer_tableau_faces(ci_);
+  la_zone_VEF.valeur().creer_tableau_faces(T_);
+  la_zone_VEF.valeur().creer_tableau_faces(ir_);
+  la_zone_VEF.valeur().creer_tableau_faces(ip_);
+  la_zone_VEF.valeur().creer_tableau_faces(op_);
+
+  const DoubleTab& xv=la_zone_VEF.valeur().xv(); // Recuperation des centre de gravite des faces pour P1NC
+
+  if(ch_C_.que_suis_je().find("P1NC") !=-1)
     {
-      C_.ref(ch_C.valeurs());
+      C_.ref(ch_C_.valeur().valeurs());
     }
   else
     {
-      Champ stoC;
-      const Champ_base& ch_C_post = equation().probleme().get_champ_post(nom_champ_C_).get_champ(stoC);
-      assert(ch_C_post.que_suis_je().find("P1NC") !=-1);
-      C_.ref(ch_C_post.valeurs());
+      Champ_P0_VEF& ch_C = ref_cast(Champ_P0_VEF, ch_C_);
+      //const DoubleTab& xv=la_zone_VEF.valeur().xv(); // Recuperation des centre de gravite des faces pour P1NC
+      ch_C.valeur_aux(xv, C_);
     }
 
-  const Champ_base& ch_D = equation().probleme().get_champ("diffusion_nafion");
-  if(ch_D.que_suis_je().find("P1NC") !=-1)
+  if(ch_D_i_naf_.que_suis_je().find("P1NC") !=-1)
     {
-      diffu_.ref(ch_D.valeurs());
+      diffu_.ref(ch_D_i_naf_.valeur().valeurs());
     }
   else
     {
-      Champ stoD;
-      const Champ_base& ch_D_post = equation().probleme().get_champ_post(nom_champ_D_).get_champ(stoD);
-      assert(ch_D_post.que_suis_je().find("P1NC") !=-1);
-      diffu_.ref(ch_D_post.valeurs());
+      Champ_P0_VEF& ch_D = ref_cast(Champ_P0_VEF, ch_D_i_naf_);
+      //const DoubleTab& xv=la_zone_VEF.valeur().xv(); // Recuperation des centre de gravite des faces pour P1NC
+      ch_D.valeur_aux(xv, diffu_);
     }
+
+  if(ch_T_.non_nul())
+    {
+      //const DoubleTab& xv=la_zone_VEF.valeur().xv(); // Recuperation des centre de gravite des faces pour P1NC
+      ch_T_.valeur().valeur_aux(xv, T_);
+    }
+  else
+    {
+      T_ = T_0_;
+    }
+
+  if(ch_ci_.non_nul())
+    {
+      //const DoubleTab& xv=la_zone_VEF.valeur().xv(); // Recuperation des centre de gravite des faces pour P1NC
+      ch_ci_.valeur().valeur_aux(xv, ci_);
+    }
+  else
+    {
+      ci_ = 0.;
+    }
+
+  if(ch_ir_.non_nul())
+    {
+      //const DoubleTab& xv=la_zone_VEF.valeur().xv(); // Recuperation des centre de gravite des faces pour P1NC
+      ch_ir_.valeur().valeur_aux(xv, ir_);
+    }
+  else
+    {
+      ir_ = 0.;
+    }
+
+  if(ch_ip_.non_nul())
+    {
+      //const DoubleTab& xv=la_zone_VEF.valeur().xv(); // Recuperation des centre de gravite des faces pour P1NC
+      ch_ip_.valeur().valeur_aux(xv, ip_);
+    }
+  else
+    {
+      ip_ = 0.;
+    }
+
+  if(ch_op_.non_nul())
+    {
+      ch_op_.valeur().valeur_aux(xv, op_);
+    }
+  else
+    {
+      op_ = 0.;
+    }
+
 }
 
 void Source_Term_pemfc_VEF_P1NC::remplir_volumes()

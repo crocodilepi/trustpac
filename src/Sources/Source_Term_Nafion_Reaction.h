@@ -23,6 +23,13 @@
 #define Source_Term_Nafion_Reaction_included
 
 #include <Source_base.h>
+#include <Param.h>
+#include <Ref_Zone_VEF.h>
+#include <Ref_Zone_Cl_VEF.h>
+#include <Ref_Domaine.h>
+#include <Ref_Sous_Zone.h>
+#include <DoubleTab.h>
+#include <Champ_Don.h>
 
 /////////////////////////////////////////////////////////////////////////////
 //

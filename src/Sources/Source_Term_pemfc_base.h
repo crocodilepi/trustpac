@@ -31,14 +31,24 @@
 #include <Zone_Cl_dis.h>
 #include <Param.h>
 #include <Ref_Domaine.h>
+#include <Ref_Operateur_base.h>
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // .DESCRIPTION : class Source_Term_pemfc_base
-//  Modele de source de dissolution des especes (H2, N2, O2) de type:
-//  Sa = Da * gamma_CL / e_ionomer * (Ceq - C)
+//  Modele de source de dissolution des especes (H2, N2, O2, H20 ou vap) de type:
+//  Sa_i = D_i_naf * gamma_CL / e_naf * (Ceq_i - C_i) + S_i
 //  avec
-//  Ceq = c * R * T * H
+//  Ceq_i = c_i * R * T * H_i		avec i = H3 O2 N2
+//  Ceq_i = C_SO3 * ld_eq(c_i*R*T/P_sat(T)) 	avec i = H2O
+//  ld_eq (a) = 0.043 + 17.81*a -39.85a^2+36a^3
+//  P_sat(T) = exp(23.1961-3816.44/(T-46.13))
+//  S_H2 = -ir / (2F)
+//  S_O2 = (ir+ip) / (4F)
+//  S_N2 = 0
+//  S_H20 = -(ir+ip) / (2F) dans CL_c et null dans les zones restants
+//  En particulier avec H20, un terme source supplementaire :
+//  S_H20_supp = -nd/F*div(kappa.grad(phi)) = -nd/F*Operateur_diff(0)
 // <Description of class Source_Term_pemfc_base>
 //
 /////////////////////////////////////////////////////////////////////////////
@@ -58,31 +68,92 @@ public :
   virtual void completer();
   //void set_param(Param& param);
 protected :
-  //Motcles nom_especes_compris_;
 
   Nom nom_espece_;						// nom d'espece dans la liste { H2 O2 N2 vap H2O}
   Nom nom_domaine_;
-  Nom nom_ssz_;
-  Nom nom_champ_D_, nom_champ_T_, nom_champ_c_, nom_champ_C_;
-  //REF(Champ_base)  T_;   				// champ_inc Temperature du probleme couple T
-  //REF(Champ_base) Da_;				// champ conductivite Da
-  //REF(Champ_base)  C_;				// Champ_Inc dissolved concentration
-  //REF(Champ_base)  c_;				// Champ_Inc concentration du problem couple c
-  double epsilon_ionomer_;				// ionomer proportion
-  double epsilon_	; 					// porosity
-  double gamma_CL_ ; 					// specific surface m2/m3
-  double thickness_ionomer_;			// = (1-epsilon)*epsilon_ionomer / gamma_CL
+  Nom nom_ssz_CLa_;
+  Nom nom_ssz_CLc_;
+  Nom nom_champ_D_;
+  Nom nom_pb_T_;
+  Nom nom_champ_T_;
+  Nom nom_pb_ci_;
+  Nom nom_champ_ci_;
+  Nom nom_pb_phi_;
+  Nom nom_champ_ir_;
+  Nom nom_champ_ip_;
+  Nom nom_op_diff_;
+
+  REF(Domaine) dom_;					// domaine
+  REF(Sous_Zone) CL_a_;					// sous_zone anode
+  REF(Sous_Zone) CL_c_;					// sous_zone cathode
+  REF(Champ_base)  ch_T_;   				// Champ Temperature de conduction de la chaleur   -> couple
+  REF(Champ_base)  ch_D_i_naf_;				// champ conductivite Da -> get_champ
+  REF(Champ_Inc)   ch_C_;					// Champ_Inc dissolved concentration -> inconnu()
+  REF(Champ_base)  ch_ci_;					// Champ concentration de  diffusion des multi-especes -> couple
+  REF(Champ_base)  ch_ir_;	// couple
+  REF(Champ_base)  ch_ip_;	// couple
+  REF(Champ_base)  ch_op_;	// couple
+
+  double eps_naf_;					// ionomer proportion
+  double por_naf_; 					// porosity
+  double gamma_CL_; 				// specific surface m2/m3
+  double T_0_;
+  double C_SO3_;
+
   DoubleTab diffu_;
   DoubleTab C_;
-  DoubleTab c_;
+  DoubleTab ci_;
   DoubleTab T_;
+  DoubleTab ir_;
+  DoubleTab ip_;
+  DoubleTab op_;
+
   DoubleVect volumes_;
+
   virtual void remplir_volumes()=0;
   double eval_f(double diffu, double Ci, double ci, double T) const;
   double eval_derivee_f(double diffu) const;
 
-  REF(Domaine) dom_;
-  REF(Sous_Zone) ssz_;
+  double f_nd(double C) const;
+  double f_Psat(double T) const;
+  double f_lambda(double a) const;
+  double f_Henry_H2(double T) const;
+  double f_Henry_O2(double T) const;
+  double f_Henry_N2(double T) const;
 };
+
+const double R = 8.314;
+const double F = 96500;
+
+inline double Source_Term_pemfc_base::f_Psat(double T) const
+{
+  return exp(23.1961-3816.44/(T-46.13));
+}
+
+inline double Source_Term_pemfc_base::f_lambda(double a) const
+{
+  return 0.043+17.81*a-39.85*a*a+36*a*a*a;
+}
+
+inline double Source_Term_pemfc_base::f_Henry_H2(double T) const
+{
+  return (1./1.01325e5)*exp(9.05e3/(R*T));
+}
+
+inline double Source_Term_pemfc_base::f_Henry_O2(double T)  const
+{
+  return (1/1.01325e5)*exp(5.88e3/(R*T));
+}
+
+inline double Source_Term_pemfc_base::f_nd(double C) const
+{
+  double ld = C / C_SO3_;
+  return 1. + 0.0028*ld + 0.0026*ld*ld;
+}
+
+inline double Source_Term_pemfc_base::f_Henry_N2(double T) const
+{
+  return 6.4e-6*exp(1300*(1/T-1/298.15));
+}
 
 #endif /* Source_Term_pemfc_base_included */
