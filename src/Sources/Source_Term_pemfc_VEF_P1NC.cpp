@@ -113,7 +113,7 @@ DoubleTab& Source_Term_pemfc_VEF_P1NC::ajouter(DoubleTab& resu) const
               int face = la_zone_VEF.valeur().elem_faces(elem, f);
               if(!faces_ssz(face))
                 {
-                  resu(face) += eval_f(diffu_(face), C_(face), ci_(face), T_(face)) * volumes_(face) * inv_rhoCp;
+                  resu(face) += eval_f(diffu_(face), C_(face), ci_(face), T_(face)) * volumes_(face) * inv_rhoCp;		// A VERIFIER
                   // necessaire (source*porosite_surf(num_face));
                   faces_ssz(face) = 1;		// marquer comme deja traite
                 }
@@ -127,7 +127,7 @@ DoubleTab& Source_Term_pemfc_VEF_P1NC::ajouter(DoubleTab& resu) const
       // ajouter un terme source de type: -nd/F*op avec op = div(kappa.grad(phi))
       for (int face = 0; face < nb_faces; ++face)
         {
-          resu(face) += -f_nd(C_(face))/F*op_(face);
+          resu(face) += -f_nd(C_(face))/F*op_(face) * volumes_(face) * inv_rhoCp;			// A VERIFIER
         }
     }
 
