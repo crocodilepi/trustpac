@@ -67,19 +67,20 @@ void Source_Term_Nafion_Reaction::associer_pb(const Probleme_base& pb)
 {
   Cerr << " Source_Term_Nafion_Reaction::associer_pb " << finl ;
   assert(pb.que_suis_je() == "Pb_Conduction");
-  int ok = 0;
-  const Equation_base& eqn = pb.equation(0);
-  if  (eqn.que_suis_je() == "Conduction")
-    {
-      associer_zones(eqn.zone_dis(),eqn.zone_Cl_dis());
-      ok = 1;
-    }
-  if (!ok)
-    {
-      Cerr << "Erreur TRUST dans Source_Term_Nafion_Reaction::associer_pb()" << finl;
-      Cerr << "On ne trouve pas d'equation de conduction dans le probleme" << finl;
-      exit();
-    }
+//  int ok = 0;
+//  const Equation_base& eqn = pb.equation(0);
+//  assert(eqn.que_suis_je() == "Conduction");
+//  if  (eqn.que_suis_je() == "Conduction")
+//    {
+//      associer_zones(eqn.zone_dis(),eqn.zone_Cl_dis());
+//      ok = 1;
+//    }
+//  if (!ok)
+//    {
+//      Cerr << "Erreur TRUST dans Source_Term_Nafion_Reaction::associer_pb()" << finl;
+//      Cerr << "On ne trouve pas d'equation de conduction dans le probleme" << finl;
+//      exit();
+//    }
 }
 
 void Source_Term_Nafion_Reaction::associer_zones(const Zone_dis& zone_dis, const Zone_Cl_dis& zcl_dis)

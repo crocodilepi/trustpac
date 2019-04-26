@@ -35,6 +35,7 @@ Sortie& Source_Term_pemfc_VDF_P0_VDF::printOn(Sortie& os) const
 Entree& Source_Term_pemfc_VDF_P0_VDF::readOn(Entree& is)
 {
   Source_Term_pemfc_base::readOn(is);
+
   return is;
 }
 
@@ -49,19 +50,20 @@ void Source_Term_pemfc_VDF_P0_VDF::associer_pb(const Probleme_base& pb)
 {
   Cerr << " Source_Term_pemfc_VDF_P0_VDF::associer_pb " << finl ;
   assert(pb.que_suis_je() == "Pb_Conduction");
-  int ok = 0;
-  const Equation_base& eqn = pb.equation(0);
-  if  (eqn.que_suis_je() == "Conduction")
-    {
-      associer_zones(eqn.zone_dis(),eqn.zone_Cl_dis());
-      ok = 1;
-    }
-  if (!ok)
-    {
-      Cerr << "Erreur TRUST dans Source_Term_pemfc_VDF_P0_VDF::associer_pb()" << finl;
-      Cerr << "On ne trouve pas d'equation de conduction dans le probleme" << finl;
-      exit();
-    }
+//  int ok = 0;
+//  const Equation_base& eqn = pb.equation(0);
+//  assert(eqn.que_suis_je() == "Conduction");
+//  if  (eqn.que_suis_je() == "Conduction")
+//    {
+//      associer_zones(eqn.zone_dis(),eqn.zone_Cl_dis());
+//      ok = 1;
+//    }
+//  if (!ok)
+//    {
+//      Cerr << "Erreur TRUST dans Source_Term_pemfc_VDF_P0_VDF::associer_pb()" << finl;
+//      Cerr << "On ne trouve pas d'equation de conduction dans le probleme" << finl;
+//      exit();
+//    }
 
 }
 
@@ -110,7 +112,6 @@ void Source_Term_pemfc_VDF_P0_VDF::contribuer_a_avec(const DoubleTab& inco, Matr
 void Source_Term_pemfc_VDF_P0_VDF::completer()
 {
   Source_Term_pemfc_base::completer();
-
   T_.resize(0, 1);			// scalaire
   C_.resize(0, 1);			// scalaire
   ci_.resize(0, 1);			// scalaire
@@ -124,32 +125,37 @@ void Source_Term_pemfc_VDF_P0_VDF::completer()
   dom_.valeur().creer_tableau_elements(T_);
   dom_.valeur().creer_tableau_elements(ir_);
   dom_.valeur().creer_tableau_elements(ip_);
+}
 
-  if(ch_C_.que_suis_je().find("P0") !=-1)
+void Source_Term_pemfc_VDF_P0_VDF::mettre_a_jour(double temps)
+{
+
+  Source_Term_pemfc_base::mettre_a_jour(temps);
+
+  const DoubleTab& xp=la_zone_VDF.valeur().xp(); // Recuperation des centre de gravite des elements pour P0
+
+  if(ch_C_.valeur().que_suis_je().find("P0") !=-1)
     {
       C_.ref(ch_C_.valeur().valeurs());
     }
   else
     {
       Champ_P1NC& ch_C = ref_cast(Champ_P1NC, ch_C_);
-      const DoubleTab& xp=la_zone_VDF.valeur().xp(); // Recuperation des centre de gravite des elements pour P0
       ch_C.valeur_aux(xp, C_);
     }
 
-  if(ch_D_i_naf_.que_suis_je().find("P0") !=-1)
+  if(ch_D_i_naf_.valeur().que_suis_je().find("P0") !=-1)
     {
       diffu_.ref(ch_D_i_naf_.valeur().valeurs());
     }
   else
     {
       Champ_P1NC& ch_D = ref_cast(Champ_P1NC, ch_D_i_naf_);
-      const DoubleTab& xp=la_zone_VDF.valeur().xp(); // Recuperation des centre de gravite des elements pour P0
       ch_D.valeur_aux(xp, diffu_);
     }
 
   if(ch_T_.non_nul())
     {
-      const DoubleTab& xp=la_zone_VDF.valeur().xp(); // Recuperation des centre de gravite des elements pour P0
       ch_T_.valeur().valeur_aux(xp, T_);
     }
   else
@@ -157,35 +163,62 @@ void Source_Term_pemfc_VDF_P0_VDF::completer()
       T_ = T_0_;
     }
 
-  if(ch_ci_.non_nul())
+  if(ch_ci_cathode_.non_nul() && !ch_ci_anode_.non_nul())
     {
-      const DoubleTab& xp=la_zone_VDF.valeur().xp(); // Recuperation des centre de gravite des elements pour P0
-      ch_ci_.valeur().valeur_aux(xp, ci_);
+      // case O2
+      ch_ci_cathode_.valeur().valeur_aux(xp, ci_);
+    }
+  else if(ch_ci_anode_.non_nul() && !ch_ci_cathode_.non_nul())
+    {
+      // case H2
+      ch_ci_anode_.valeur().valeur_aux(xp, ci_);
     }
   else
     {
-      ci_ = 0.;
+      // case N2, H20
+      DoubleTab val_ci_cathode, val_ci_anode;
+      ch_ci_cathode_.valeur().valeur_aux(xp, val_ci_cathode);
+      ch_ci_anode_.valeur().valeur_aux(xp, val_ci_anode);
+
+      for (int poly = 0; poly < CL_a_.valeur().nb_elem_tot(); poly++)
+        {
+          int elem = CL_a_.valeur()(poly);
+          ci_(elem) = val_ci_anode(elem);
+        }
+
+      for (int poly = 0; poly < CL_c_.valeur().nb_elem_tot(); poly++)
+        {
+          int elem = CL_c_.valeur()(poly);
+          ci_(elem)= val_ci_cathode(elem);
+        }
     }
 
   if(ch_ir_.non_nul())
     {
-      const DoubleTab& xp=la_zone_VDF.valeur().xp(); // Recuperation des centre de gravite des elements pour P0
       ch_ir_.valeur().valeur_aux(xp, ir_);
     }
-  else
-    {
-      ir_ = 0.;
-    }
+//	  else
+//	    {
+//	      ir_ = 0.;
+//	    }
 
   if(ch_ip_.non_nul())
     {
-      const DoubleTab& xp=la_zone_VDF.valeur().xp(); // Recuperation des centre de gravite des elements pour P0
       ch_ip_.valeur().valeur_aux(xp, ip_);
     }
-  else
+//	  else
+//	    {
+//	      ip_ = 0.;
+//	    }
+
+  if(ch_op_.non_nul())
     {
-      ip_ = 0.;
+      ch_op_.valeur().valeur_aux(xp, op_);
     }
+  //  else
+  //    {
+  //      op_ = 0.;
+  //    }
 }
 
 void Source_Term_pemfc_VDF_P0_VDF::remplir_volumes()

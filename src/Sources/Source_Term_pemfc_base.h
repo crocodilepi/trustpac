@@ -76,8 +76,10 @@ protected :
   Nom nom_champ_D_;
   Nom nom_pb_T_;
   Nom nom_champ_T_;
-  Nom nom_pb_ci_;
-  Nom nom_champ_ci_;
+  Nom nom_pb_ci_cathode_;
+  Nom nom_champ_ci_cathode_;
+  Nom nom_pb_ci_anode_;
+  Nom nom_champ_ci_anode_;
   Nom nom_pb_phi_;
   Nom nom_champ_ir_;
   Nom nom_champ_ip_;
@@ -89,7 +91,8 @@ protected :
   REF(Champ_base)  ch_T_;   				// Champ Temperature de conduction de la chaleur   -> couple
   REF(Champ_base)  ch_D_i_naf_;				// champ conductivite Da -> get_champ
   REF(Champ_Inc)   ch_C_;					// Champ_Inc dissolved concentration -> inconnu()
-  REF(Champ_base)  ch_ci_;					// Champ concentration de  diffusion des multi-especes -> couple
+  REF(Champ_base)  ch_ci_cathode_;			// Champ concentration de  diffusion des multi-especes -> couple
+  REF(Champ_base)  ch_ci_anode_;			// Champ concentration de  diffusion des multi-especes -> couple
   REF(Champ_base)  ch_ir_;	// couple
   REF(Champ_base)  ch_ip_;	// couple
   REF(Champ_base)  ch_op_;	// couple

@@ -53,19 +53,20 @@ void Source_Term_pemfc_VEF_P1NC::associer_pb(const Probleme_base& pb)
 {
   Cerr << " Source_Term_pemfc_VEF_P1NC::associer_pb " << finl ;
   assert(pb.que_suis_je() == "Pb_Conduction");
-  int ok = 0;
-  const Equation_base& eqn = pb.equation(0);
-  if  (eqn.que_suis_je() == "Conduction")
-    {
-      associer_zones(eqn.zone_dis(),eqn.zone_Cl_dis());
-      ok = 1;
-    }
-  if (!ok)
-    {
-      Cerr << "Erreur TRUST dans Source_Term_pemfc_VEF_P1NC::associer_pb()" << finl;
-      Cerr << "On ne trouve pas d'equation de conduction dans le probleme" << finl;
-      exit();
-    }
+//  int ok = 0;
+//  const Equation_base& eqn = pb.equation(0);
+//  assert(eqn.que_suis_je() == "Conduction");
+//  if  (eqn.que_suis_je() == "Conduction")
+//    {
+//      associer_zones(eqn.zone_dis(),eqn.zone_Cl_dis());
+//      ok = 1;
+//    }
+//  if (!ok)
+//    {
+//      Cerr << "Erreur TRUST dans Source_Term_pemfc_VEF_P1NC::associer_pb()" << finl;
+//      Cerr << "On ne trouve pas d'equation de conduction dans le probleme" << finl;
+//      exit();
+//    }
 
 }
 
@@ -188,11 +189,10 @@ void Source_Term_pemfc_VEF_P1NC::contribuer_a_avec(const DoubleTab& inco, Matric
 void Source_Term_pemfc_VEF_P1NC::completer()
 {
   Source_Term_pemfc_base::completer();
-
   T_.resize(0, 1);			// scalaire
   C_.resize(0, 1);			// scalaire
   ci_.resize(0, 1);			// scalaire
-  diffu_.resize(0,1);		// scalaire
+  diffu_.resize(0,1);		    // scalaire
   ir_.resize(0,1);			// scalaire
   ip_.resize(0,1);			// scalaire
   op_.resize(0,1);			// scalaire
@@ -204,34 +204,37 @@ void Source_Term_pemfc_VEF_P1NC::completer()
   la_zone_VEF.valeur().creer_tableau_faces(ir_);
   la_zone_VEF.valeur().creer_tableau_faces(ip_);
   la_zone_VEF.valeur().creer_tableau_faces(op_);
+}
+
+void Source_Term_pemfc_VEF_P1NC::mettre_a_jour(double temps)
+{
+
+  Source_Term_pemfc_base::mettre_a_jour(temps);
 
   const DoubleTab& xv=la_zone_VEF.valeur().xv(); // Recuperation des centre de gravite des faces pour P1NC
 
-  if(ch_C_.que_suis_je().find("P1NC") !=-1)
+  if(ch_C_.valeur().que_suis_je().find("P1NC") !=-1)
     {
       C_.ref(ch_C_.valeur().valeurs());
     }
   else
     {
       Champ_P0_VEF& ch_C = ref_cast(Champ_P0_VEF, ch_C_);
-      //const DoubleTab& xv=la_zone_VEF.valeur().xv(); // Recuperation des centre de gravite des faces pour P1NC
       ch_C.valeur_aux(xv, C_);
     }
 
-  if(ch_D_i_naf_.que_suis_je().find("P1NC") !=-1)
+  if(ch_D_i_naf_.valeur().que_suis_je().find("P1NC") !=-1)
     {
       diffu_.ref(ch_D_i_naf_.valeur().valeurs());
     }
   else
     {
       Champ_P0_VEF& ch_D = ref_cast(Champ_P0_VEF, ch_D_i_naf_);
-      //const DoubleTab& xv=la_zone_VEF.valeur().xv(); // Recuperation des centre de gravite des faces pour P1NC
       ch_D.valeur_aux(xv, diffu_);
     }
 
   if(ch_T_.non_nul())
     {
-      //const DoubleTab& xv=la_zone_VEF.valeur().xv(); // Recuperation des centre de gravite des faces pour P1NC
       ch_T_.valeur().valeur_aux(xv, T_);
     }
   else
@@ -239,44 +242,84 @@ void Source_Term_pemfc_VEF_P1NC::completer()
       T_ = T_0_;
     }
 
-  if(ch_ci_.non_nul())
+  if(ch_ci_cathode_.non_nul() && !ch_ci_anode_.non_nul())
     {
-      //const DoubleTab& xv=la_zone_VEF.valeur().xv(); // Recuperation des centre de gravite des faces pour P1NC
-      ch_ci_.valeur().valeur_aux(xv, ci_);
+      // case O2
+      ch_ci_cathode_.valeur().valeur_aux(xv, ci_);
+    }
+  else if(ch_ci_anode_.non_nul() && !ch_ci_cathode_.non_nul())
+    {
+      // case H2
+      ch_ci_anode_.valeur().valeur_aux(xv, ci_);
     }
   else
     {
-      ci_ = 0.;
+      // case N2, H20
+      DoubleTab val_ci_cathode, val_ci_anode;
+      ch_ci_cathode_.valeur().valeur_aux(xv, val_ci_cathode);
+      ch_ci_anode_.valeur().valeur_aux(xv, val_ci_anode);
+
+      IntTab faces_ssz;	// faces belong to the sous_zone -> flag = 1, if not, flag = 0
+      la_zone_VEF.valeur().creer_tableau_faces(faces_ssz);
+
+      faces_ssz = 0;		// init with no flag (all faces are unchecked)
+      for (int poly = 0; poly < CL_a_.valeur().nb_elem_tot(); poly++)
+        {
+          int elem = CL_a_.valeur()(poly);
+          for (int f = 0; f < la_zone_VEF.valeur().zone().nb_faces_elem(0); ++f)
+            {
+              int face = la_zone_VEF.valeur().elem_faces(elem, f);
+              if(!faces_ssz(face))
+                {
+                  ci_(face) = val_ci_anode(face);
+                  // necessaire (source*porosite_surf(num_face));
+                  faces_ssz(face) = 1;		// marquer comme deja traite
+                }
+            }
+        }
+      faces_ssz = 0;		// init with no flag (all faces are unchecked)
+      for (int poly = 0; poly < CL_c_.valeur().nb_elem_tot(); poly++)
+        {
+          int elem = CL_c_.valeur()(poly);
+          for (int f = 0; f < la_zone_VEF.valeur().zone().nb_faces_elem(0); ++f)
+            {
+              int face = la_zone_VEF.valeur().elem_faces(elem, f);
+              if(!faces_ssz(face))
+                {
+                  ci_(face) = val_ci_cathode(face);
+                  // necessaire (source*porosite_surf(num_face));
+                  faces_ssz(face) = 1;		// marquer comme deja traite
+                }
+            }
+        }
     }
 
   if(ch_ir_.non_nul())
     {
-      //const DoubleTab& xv=la_zone_VEF.valeur().xv(); // Recuperation des centre de gravite des faces pour P1NC
       ch_ir_.valeur().valeur_aux(xv, ir_);
     }
-  else
-    {
-      ir_ = 0.;
-    }
+  //  else
+  //    {
+  //      ir_ = 0.;
+  //    }
 
   if(ch_ip_.non_nul())
     {
-      //const DoubleTab& xv=la_zone_VEF.valeur().xv(); // Recuperation des centre de gravite des faces pour P1NC
       ch_ip_.valeur().valeur_aux(xv, ip_);
     }
-  else
-    {
-      ip_ = 0.;
-    }
+  //  else
+  //    {
+  //      ip_ = 0.;
+  //    }
 
   if(ch_op_.non_nul())
     {
       ch_op_.valeur().valeur_aux(xv, op_);
     }
-  else
-    {
-      op_ = 0.;
-    }
+  //  else
+  //    {
+  //      op_ = 0.;
+  //    }
 
 }
 

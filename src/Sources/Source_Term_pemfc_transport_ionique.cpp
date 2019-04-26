@@ -48,42 +48,53 @@ Entree& Source_Term_pemfc_transport_ionique::readOn( Entree& is )
   CL_c_ = dom_.valeur().ss_zone(nom_ssz_CLc_);
   Probleme_base& pb_T = ref_cast(Probleme_base,interprete().objet(nom_pb_T_));
   ch_T_ = pb_T.get_champ(nom_champ_T_);
-  assert(ch_T_.que_suis_je().find("P1NC") !=-1);
+  assert(ch_T_.valeur().que_suis_je().find("P1NC") !=-1);
 
-  Probleme_base& pb_H2 = ref_cast(Probleme_base,interprete().objet(nom_pb_dissolve_H2_));
+  Probleme_base& pb_H2 = ref_cast(Probleme_base,interprete().objet(nom_pb_C_H2_));
   ch_C_H2_ = pb_H2.get_champ(nom_champ_C_H2_);
-  assert(ch_C_H2_.que_suis_je().find("P1NC") !=-1);
+  assert(ch_C_H2_.valeur().que_suis_je().find("P1NC") !=-1);
 
-  Probleme_base& pb_O2 = ref_cast(Probleme_base,interprete().objet(nom_pb_dissolve_O2_));
+  Probleme_base& pb_O2 = ref_cast(Probleme_base,interprete().objet(nom_pb_C_O2_));
   ch_C_O2_ = pb_O2.get_champ(nom_champ_C_O2_);
-  assert(ch_C_O2_.que_suis_je().find("P1NC") !=-1);
+  assert(ch_C_O2_.valeur().que_suis_je().find("P1NC") !=-1);
 
-  Probleme_base& pb_H2O = ref_cast(Probleme_base,interprete().objet(nom_pb_dissolve_H20_));
+  Probleme_base& pb_H2O = ref_cast(Probleme_base,interprete().objet(nom_pb_C_H20_));
   ch_C_H20_ = pb_H2O.get_champ(nom_champ_C_H20_);
-  assert(ch_C_H20_.que_suis_je().find("P1NC") !=-1);
+  assert(ch_C_H20_.valeur().que_suis_je().find("P1NC") !=-1);
 
-  Probleme_base& pb_psi = ref_cast(Probleme_base,interprete().objet(nom_pb_psi_));
-  ch_psi_ = pb_psi.get_champ(nom_champ_psi_);
-  assert(ch_psi_.que_suis_je().find("P1NC") !=-1);
+  assert((nom_pb_psi_ != "??") || (nom_pb_phi_ != "??"));
 
-  ch_phi_ = equation().inconnue();
-  assert(ch_phi_.que_suis_je().find("P1NC") !=-1);
-  phi_.ref(ch_phi_.valeur().valeurs());
+  if(nom_pb_psi_ != "??" && (nom_pb_phi_ == "??"))
+    {
+      // transport ionique
 
-  int dim = 1;		// all fields are scalar
-  T_.resize(0, dim);
-  a_H2_.resize(0, dim);
-  a_O2_.resize(0, dim);
-  a_H2O_.resize(0, dim);
-  a_H_.resize(0, dim);
-  psi_.resize(0, dim);
-  la_zone_VEF.valeur().creer_tableau_faces(T_);
-  la_zone_VEF.valeur().creer_tableau_faces(a_H2_);
-  la_zone_VEF.valeur().creer_tableau_faces(a_O2_);
-  la_zone_VEF.valeur().creer_tableau_faces(a_H2O_);
-  la_zone_VEF.valeur().creer_tableau_faces(a_H_);
-  la_zone_VEF.valeur().creer_tableau_faces(psi_);
-  la_zone_VEF.valeur().creer_tableau_faces(phi_);
+      Probleme_base& pb_psi = ref_cast(Probleme_base,interprete().objet(nom_pb_psi_));
+      ch_psi_ = pb_psi.get_champ(nom_champ_psi_);
+      assert(ch_psi_.valeur().que_suis_je().find("P1NC") !=-1);
+      ch_phi_ = equation().inconnue();
+      assert(ch_phi_.valeur().que_suis_je().find("P1NC") !=-1);
+      phi_.ref(ch_phi_.valeur().valeurs());
+    }
+  else if(nom_pb_phi_ != "??" && (nom_pb_psi_ == "??"))
+    {
+      // transport electrique
+
+      Probleme_base& pb_phi = ref_cast(Probleme_base,interprete().objet(nom_pb_phi_));
+      ch_phi_ = pb_phi.get_champ(nom_champ_phi_);
+      assert(ch_phi_.valeur().que_suis_je().find("P1NC") !=-1);
+      ch_psi_ = equation().inconnue();
+      assert(ch_psi_.valeur().que_suis_je().find("P1NC") !=-1);
+      psi_.ref(ch_psi_.valeur().valeurs());
+    }
+  else
+    {
+      Cerr << "On ne connait pas le probleme actuel & couple" << finl;
+      exit();
+    }
+
+  // discretiser les champs
+  discretiser(equation().discretisation());
+
   return is;
 }
 
@@ -92,15 +103,17 @@ void Source_Term_pemfc_transport_ionique::set_param(Param& param)
   //param.ajouter("nom_domaine", &nom_domaine_, Param::REQUIRED);		// DVQ: pas necessaire car associe a l'equation -> get domain
   param.ajouter("nom_ssz_CLc", &nom_ssz_CLc_, Param::REQUIRED);
   param.ajouter("nom_ssz_CLa", &nom_ssz_CLa_, Param::REQUIRED);
-  param.ajouter("nom_pb_psi", &nom_pb_psi_, Param::REQUIRED);
-  param.ajouter("nom_champ_psi", &nom_champ_psi_, Param::REQUIRED);
+  param.ajouter("nom_pb_psi", &nom_pb_psi_, Param::OPTIONAL);
+  param.ajouter("nom_champ_psi", &nom_champ_psi_, Param::OPTIONAL);
+  param.ajouter("nom_pb_phi", &nom_pb_phi_, Param::OPTIONAL);
+  param.ajouter("nom_champ_phi", &nom_champ_phi_, Param::OPTIONAL);
   param.ajouter("nom_pb_T", &nom_pb_T_, Param::REQUIRED);
   param.ajouter("nom_champ_T", &nom_champ_T_, Param::REQUIRED);
-  param.ajouter("nom_pb_dissolve_H2", &nom_pb_dissolve_H2_, Param::REQUIRED);
+  param.ajouter("nom_pb_C_H2", &nom_pb_C_H2_, Param::REQUIRED);
   param.ajouter("nom_champ_C_H2", &nom_champ_C_H2_, Param::REQUIRED);
-  param.ajouter("nom_pb_dissolve_O2", &nom_pb_dissolve_O2_, Param::REQUIRED);
+  param.ajouter("nom_pb_C_O2", &nom_pb_C_O2_, Param::REQUIRED);
   param.ajouter("nom_champ_C_O2", &nom_champ_C_O2_, Param::REQUIRED);
-  param.ajouter("nom_pb_dissolve_H2O", &nom_pb_dissolve_H20_, Param::REQUIRED);
+  param.ajouter("nom_pb_C_H2O", &nom_pb_C_H20_, Param::REQUIRED);
   param.ajouter("nom_champ_C_H2O", &nom_champ_C_H20_, Param::REQUIRED);
 }
 
@@ -109,19 +122,20 @@ void Source_Term_pemfc_transport_ionique::associer_pb(const Probleme_base& pb)
   // recuperer le milieu_base -> nothing to do
   Cerr << " Source_Term_pemfc_transport_ionique::associer_pb " << finl ;
   assert(pb.que_suis_je() == "Pb_Conduction");
-  int ok = 0;
-  const Equation_base& eqn = pb.equation(0);
-  if  (eqn.que_suis_je() == "Conduction")
-    {
-      associer_zones(eqn.zone_dis(),eqn.zone_Cl_dis());
-      ok = 1;
-    }
-  if (!ok)
-    {
-      Cerr << "Erreur TRUST dans Source_Term_pemfc_transport_ionique::associer_pb()" << finl;
-      Cerr << "On ne trouve pas d'equation de conduction dans le probleme" << finl;
-      exit();
-    }
+//  int ok = 0;
+//  const Equation_base& eqn = pb.equation(0);
+//  assert(eqn.que_suis_je() == "Conduction");
+//  if  (eqn.que_suis_je() == "Conduction")
+//    {
+//      associer_zones(eqn.zone_dis(),eqn.zone_Cl_dis());
+//      ok = 1;
+//    }
+//  if (!ok)
+//    {
+//      Cerr << "Erreur TRUST dans Source_Term_pemfc_transport_ionique::associer_pb()" << finl;
+//      Cerr << "On ne trouve pas d'equation de conduction dans le probleme" << finl;
+//      exit();
+//    }
 
 }
 
@@ -129,6 +143,36 @@ void Source_Term_pemfc_transport_ionique::completer()
 {
   // get all references to the coupling fields
   Source_base::completer();
+
+//  int dim = 1;		// all fields are scalar
+//  T_.resize(0, dim);
+//  a_H2_.resize(0, dim);
+//  a_O2_.resize(0, dim);
+//  a_H2O_.resize(0, dim);
+//  a_H_.resize(0, dim);
+  if(nom_pb_psi_ != "??") 		// transport ionique couple avec psi
+    {
+//      psi_.resize(0, dim);
+      la_zone_VEF.valeur().creer_tableau_faces(psi_);
+      phi_.ref(ch_phi_.valeur().valeurs());			// phi
+    }
+  if(nom_pb_phi_ != "??") 		// transport electrique couplage avec phi
+    {
+//      phi_.resize(0, dim);
+      la_zone_VEF.valeur().creer_tableau_faces(phi_);
+      psi_.ref(ch_psi_.valeur().valeurs());			// psi
+    }
+
+  la_zone_VEF.valeur().creer_tableau_faces(T_);
+  la_zone_VEF.valeur().creer_tableau_faces(a_H2_);
+  la_zone_VEF.valeur().creer_tableau_faces(a_O2_);
+  la_zone_VEF.valeur().creer_tableau_faces(a_H2O_);
+  la_zone_VEF.valeur().creer_tableau_faces(a_H_);
+  T_ = T_ref;
+  a_H2_ = a_lim;
+  a_O2_ = a_lim;
+  a_H2O_ = a_lim;
+  a_H_ = a_lim;
 }
 
 void Source_Term_pemfc_transport_ionique::associer_zones(
@@ -149,8 +193,8 @@ void Source_Term_pemfc_transport_ionique::discretiser(const Discretisation_base&
   champs_compris_.ajoute_champ(ch_io_);
   dis.discretiser_champ("temperature",equation().zone_dis().valeur(),"ir","unit", 1 , 0. , ch_ir_);
   champs_compris_.ajoute_champ(ch_ir_);
-  //dis.discretiser_champ("temperature",equation().zone_dis().valeur(),"ip","unit", 1 , 0. , ch_jp_);
-  //champs_compris_.ajoute_champ(ch_ip_);
+  dis.discretiser_champ("temperature",equation().zone_dis().valeur(),"ip","unit", 1 , 0. , ch_ip_);
+  champs_compris_.ajoute_champ(ch_ip_);
 
 }
 
@@ -171,8 +215,17 @@ void Source_Term_pemfc_transport_ionique::mettre_a_jour(double temps)
   ch_C_H2_.valeur().valeur_aux( xv, a_H2_ );		// C_H2
   ch_C_O2_.valeur().valeur_aux( xv, a_O2_ );		// C_O2
   ch_C_H20_.valeur().valeur_aux( xv, a_H2O_ );	// C_H2O
-  ch_psi_.valeur().valeur_aux( xv, psi_ );		// psi
-  phi_.ref(ch_phi_.valeur().valeurs());			// phi
+
+  if(nom_pb_psi_ != "??") 		// transport ionique couple avec psi
+    {
+      ch_psi_.valeur().valeur_aux( xv, psi_ );		// psi interpole
+      phi_.ref(ch_phi_.valeur().valeurs());			// phi
+    }
+  if(nom_pb_phi_ != "??") 		// transport electrique couplage avec phi
+    {
+      ch_phi_.valeur().valeur_aux( xv, phi_ );		// phi interpole
+      psi_.ref(ch_psi_.valeur().valeurs());			// phi
+    }
 
   // convertir le champ C -> le champ activite
   int nb_faces = la_zone_VEF.valeur().nb_faces();
@@ -182,8 +235,9 @@ void Source_Term_pemfc_transport_ionique::mettre_a_jour(double temps)
       a_H2_(face) /= f_Henry_H2(Tf)*P_ref;
       a_O2_(face) /= f_Henry_O2(Tf)*P_ref;
       double ld = a_H2O_(face) / C_SO3;
-      a_H2O_(face) *= R * Tf / f_Psat(Tf);				// TO-DO:VERIFY f_lambda_inv(ld) = C_H20*R*T/P_sat
-      a_H_(face) = f_lambda(1.) / (ld);
+      a_H2O_(face) = f_lambda_inv(ld);				// need testing
+      //a_H_(face) = f_lambda(1.) / (ld);				// ATTENTION divise by zero
+      a_H_(face) = 1.;
     }
 
   // mettre a jour des champs compris
@@ -191,7 +245,7 @@ void Source_Term_pemfc_transport_ionique::mettre_a_jour(double temps)
   DoubleTab& val_erev_ = ch_erev_.valeurs();
   DoubleTab& val_i0 = ch_io_.valeurs();
   DoubleTab& val_ir = ch_ir_.valeurs();
-  //DoubleTab& val_jp = ch_jp_.valeurs();
+  DoubleTab& val_ip = ch_ip_.valeurs();
 
   IntTab faces_ssz;	// faces belong to the sous_zone -> flag = 1, if not, flag = 0
   la_zone_VEF.valeur().creer_tableau_faces(faces_ssz);
@@ -213,6 +267,7 @@ void Source_Term_pemfc_transport_ionique::mettre_a_jour(double temps)
               val_eta(face) 	= eta;
               val_i0(face)		= i0;
               val_ir(face) 		= ir;
+              val_ip(face)		= 0.;									// TO-DO: need update
               // necessaire (source*porosite_surf(num_face));
               faces_ssz(face) = 1;		// marquer comme deja traite
             }
@@ -235,6 +290,7 @@ void Source_Term_pemfc_transport_ionique::mettre_a_jour(double temps)
               val_eta(face) 	= eta;
               val_i0(face)		= i0;
               val_ir(face) 		= ir;
+              val_ip(face)		= 0.;							// TO-DO: need update
               // necessaire (source*porosite_surf(num_face));
               faces_ssz(face) = 1;		// marquer comme deja traite
             }
@@ -328,7 +384,7 @@ double Source_Term_pemfc_transport_ionique::eval_ir_cathode(double io, double et
   return res;
 }
 
-// source = ie = ir
+// source = ie = ir si ionique, source = -ir si electrique
 DoubleTab& Source_Term_pemfc_transport_ionique::ajouter(DoubleTab& resu) const
 {
   assert(resu.dimension(0)==volumes_.size());
@@ -339,12 +395,14 @@ DoubleTab& Source_Term_pemfc_transport_ionique::ajouter(DoubleTab& resu) const
   assert(resu.dimension(0)==psi_.size());
   assert(resu.dimension(0)==phi_.size());
 
+  int signe = (nom_champ_psi_ != "??")?1:-1;
+
   int nb_faces = la_zone_VEF.valeur().zone().nb_faces_elem(0);
   for (int face = 0; face < nb_faces; ++face)
     {
       // champ ir est mis a jour dans mettre_a_jour(double) avant ajouter()
       // source = ir dans CL_a | (ir + ip) dans CL_c | 0 dans MB
-      resu(face) += ch_ir_.valeurs()(face);
+      resu(face) += signe * ch_ir_.valeurs()(face);
     }
   return resu;
 }

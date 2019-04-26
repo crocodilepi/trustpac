@@ -43,6 +43,7 @@ public :
   DoubleTab& ajouter(DoubleTab& ) const;
   void contribuer_a_avec(const DoubleTab&, Matrice_Morse&) const;
   void completer();
+  void mettre_a_jour(double temps);
 protected :
   void associer_zones(const Zone_dis& ,const Zone_Cl_dis& );
   void associer_pb(const Probleme_base& );

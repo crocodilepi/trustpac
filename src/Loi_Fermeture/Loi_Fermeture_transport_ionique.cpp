@@ -27,6 +27,7 @@
 #include <Operateur.h>
 #include <Operateur_base.h>
 #include <Zone_VF.h>
+#include <Domaine.h>
 
 Implemente_instanciable( Loi_Fermeture_transport_ionique, "Loi_Fermeture_transport_ionique", Loi_Fermeture_base ) ;
 
@@ -39,6 +40,11 @@ Sortie& Loi_Fermeture_transport_ionique::printOn( Sortie& os ) const
 Entree& Loi_Fermeture_transport_ionique::readOn( Entree& is )
 {
   Loi_Fermeture_base::readOn( is );
+
+  const Domaine& dom = equation().probleme().domaine();
+  dom.creer_tableau_elements(T_);
+  dom.creer_tableau_elements(C_);
+
   return is;
 }
 
@@ -67,7 +73,7 @@ void Loi_Fermeture_transport_ionique::discretiser( const Discretisation_base& di
   I_i_ -> fixer_nature_du_champ(vectoriel);
   champs_compris_.ajoute_champ(I_i_);
 
-  dis.discretiser_champ("temperature",equation().zone_dis().valeur(),"D_i_","unit", dimension ,0. , D_i_);
+  dis.discretiser_champ("temperature",equation().zone_dis().valeur(),"D_i","unit", dimension ,0. , D_i_);
   champs_compris_.ajoute_champ(D_i_);
 }
 
@@ -77,10 +83,10 @@ inline void Loi_Fermeture_transport_ionique::completer()
   // get the reference to the coupling fields
   Probleme_base& pb_T = ref_cast(Probleme_base,interprete().objet(nom_pb_T_));
   ch_T_ = pb_T.get_champ(nom_champ_T_);
-  assert(ch_T_.que_suis_je().find("P1NC") != -1);
+  assert(ch_T_.valeur().que_suis_je().find("P1NC") != -1);
   Probleme_base& pb_phi = ref_cast(Probleme_base,interprete().objet(nom_pb_C_));
   ch_C_ = pb_phi.get_champ(nom_champ_C_);
-  assert(ch_C_.que_suis_je().find("P1NC") != -1);
+  assert(ch_C_.valeur().que_suis_je().find("P1NC") != -1);
   ch_phi_ = equation().inconnue();
   op_diff_phi_ = equation().operateur(0).l_op_base();				// verifier ?
 }
@@ -88,7 +94,7 @@ inline void Loi_Fermeture_transport_ionique::completer()
 inline void Loi_Fermeture_transport_ionique::mettre_a_jour(double temps)
 {
   // mettre a jour les champs couples -> interpoler vers P0
-  const Zone_VF& la_zone = ref_cast(Zone_VF, equation().zone_dis());
+  const Zone_VF& la_zone = ref_cast(Zone_VF, equation().zone_dis().valeur());
   const DoubleTab& xp=la_zone.xp(); // Recuperation des centre de gravite des elements pour P0
 
   ch_T_.valeur().mettre_a_jour(temps);
@@ -107,7 +113,7 @@ inline void Loi_Fermeture_transport_ionique::mettre_a_jour(double temps)
 
   // mettre a jour le champ D_i_ P1NC
   DoubleTab& D_i = D_i_.valeurs();
-  if(ch_phi_.que_suis_je().find("P1NC") !=-1)
+  if(ch_phi_.valeur().que_suis_je().find("P1NC") !=-1)
     {
       op_diff_phi_.valeur().calculer(ch_phi_.valeur().valeurs(), D_i);
     }

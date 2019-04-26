@@ -64,6 +64,7 @@ protected :
   double eval_ir_anode(double io, double eta, double T);
   double eval_ir_cathode(double io, double eta, double T);
   double f_lambda(double a);
+  double f_lambda_inv(double ld);
 
   void remplir_volumes();
 
@@ -74,15 +75,17 @@ protected :
   Nom nom_domaine_;			// pas necessaire car le terme source est associe a l'equation
   Nom nom_ssz_CLc_;			// le sous zone situant le terme source
   Nom nom_ssz_CLa_;			// le sous zone situant le terme source
-  Nom nom_pb_psi_;			// transport electrique
-  Nom nom_champ_psi_;			// champ potentiel electrique
-  Nom nom_pb_T_;				// conduction de la chaleur
+  Nom nom_pb_phi_;			// transport ionique (if we consider the electronic transport)
+  Nom nom_champ_phi_;		// champ potentiel ionique
+  Nom nom_pb_psi_;			// transport electrique (if we consider the ionic transport)
+  Nom nom_champ_psi_;		// champ potentiel electrique
+  Nom nom_pb_T_;			// conduction de la chaleur
   Nom nom_champ_T_;			// champ temperature
-  Nom nom_pb_dissolve_H2_;	// dissolve H2
+  Nom nom_pb_C_H2_;	// dissolve H2
   Nom nom_champ_C_H2_;		// champ C_H2 -> activite H2 a_H2 = C_H2 / (Henry_H2 * Pref)
-  Nom nom_pb_dissolve_O2_;	// dissolve 02
+  Nom nom_pb_C_O2_;	// dissolve 02
   Nom nom_champ_C_O2_;		// champ C_O2 -> activite 02 a_02 = C_02 / (Henry_O2 * Pref)
-  Nom nom_pb_dissolve_H20_;	// dissolve H2O
+  Nom nom_pb_C_H20_;	// dissolve H2O
   Nom nom_champ_C_H20_;		// champ C_H20 -> activite H2O a_H2O = lambda / lambda_eq = C_H2O*R*T / P_sat
 
   REF(Domaine) dom_;		// domaine de transport ionique (CL_c + MB + CL_a)
@@ -92,8 +95,8 @@ protected :
   REF(Champ_base) ch_C_H2_;	// champ concentration absorbe H2 dans Nafion (importe depuis pb_dissolve_H2)
   REF(Champ_base) ch_C_O2_;	// champ concentration absorbe 02 dans Nafion (importe depuis pb_dissolve_02)
   REF(Champ_base) ch_C_H20_;	// champ concentration absorbe H20 dans Nafion (importe depuis pb_dissolve_H20)
-  REF(Champ_base) ch_phi_;	// champ de potentiel ionique (champ inconnu)
-  REF(Champ_base) ch_psi_;	// champ de potentiel electrique (importe depuis pb_transport_electrique)
+  REF(Champ_base) ch_phi_;	// champ de potentiel ionique
+  REF(Champ_base) ch_psi_;	// champ de potentiel electrique
 
   DoubleTab T_;			// P0 pour VDF, P1NC pour VEF
   DoubleTab a_H2_;		// P0 pour VDF, P1NC pour VEF
@@ -107,7 +110,7 @@ protected :
   Champ_Fonc ch_eta_;		// P0 pour VDF, P1NC pour VEF eta
   Champ_Fonc ch_io_;		// P0 pour VDF, P1NC pour VEF exchange current density
   Champ_Fonc ch_ir_;		// P0 pour VDF, P1NC pour VEF champ electrochemique courant ir = io.gamma_CL.[exp()-exp()]
-  //Champ_Fonc ch_jp_;  	// P0 pour VDF, P1NC pour VEF champ electrochemique courant ip = N_H2.2.F/e_CL
+  Champ_Fonc ch_ip_;  	    // P0 pour VDF, P1NC pour VEF champ electrochemique courant ip = N_H2.2.F/e_CL
 
   // Constante de Henry H2 pour le Nafion
   double f_Henry_H2(double T);
@@ -183,6 +186,36 @@ inline double Source_Term_pemfc_transport_ionique::f_Henry_N2(double T)
 inline double Source_Term_pemfc_transport_ionique::f_lambda(double a)
 {
   return 0.043 + 17.81*a - 39.85*a*a + 36*a*a*a;
+}
+
+inline double Source_Term_pemfc_transport_ionique::f_lambda_inv(double ld)
+{
+  // using a newton raphson iteration
+  int it,max_iter = 1000;
+  double eps = 1.e-6;
+  double a = -0.043/17.81;
+
+  double num = f_lambda(a) - ld;
+  double den = 17.81 - 2*39.85*a + 3*36*a*a;
+  double da = num/den;
+  a -= da;
+  it=0;
+  while (da/a>eps && it<max_iter)
+    {
+      num=f_lambda(a) - ld;
+      den=17.81 - 2*39.85*a + 3*36*a*a;
+      da = num/den;
+      a -= da;
+      it++;
+    }
+
+  if (da/a>eps)
+    {
+      Cerr<<"Source_Term_pemfc_transport_ionique::f_lambda_inv resolution Newton fail "<<finl;
+      Cerr<<"ld="<< ld <<" da="<<da<<" a="<<a<<finl;
+      exit();
+    }
+  return a;
 }
 
 inline double Source_Term_pemfc_transport_ionique::f_Psat(double T)

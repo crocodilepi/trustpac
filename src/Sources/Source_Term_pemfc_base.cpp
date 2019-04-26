@@ -45,18 +45,20 @@ Entree& Source_Term_pemfc_base::readOn( Entree& is )
   Param param(que_suis_je());
   param.ajouter("nom_espece",&nom_espece_,Param::REQUIRED);
   param.ajouter("nom_domaine",&nom_domaine_,Param::REQUIRED);		// pas necessaire ? dom_ = equation().problem().domaine() ?
-  param.ajouter("nom_CLa",&CL_a_,Param::OPTIONAL);
-  param.ajouter("nom_CLc",&CL_c_,Param::OPTIONAL);
+  param.ajouter("nom_CLa",&nom_ssz_CLa_,Param::OPTIONAL);					// requis pour H2, N2, H20
+  param.ajouter("nom_CLc",&nom_ssz_CLc_,Param::OPTIONAL);					// requis pour O2, N2, H20
   param.ajouter("por_naf", &por_naf_, Param::REQUIRED);
   param.ajouter("eps_naf", &eps_naf_, Param::REQUIRED);
   param.ajouter("gamma_CL", &gamma_CL_, Param::REQUIRED);
   param.ajouter("C_SO3", &C_SO3_, Param::REQUIRED);
-  param.ajouter("nom_champ_D", &nom_champ_D_, Param::OPTIONAL);			// diffusion_nafion
-  param.ajouter("nom_pb_T", &nom_pb_T_, Param::OPTIONAL);
-  param.ajouter("nom_champ_T", &nom_champ_T_, Param::OPTIONAL);
-  param.ajouter("nom_pb_ci", &nom_pb_ci_, Param::OPTIONAL);
-  param.ajouter("nom_champ_ci", &nom_champ_ci_, Param::OPTIONAL);
-  param.ajouter("nom_pb_phi", &nom_pb_ci_, Param::OPTIONAL);
+  param.ajouter("nom_champ_D", &nom_champ_D_, Param::REQUIRED);			// diffusion_nafion requis si couplage
+  param.ajouter("nom_pb_T", &nom_pb_T_, Param::REQUIRED);
+  param.ajouter("nom_champ_T", &nom_champ_T_, Param::REQUIRED);
+  param.ajouter("nom_pb_ci_cathode", &nom_pb_ci_cathode_, Param::OPTIONAL);
+  param.ajouter("nom_champ_ci_cathode", &nom_champ_ci_cathode_, Param::OPTIONAL);
+  param.ajouter("nom_pb_ci_anode", &nom_pb_ci_anode_, Param::OPTIONAL);
+  param.ajouter("nom_champ_ci_anode", &nom_champ_ci_anode_, Param::OPTIONAL);
+  param.ajouter("nom_pb_phi", &nom_pb_phi_, Param::OPTIONAL);
   param.ajouter("nom_champ_ir", &nom_champ_ir_, Param::OPTIONAL);
   param.ajouter("nom_champ_ip", &nom_champ_ip_, Param::OPTIONAL);
   param.ajouter("nom_op_diff", &nom_op_diff_, Param::OPTIONAL);
@@ -86,23 +88,36 @@ Entree& Source_Term_pemfc_base::readOn( Entree& is )
     {
       // check
       assert(nom_ssz_CLa_ != "??");
+      assert(nom_pb_ci_anode_ != "??");
+      assert(nom_champ_ci_anode_ != "??");
     }
   else if (nom_espece_ == "O2")
     {
       assert(nom_ssz_CLc_ != "??");
+      assert(nom_pb_ci_cathode_ != "??");
+      assert(nom_champ_ci_cathode_ != "??");
     }
   else
     {
       assert(nom_ssz_CLa_ != "??");
       assert(nom_ssz_CLc_ != "??");
+      assert(nom_pb_ci_cathode_ != "??");
+      assert(nom_champ_ci_cathode_ != "??");
+      assert(nom_pb_ci_anode_ != "??");
+      assert(nom_champ_ci_anode_ != "??");
       if (nom_espece_ == "H2O" || nom_espece_ == "vap")
-        assert(nom_op_diff_ != "??");
+        {
+          assert(nom_pb_phi_ != "??");
+          assert(nom_champ_ir_ != "??");
+          assert(nom_champ_ip_ != "??");
+          assert(nom_op_diff_ != "??");
+        }
     }
 
   if(nom_ssz_CLa_ != "??")
     CL_a_ = dom_.valeur().ss_zone(nom_ssz_CLa_);
   if(nom_ssz_CLc_ != "??")
-    CL_c_ = dom_.valeur().ss_zone(nom_ssz_CLa_);
+    CL_c_ = dom_.valeur().ss_zone(nom_ssz_CLc_);
 
   return is;
 }
@@ -157,8 +172,10 @@ void Source_Term_pemfc_base::mettre_a_jour(double temps)
   // update the involving fields -> to-do: nothing
   if(ch_T_.non_nul())
     ch_T_.valeur().mettre_a_jour(temps);
-  if(ch_ci_.non_nul())
-    ch_ci_.valeur().mettre_a_jour(temps);
+  if(ch_ci_cathode_.non_nul())
+    ch_ci_cathode_.valeur().mettre_a_jour(temps);
+  if(ch_ci_anode_.non_nul())
+    ch_ci_anode_.valeur().mettre_a_jour(temps);
   if(ch_ir_.non_nul())
     ch_ir_.valeur().mettre_a_jour(temps);
   if(ch_ip_.non_nul())
@@ -176,10 +193,15 @@ void Source_Term_pemfc_base::completer()
       Probleme_base& pb_T = ref_cast(Probleme_base,interprete().objet(nom_pb_T_));
       ch_T_ = pb_T.get_champ(nom_champ_T_);
     }
-  if(nom_pb_ci_ != "??")
+  if(nom_pb_ci_cathode_ != "??")
     {
-      Probleme_base& pb_ci = ref_cast(Probleme_base,interprete().objet(nom_pb_ci_));
-      ch_ci_ = pb_ci.get_champ(nom_champ_ci_);
+      Probleme_base& pb_ci_cathode = ref_cast(Probleme_base,interprete().objet(nom_pb_ci_cathode_));
+      ch_ci_cathode_ = pb_ci_cathode.get_champ(nom_champ_ci_cathode_);
+    }
+  if(nom_pb_ci_anode_ != "??")
+    {
+      Probleme_base& pb_ci_anode = ref_cast(Probleme_base,interprete().objet(nom_pb_ci_anode_));
+      ch_ci_anode_ = pb_ci_anode.get_champ(nom_champ_ci_anode_);
     }
   if(nom_pb_phi_ != "??" )
     {

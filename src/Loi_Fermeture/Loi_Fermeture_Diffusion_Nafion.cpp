@@ -59,8 +59,8 @@ Entree& Loi_Fermeture_Diffusion_Nafion::readOn( Entree& is )
 //  eps_naf_ = 0.2;			// ionomer proportionnel de Nafion
 //  tor_naf_ = 1.;
 
-  T_.resize(0, 1);			// scalaire
-  C_.resize(0, 1);			// scalaire
+//  T_.resize(0, 1);			// scalaire
+//  C_.resize(0, 1);			// scalaire
   I_.resize(0, dimension);	// vectoriel
   equation().zone_dis().zone().creer_tableau_elements(T_);
   T_ = T_0_;
@@ -118,7 +118,7 @@ void Loi_Fermeture_Diffusion_Nafion::preparer_calcul()
 void Loi_Fermeture_Diffusion_Nafion::mettre_a_jour(double temps)
 {
   // mettre a jour les champs couples -> interpoler vers P0
-  const Zone_VF& la_zone = ref_cast(Zone_VF, equation().zone_dis());
+  const Zone_VF& la_zone = ref_cast(Zone_VF, equation().zone_dis().valeur());
   const DoubleTab& xp=la_zone.xp(); // Recuperation des centre de gravite des elements pour P0
   if(ch_T_.non_nul())
     {
@@ -131,7 +131,7 @@ void Loi_Fermeture_Diffusion_Nafion::mettre_a_jour(double temps)
       ch_I_.valeur().valeur_aux(xp, I_);
     }
   // interpolation champ_inc P1NC -> P0 if necessaire
-  if(ch_C_.que_suis_je().find("P1NC") !=-1)
+  if(ch_C_.valeur().que_suis_je().find("P1NC") !=-1)
     {
       Champ_P1NC& C_faces = ref_cast(Champ_P1NC, ch_C_.valeur());
       C_faces.valeur_aux(xp, C_);
