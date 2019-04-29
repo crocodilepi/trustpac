@@ -44,7 +44,7 @@ Entree& Source_Term_pemfc_transport_ionique::readOn( Entree& is )
   param.lire_avec_accolades(is);
 
   dom_ = equation().probleme().domaine();
-  CL_a_ = dom_.valeur().ss_zone(nom_ssz_CLc_);
+  CL_a_ = dom_.valeur().ss_zone(nom_ssz_CLa_);
   CL_c_ = dom_.valeur().ss_zone(nom_ssz_CLc_);
   Probleme_base& pb_T = ref_cast(Probleme_base,interprete().objet(nom_pb_T_));
   ch_T_ = pb_T.get_champ(nom_champ_T_);
@@ -214,7 +214,7 @@ void Source_Term_pemfc_transport_ionique::mettre_a_jour(double temps)
   ch_T_.valeur().valeur_aux( xv, T_ );
   ch_C_H2_.valeur().valeur_aux( xv, a_H2_ );		// C_H2
   ch_C_O2_.valeur().valeur_aux( xv, a_O2_ );		// C_O2
-  ch_C_H20_.valeur().valeur_aux( xv, a_H2O_ );	// C_H2O
+  ch_C_H20_.valeur().valeur_aux( xv, a_H2O_ );		// C_H2O
 
   if(nom_pb_psi_ != "??") 		// transport ionique couple avec psi
     {
@@ -224,7 +224,7 @@ void Source_Term_pemfc_transport_ionique::mettre_a_jour(double temps)
   if(nom_pb_phi_ != "??") 		// transport electrique couplage avec phi
     {
       ch_phi_.valeur().valeur_aux( xv, phi_ );		// phi interpole
-      psi_.ref(ch_psi_.valeur().valeurs());			// phi
+      psi_.ref(ch_psi_.valeur().valeurs());			// psi
     }
 
   // convertir le champ C -> le champ activite
@@ -232,12 +232,12 @@ void Source_Term_pemfc_transport_ionique::mettre_a_jour(double temps)
   for (int face = 0; face < nb_faces; ++face)
     {
       double Tf = T_(face);
-      a_H2_(face) /= f_Henry_H2(Tf)*P_ref;
-      a_O2_(face) /= f_Henry_O2(Tf)*P_ref;
-      double ld = a_H2O_(face) / C_SO3;
-      a_H2O_(face) = f_lambda_inv(ld);				// need testing
-      //a_H_(face) = f_lambda(1.) / (ld);				// ATTENTION divise by zero
-      a_H_(face) = 1.;
+      a_H2_(face) /= f_Henry_H2(Tf)*P_ref;			// a_H2 = C_H2 / (H_H2 * P_ref)
+      a_O2_(face) /= f_Henry_O2(Tf)*P_ref;			// a_O2 = C_O2 / (H_O2 * P_ref)
+      double ld = a_H2O_(face) / C_SO3;				// ld = C_H20 / C_SO3
+      a_H2O_(face) = f_lambda_inv(ld);				// a_H20 = f_lambda_inv(ld) -> need testing -> dvq: tested OK
+      //a_H_(face) = f_lambda(1.) / (ld);			// ATTENTION divise by zero
+      a_H_(face) = 1.;								// approximation -> need testing
     }
 
   // mettre a jour des champs compris
@@ -304,7 +304,9 @@ double Source_Term_pemfc_transport_ionique::eval_erev_anode(double T, double a_H
   double nF = 2. * 96500.;
   double RTsurnF = 8.314 * T / nF;
   double a_H2_lim = max(a_H2, a_lim);
-  double RTsurnFlog = RTsurnF * log(pow(a_H2_lim, nu_H2)*pow(a_H,nu_H_a));
+  double aij = pow(a_H2_lim, nu_H2)*pow(a_H,nu_H_a);
+  double loga = log(aij);
+  double RTsurnFlog = RTsurnF * loga;
   //double dHox0_a = 25e3; 			// TO-DO: dHox0_a   = 25e3; dHox0_c   = 167.9e3;
   //double dSox0_a = -172; 			// TO-DO: dSox0_a   = -172; dSox0_c   = -205.6;
   double dG_0 = dHox0_a - T * dSox0_a;
@@ -312,12 +314,15 @@ double Source_Term_pemfc_transport_ionique::eval_erev_anode(double T, double a_H
 }
 
 // -dG/(n*F)-R*T*log(a_X2_lim^nu_O2*a_H^nu_H_c*a_H2O^nu_H2O)/(n*F)
-double Source_Term_pemfc_transport_ionique::eval_erev_cathode(double T, double a_O2, double a_H20, double a_H)
+double Source_Term_pemfc_transport_ionique::eval_erev_cathode(double T, double a_O2, double a_H2O, double a_H)
 {
   double nF = 2. * 96500.;
   double RTsurnF = 8.314 * T / nF;
   double a_O2_lim = max(a_O2, a_lim);
-  double RTsurnFlog = RTsurnF * log(pow(a_O2_lim, nu_O2)*pow(a_H,nu_H_c)*pow(a_H20,nu_H2O));
+  double a_H2O_lim = max(a_H2O, 1.e-12);			// dvq: epsilon = 1e-12
+  double aij = pow(a_O2_lim, nu_O2)*pow(a_H,nu_H_c)*pow(a_H2O_lim,nu_H2O);
+  double loga = log(aij);
+  double RTsurnFlog = RTsurnF * loga;
   //double dHox0_c = 167.9e3; 			// TO-DO: dHox0_a   = 25e3; dHox0_c   = 167.9e3;
   //double dSox0_c = -205.6; 			// TO-DO: dSox0_a   = -172; dSox0_c   = -205.6;
   double dG_0 = dHox0_c - T * dSox0_c;
@@ -355,9 +360,10 @@ double Source_Term_pemfc_transport_ionique::eval_i0_cathode(double T, double a_O
   double kox0 = k0*T*exp(-dGox0_c/RT);
   double kred0 = k0*T*exp(-dGred0/RT);
   double i00 = n_c*F*pow(kox0, (1-alpha_a))*pow(kred0,alpha_a);
-  double a_O2_lim = max(a_O2, a_lim);
+  double a_O2_lim = max(a_O2, a_lim);							// CONTRAINTE ?
+  double a_H20_lim = max(a_H2O, 0.);							// CONTRAINTE ?
   // i00*max(a_X2/a_X2_lim,0)*a_X2_lim^(-alpha_c*nu_O2)*a_H^(-alpha_c*nu_H_c)*a_H2O^((1-alpha_c)*nu_H2O)
-  return i00*max(a_O2/a_O2_lim,0.)*pow(a_O2_lim, (1-alpha_c)*nu_O2)*pow(a_H, -alpha_c*nu_H_c)*pow(a_H2O, (1-alpha_c)*nu_H2O);
+  return i00*max(a_O2/a_O2_lim,0.)*pow(a_O2_lim, (1-alpha_c)*nu_O2)*pow(a_H, -alpha_c*nu_H_c)*pow(a_H20_lim, (1-alpha_c)*nu_H2O);
 }
 
 double Source_Term_pemfc_transport_ionique::eval_ir_anode(double io, double eta, double T)

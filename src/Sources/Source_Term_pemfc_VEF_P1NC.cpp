@@ -189,13 +189,13 @@ void Source_Term_pemfc_VEF_P1NC::contribuer_a_avec(const DoubleTab& inco, Matric
 void Source_Term_pemfc_VEF_P1NC::completer()
 {
   Source_Term_pemfc_base::completer();
-  T_.resize(0, 1);			// scalaire
-  C_.resize(0, 1);			// scalaire
-  ci_.resize(0, 1);			// scalaire
-  diffu_.resize(0,1);		    // scalaire
-  ir_.resize(0,1);			// scalaire
-  ip_.resize(0,1);			// scalaire
-  op_.resize(0,1);			// scalaire
+  //T_.resize(0, 1);			// scalaire
+  //C_.resize(0, 1);			// scalaire
+  //ci_.resize(0, 1);			// scalaire
+  //diffu_.resize(0,1);		    // scalaire
+  //ir_.resize(0,1);			// scalaire
+  //ip_.resize(0,1);			// scalaire
+  //op_.resize(0,1);			// scalaire
 
   la_zone_VEF.valeur().creer_tableau_faces(C_);
   la_zone_VEF.valeur().creer_tableau_faces(diffu_);
@@ -213,24 +213,30 @@ void Source_Term_pemfc_VEF_P1NC::mettre_a_jour(double temps)
 
   const DoubleTab& xv=la_zone_VEF.valeur().xv(); // Recuperation des centre de gravite des faces pour P1NC
 
-  if(ch_C_.valeur().que_suis_je().find("P1NC") !=-1)
+  if(ch_C_.valeur().valeur().que_suis_je().find("P1NC") !=-1)
+//  if(sub_type(Champ_P1NC, ch_C_.valeur().valeur()))
     {
       C_.ref(ch_C_.valeur().valeurs());
     }
   else
     {
-      Champ_P0_VEF& ch_C = ref_cast(Champ_P0_VEF, ch_C_);
-      ch_C.valeur_aux(xv, C_);
+      ch_C_.valeur().valeur().valeur_aux(xv, C_);
+//      assert(sub_type(Champ_P0_VEF, ch_C_.valeur().valeur()));
+//      Champ_P0_VEF& ch_C = ref_cast(Champ_P0_VEF, ch_C_.valeur().valeur());
+//      ch_C.valeur_aux(xv, C_);
     }
 
+//  if(sub_type(Champ_P1NC, ch_D_i_naf_.valeur()))
   if(ch_D_i_naf_.valeur().que_suis_je().find("P1NC") !=-1)
     {
       diffu_.ref(ch_D_i_naf_.valeur().valeurs());
     }
   else
     {
-      Champ_P0_VEF& ch_D = ref_cast(Champ_P0_VEF, ch_D_i_naf_);
-      ch_D.valeur_aux(xv, diffu_);
+      ch_D_i_naf_.valeur().valeur_aux(xv, diffu_);
+//      assert(sub_type(Champ_P0_VEF, ch_D_i_naf_.valeur()));
+//      Champ_P0_VEF& ch_D = ref_cast(Champ_P0_VEF, ch_D_i_naf_.valeur());
+//      ch_D.valeur_aux(xv, diffu_);
     }
 
   if(ch_T_.non_nul())
@@ -245,19 +251,29 @@ void Source_Term_pemfc_VEF_P1NC::mettre_a_jour(double temps)
   if(ch_ci_cathode_.non_nul() && !ch_ci_anode_.non_nul())
     {
       // case O2
-      ch_ci_cathode_.valeur().valeur_aux(xv, ci_);
+      ch_ci_cathode_.valeur().valeur_aux_compo(xv, ci_, 0);										// ncomp = 0 pour O2
     }
   else if(ch_ci_anode_.non_nul() && !ch_ci_cathode_.non_nul())
     {
       // case H2
-      ch_ci_anode_.valeur().valeur_aux(xv, ci_);
+      ch_ci_anode_.valeur().valeur_aux_compo(xv, ci_, 0);										// ncomp = 0 pour O2
     }
   else
     {
       // case N2, H20
       DoubleTab val_ci_cathode, val_ci_anode;
-      ch_ci_cathode_.valeur().valeur_aux(xv, val_ci_cathode);
-      ch_ci_anode_.valeur().valeur_aux(xv, val_ci_anode);
+      la_zone_VEF.valeur().creer_tableau_faces(val_ci_cathode);
+      la_zone_VEF.valeur().creer_tableau_faces(val_ci_anode);
+      if(nom_espece_ == "N2")
+        {
+          ch_ci_cathode_.valeur().valeur_aux_compo(xv, val_ci_cathode, 2);							// ncomp = 1 pour H20, 2 pour N2
+          ch_ci_anode_.valeur().valeur_aux_compo(xv, val_ci_anode, 2);
+        }
+      else
+        {
+          ch_ci_cathode_.valeur().valeur_aux_compo(xv, val_ci_cathode, 1);							// ncomp = 1 pour H20, 2 pour N2
+          ch_ci_anode_.valeur().valeur_aux_compo(xv, val_ci_anode, 1);
+        }
 
       IntTab faces_ssz;	// faces belong to the sous_zone -> flag = 1, if not, flag = 0
       la_zone_VEF.valeur().creer_tableau_faces(faces_ssz);

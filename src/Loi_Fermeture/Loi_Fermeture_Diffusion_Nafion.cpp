@@ -231,7 +231,7 @@ double Loi_Fermeture_Diffusion_Nafion::eval_diffu_(double T, double C)
 {
   if (nom_espece_ == "H2O" || nom_espece_ == "vap")
     {
-      return -eval_D_i_naf(T,C);
+      return eval_D_i_naf(T,C);
     }
 
   double coef = (1. - por_naf_)*eps_naf_ / (tor_naf_*tor_naf_);

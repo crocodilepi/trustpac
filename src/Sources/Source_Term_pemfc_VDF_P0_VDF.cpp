@@ -134,13 +134,13 @@ void Source_Term_pemfc_VDF_P0_VDF::mettre_a_jour(double temps)
 
   const DoubleTab& xp=la_zone_VDF.valeur().xp(); // Recuperation des centre de gravite des elements pour P0
 
-  if(ch_C_.valeur().que_suis_je().find("P0") !=-1)
+  if(ch_C_.valeur().valeur().que_suis_je().find("P0") !=-1)
     {
       C_.ref(ch_C_.valeur().valeurs());
     }
   else
     {
-      Champ_P1NC& ch_C = ref_cast(Champ_P1NC, ch_C_);
+      Champ_P1NC& ch_C = ref_cast(Champ_P1NC, ch_C_.valeur().valeur());
       ch_C.valeur_aux(xp, C_);
     }
 
@@ -150,7 +150,7 @@ void Source_Term_pemfc_VDF_P0_VDF::mettre_a_jour(double temps)
     }
   else
     {
-      Champ_P1NC& ch_D = ref_cast(Champ_P1NC, ch_D_i_naf_);
+      Champ_P1NC& ch_D = ref_cast(Champ_P1NC, ch_D_i_naf_.valeur());
       ch_D.valeur_aux(xp, diffu_);
     }
 

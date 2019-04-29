@@ -73,7 +73,7 @@ void Loi_Fermeture_transport_ionique::discretiser( const Discretisation_base& di
   I_i_ -> fixer_nature_du_champ(vectoriel);
   champs_compris_.ajoute_champ(I_i_);
 
-  dis.discretiser_champ("temperature",equation().zone_dis().valeur(),"D_i","unit", dimension ,0. , D_i_);
+  dis.discretiser_champ("temperature",equation().zone_dis().valeur(),"D_i","unit", 1 ,0. , D_i_);
   champs_compris_.ajoute_champ(D_i_);
 }
 
