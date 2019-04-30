@@ -55,21 +55,28 @@ public :
 protected :
   void remplir_volumes();
   double eval_f(double jr, double jp) const;
+
   REF(Zone_VEF) la_zone_VEF;
   REF(Zone_Cl_VEF) la_zcl_VEF;
   DoubleVect volumes_;
 
   Nom nom_espece_;
   Nom nom_domaine_;
-  Nom nom_ssz_;
-  Nom nom_champ_jr_;
-  Nom nom_champ_jp_;
-  REF(Domaine) dom_;
-  REF(Sous_Zone) ssz_;
-  DoubleTab jr_, jp_;
+  Nom nom_ssz_CLa_;
+  Nom nom_ssz_CLc_;
+  Nom nom_pb_phi_;				// transport ionique pour recuperer le champ electro chimique
+  Nom nom_champ_ir_;			// courant de reaction
+  Nom nom_champ_ip_;			// courant de permeation
 
-  Champ_Don ch_jr_;
-  Champ_Don ch_jp_;
+  REF(Domaine) dom_;
+  REF(Sous_Zone) CL_a_;
+  REF(Sous_Zone) CL_c_;
+
+  REF(Champ_base) ch_ir_;
+  REF(Champ_base) ch_ip_;
+
+  DoubleTab ir_, ip_;
+
 };
 
 #endif /* Source_Term_Nafion_Reaction_included */

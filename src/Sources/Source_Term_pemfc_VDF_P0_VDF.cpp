@@ -127,6 +127,7 @@ void Source_Term_pemfc_VDF_P0_VDF::completer()
   dom_.valeur().creer_tableau_elements(ip_);
 }
 
+// mettre a jour les valeurs suivants: diffu_, C_, T_, ci_, ir_, ip_, op_
 void Source_Term_pemfc_VDF_P0_VDF::mettre_a_jour(double temps)
 {
 

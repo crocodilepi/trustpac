@@ -95,6 +95,7 @@ protected :
   REF(Champ_base) ch_T_;		// champ reference pour temperature (optionnel)
   REF(Champ_base) ch_I_;		// champ reference pour le courant ionique I = -kappa.grad(phi) (optionnel)
   REF(Champ_Inc) ch_C_;			// champ reference du champ inconnu C
+
   DoubleTab T_, C_, I_;			// tableau des valeurs du champ T, C, I (P0)
   double eval_D_i_naf(double T, double C);
   double eval_diffu_(double T, double C);

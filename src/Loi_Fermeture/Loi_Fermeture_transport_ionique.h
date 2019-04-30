@@ -69,7 +69,7 @@ public :
   //
   void set_param(Param& param);
 protected :
-  Champ_Fonc kappa_;		// champ de conductivite (scalaire) P0
+  Champ_Fonc kappa_;	// champ de conductivite (scalaire) P0
   Champ_Fonc I_i_;		// champ de courant (vectoriel) P0
   Champ_Fonc D_i_;		// champ de flux (scalaire) P1NC
 

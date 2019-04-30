@@ -85,17 +85,17 @@ protected :
   Nom nom_champ_ip_;
   Nom nom_op_diff_;
 
-  REF(Domaine) dom_;					// domaine
-  REF(Sous_Zone) CL_a_;					// sous_zone anode
-  REF(Sous_Zone) CL_c_;					// sous_zone cathode
+  REF(Domaine) dom_;						// domaine
+  REF(Sous_Zone) CL_a_;						// sous_zone anode
+  REF(Sous_Zone) CL_c_;						// sous_zone cathode
   REF(Champ_base)  ch_T_;   				// Champ Temperature de conduction de la chaleur   -> couple
   REF(Champ_base)  ch_D_i_naf_;				// champ conductivite Da -> get_champ
   REF(Champ_Inc)   ch_C_;					// Champ_Inc dissolved concentration -> inconnu()
   REF(Champ_base)  ch_ci_cathode_;			// Champ concentration de  diffusion des multi-especes -> couple
   REF(Champ_base)  ch_ci_anode_;			// Champ concentration de  diffusion des multi-especes -> couple
-  REF(Champ_base)  ch_ir_;	// couple
-  REF(Champ_base)  ch_ip_;	// couple
-  REF(Champ_base)  ch_op_;	// couple
+  REF(Champ_base)  ch_ir_;					// champ de courant de reaction -> couple
+  REF(Champ_base)  ch_ip_;					// champ de courant de permeration -> couple
+  REF(Champ_base)  ch_op_;					// champ de operateur diffusion du potentiel ionique div(-kappa.grad(phi)) -> couple
 
   double eps_naf_;					// ionomer proportion
   double por_naf_; 					// porosity

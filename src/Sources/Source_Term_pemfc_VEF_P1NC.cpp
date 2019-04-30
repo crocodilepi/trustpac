@@ -53,21 +53,6 @@ void Source_Term_pemfc_VEF_P1NC::associer_pb(const Probleme_base& pb)
 {
   Cerr << " Source_Term_pemfc_VEF_P1NC::associer_pb " << finl ;
   assert(pb.que_suis_je() == "Pb_Conduction");
-//  int ok = 0;
-//  const Equation_base& eqn = pb.equation(0);
-//  assert(eqn.que_suis_je() == "Conduction");
-//  if  (eqn.que_suis_je() == "Conduction")
-//    {
-//      associer_zones(eqn.zone_dis(),eqn.zone_Cl_dis());
-//      ok = 1;
-//    }
-//  if (!ok)
-//    {
-//      Cerr << "Erreur TRUST dans Source_Term_pemfc_VEF_P1NC::associer_pb()" << finl;
-//      Cerr << "On ne trouve pas d'equation de conduction dans le probleme" << finl;
-//      exit();
-//    }
-
 }
 
 // A VERIFIER
@@ -114,7 +99,7 @@ DoubleTab& Source_Term_pemfc_VEF_P1NC::ajouter(DoubleTab& resu) const
               int face = la_zone_VEF.valeur().elem_faces(elem, f);
               if(!faces_ssz(face))
                 {
-                  resu(face) += eval_f(diffu_(face), C_(face), ci_(face), T_(face)) * volumes_(face) * inv_rhoCp;		// A VERIFIER
+                  resu(face) += eval_f(diffu_(face), C_(face), ci_(face), T_(face)) * volumes_(face) * inv_rhoCp;
                   // necessaire (source*porosite_surf(num_face));
                   faces_ssz(face) = 1;		// marquer comme deja traite
                 }
@@ -125,17 +110,17 @@ DoubleTab& Source_Term_pemfc_VEF_P1NC::ajouter(DoubleTab& resu) const
   if(nom_espece_ == "H2O" || nom_espece_ == "vap")
     {
       int nb_faces = la_zone_VEF.valeur().nb_faces();
-      // ajouter un terme source de type: -nd/F*op avec op = div(kappa.grad(phi))
+      // ajouter un terme source de type: -nd/F*op avec op = div(-kappa.grad(phi))
       for (int face = 0; face < nb_faces; ++face)
         {
-          resu(face) += -f_nd(C_(face))/F*op_(face) * volumes_(face) * inv_rhoCp;			// A VERIFIER
+          resu(face) += -f_nd(C_(face))/F * op_(face) * volumes_(face) * inv_rhoCp;			// A VERIFIER
         }
     }
 
   return resu;
 }
 
-// A VERIFIER
+// A VERIFIER, NECESAIRE OU PAS ?
 void Source_Term_pemfc_VEF_P1NC::contribuer_a_avec(const DoubleTab& inco, Matrice_Morse& mat) const
 {
   assert(inco.dimension(0)==volumes_.size());
@@ -206,6 +191,7 @@ void Source_Term_pemfc_VEF_P1NC::completer()
   la_zone_VEF.valeur().creer_tableau_faces(op_);
 }
 
+// mettre a jour les valeurs suivants: diffu_, C_, T_, ci_, ir_, ip_, op_
 void Source_Term_pemfc_VEF_P1NC::mettre_a_jour(double temps)
 {
 
