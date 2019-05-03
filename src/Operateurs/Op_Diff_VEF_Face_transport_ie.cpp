@@ -14,43 +14,72 @@
 *****************************************************************************/
 /////////////////////////////////////////////////////////////////////////////
 //
-// File      : Op_Diff_VEF_Face_PEMFC_Nafion.h
+// File      : Op_Diff_VEF_Face_transport_ie.cpp
 // Directory : $PEMFC_ROOT/src/Operateurs
 //
 /////////////////////////////////////////////////////////////////////////////
 
-#ifndef Op_Diff_VEF_Face_PEMFC_Nafion_included
-#define Op_Diff_VEF_Face_PEMFC_Nafion_included
+#include <Op_Diff_VEF_Face_transport_ie.h>
+#include <Champ_base.h>
+#include <Probleme_base.h>
+#include <Milieu_base.h>
+#include <Champ_Uniforme.h>
 
-#include <Op_Diff_VEF_Face.h>
-#include <Param.h>
+Implemente_instanciable( Op_Diff_VEF_Face_transport_ie, "Op_Diff_VEFTRANSPORT_IE_var_P1NC", Op_Diff_VEF_Face ) ;
 
-/////////////////////////////////////////////////////////////////////////////
-//
-// .DESCRIPTION : class Op_Diff_VEF_Face_PEMFC_Nafion
-//  Cette classe a pour but de calculer l'operateur de diffusion de type: div(D.grad(C) avec
-//  un champ de coefficient de diffusion particulier D = D_eff / ((1-por_naf)eps_naf)
-//  D_eff champ de coefficient de diffusion (couple avec un loi_fermeture_diffusion_nafion via le champ D_i_eff)
-//  por_naf porosite de Nafion
-//  eps_naf ionomer proportiton de Nafion
-// <Description of class Op_Diff_VEF_Face_PEMFC_Nafion>
-//
-/////////////////////////////////////////////////////////////////////////////
-
-class Op_Diff_VEF_Face_PEMFC_Nafion : public Op_Diff_VEF_Face
+Sortie& Op_Diff_VEF_Face_transport_ie::printOn( Sortie& os ) const
 {
+  Op_Diff_VEF_Face::printOn( os );
+  return os;
+}
 
-  Declare_instanciable( Op_Diff_VEF_Face_PEMFC_Nafion ) ;
+Entree& Op_Diff_VEF_Face_transport_ie::readOn( Entree& is )
+{
+  Param param(que_suis_je());
+  set_param(param);
+  param.lire_avec_accolades_depuis(is);
 
-public :
-  void set_param(Param& param);
-  void completer();
-  void remplir_nu(DoubleTab&) const;
-  void mettre_a_jour(double);
-protected :
-  Nom diffu_name_;
-  double por_naf_;			// porosite de Nafion
-  double eps_naf_;			// ionomer proportionnel de Nafion
-};
+  if(diffu_name_ != "??")
+    {
+      const Champ_base& diffu=equation().probleme().get_champ(diffu_name_);
+      associer_diffusivite ( diffu );
+    }
+  else
+    {
+      associer_diffusivite(equation().milieu().diffusivite());
+    }
 
-#endif /* Op_Diff_VEF_Face_PEMFC_Nafion_included */
+  return is;
+}
+
+void Op_Diff_VEF_Face_transport_ie::set_param(Param& param)
+{
+  param.ajouter("diffusivity_fieldname",&diffu_name_,Param::OPTIONAL); // XD_ADD_P chaine name of the diffusity field
+  param.ajouter("Cdl",&Cdl_,Param::REQUIRED);
+}
+
+void Op_Diff_VEF_Face_transport_ie::completer()
+{
+  Op_Diff_VEF_Face::completer();
+}
+
+void Op_Diff_VEF_Face_transport_ie::remplir_nu(DoubleTab& nu) const
+{
+  Op_Diff_VEF_base::remplir_nu(nu);
+  if (sub_type(Champ_Uniforme,Cdl_))
+    {
+      nu /= Cdl_.valeurs()(0,0);
+    }
+  else
+    {
+      tab_divide_any_shape(nu,Cdl_.valeurs());
+    }
+
+  Cerr << "Op_Diff_VEF_Face_transport_ie::remplir_nu" << finl;
+  Cerr << "nu min max " << mp_min_vect(nu) << " " << mp_max_vect(nu) << finl;
+}
+
+void Op_Diff_VEF_Face_transport_ie::mettre_a_jour(double temps)
+{
+  remplir_nu(nu_);
+}

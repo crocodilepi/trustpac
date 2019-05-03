@@ -121,10 +121,10 @@ protected :
   REF(Champ_base) ch_psi_;	// champ de potentiel electrique
 
   DoubleTab T_;			// P0 pour VDF, P1NC pour VEF
-  DoubleTab a_H2_;		// P0 pour VDF, P1NC pour VEF
-  DoubleTab a_O2_;		// P0 pour VDF, P1NC pour VEF
-  DoubleTab a_H2O_;		// P0 pour VDF, P1NC pour VEF
-  DoubleTab a_H_;		// P0 pour VDF, P1NC pour VEF
+  DoubleTab C_H2_;		// P0 pour VDF, P1NC pour VEF
+  DoubleTab C_O2_;		// P0 pour VDF, P1NC pour VEF
+  DoubleTab C_H2O_;		// P0 pour VDF, P1NC pour VEF
+  //DoubleTab a_H_;		// P0 pour VDF, P1NC pour VEF
   DoubleTab psi_;		// P0 pour VDF, P1NC pour VEF
   DoubleTab phi_;		// P0 pour VDF, P1NC pour VEF
 

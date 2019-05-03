@@ -14,76 +14,39 @@
 *****************************************************************************/
 /////////////////////////////////////////////////////////////////////////////
 //
-// File      : Source_Term_Nafion_Reaction.h
-// Directory : $PEMFC_ROOT/src/Sources
+// File      : Op_Diff_VEF_Face_transport_ie.h
+// Directory : $PEMFC_ROOT/src/Operateurs
 //
 /////////////////////////////////////////////////////////////////////////////
 
-#ifndef Source_Term_Nafion_Reaction_included
-#define Source_Term_Nafion_Reaction_included
+#ifndef Op_Diff_VEF_Face_transport_ie_included
+#define Op_Diff_VEF_Face_transport_ie_included
 
-#include <Source_base.h>
+#include <Op_Diff_VEF_Face.h>
 #include <Param.h>
-#include <Ref_Zone_VEF.h>
-#include <Ref_Zone_Cl_VEF.h>
-#include <Ref_Domaine.h>
-#include <Ref_Sous_Zone.h>
-#include <DoubleTab.h>
-#include <Champ_base.h>
+#include <Champ_Don.h>
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// .DESCRIPTION : class Source_Term_Nafion_Reaction
-//  Source terme Si qui vient de la reaction electro-chimique dans la couche active CLa, CLc
-//    S_H2 = -ir / (2F)
-//    S_O2 = (ir+ip) / (4F)
-//    S_N2 = 0
-//    S_H20 = -(ir+ip) / (2F)
-// <Description of class Source_Term_Nafion_Reaction>
+// .DESCRIPTION : class Op_Diff_VEF_Face_transport_ie
+//
+// <Description of class Op_Diff_VEF_Face_transport_ie>
 //
 /////////////////////////////////////////////////////////////////////////////
 
-class Source_Term_Nafion_Reaction : public Source_base
+class Op_Diff_VEF_Face_transport_ie : public Op_Diff_VEF_Face
 {
 
-  Declare_instanciable( Source_Term_Nafion_Reaction ) ;
+  Declare_instanciable( Op_Diff_VEF_Face_transport_ie ) ;
 
 public :
-  DoubleTab& ajouter(DoubleTab& ) const;
-  DoubleTab& calculer(DoubleTab& ) const;
-  void mettre_a_jour(double temps);
-  void associer_zones(const Zone_dis& ,const Zone_Cl_dis& );
-  void associer_pb(const Probleme_base& );
-  void completer();
   void set_param(Param& param);
+  void completer();
+  void remplir_nu(DoubleTab&) const;
+  void mettre_a_jour(double temps);
 protected :
-  void remplir_volumes();
-  double eval_f(double jr, double jp) const;
-
-  REF(Zone_VEF) la_zone_VEF;
-  REF(Zone_Cl_VEF) la_zcl_VEF;
-  DoubleVect volumes_;
-
-  Nom nom_espece_;
-  //Nom nom_domaine_;
-  Nom nom_ssz_CLa_;
-  Nom nom_ssz_CLc_;
-  Nom nom_pb_phi_;				// transport ionique pour recuperer le champ electro chimique
-  Nom nom_champ_ir_;			// courant de reaction
-  Nom nom_champ_ip_;			// courant de permeation
-
-  REF(Domaine) dom_;
-  REF(Sous_Zone) CL_a_;
-  REF(Sous_Zone) CL_c_;
-
-  REF(Champ_base) ch_ir_;
-  REF(Champ_base) ch_ip_;
-
-  DoubleTab ir_, ip_;
-
-  double por_naf_;			// porosite de Nafion
-  double eps_naf_;			// ionomer proportionnel de Nafion
-
+  Nom diffu_name_;
+  Champ_Don Cdl_;
 };
 
-#endif /* Source_Term_Nafion_Reaction_included */
+#endif /* Op_Diff_VEF_Face_transport_ie_included */

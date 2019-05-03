@@ -41,16 +41,30 @@ Entree& Op_Diff_VEF_Face_PEMFC_Nafion::readOn( Entree& is )
   associer_diffusivite ( diffu );
 
   return is;
-
-  return is;
 }
 
 void Op_Diff_VEF_Face_PEMFC_Nafion::set_param(Param& param)
 {
   param.ajouter("diffusivity_fieldname",&diffu_name_,Param::REQUIRED); // XD_ADD_P chaine name of the diffusity field
+  param.ajouter("por_naf", &por_naf_, Param::REQUIRED);
+  param.ajouter("eps_naf", &eps_naf_, Param::REQUIRED);
 }
 
 void Op_Diff_VEF_Face_PEMFC_Nafion::completer()
 {
   Op_Diff_VEF_Face::completer();
+}
+
+void Op_Diff_VEF_Face_PEMFC_Nafion::remplir_nu(DoubleTab& nu) const
+{
+  Op_Diff_VEF_base::remplir_nu(nu);
+  double inv_rhoCp = 1./((1-por_naf_)*eps_naf_);
+  nu *= inv_rhoCp;
+  Cerr << "Op_Diff_VEF_Face_PEMFC_Nafion::remplir_nu" << finl;
+  Cerr << "nu min max " << mp_min_vect(nu) << " " << mp_max_vect(nu) << finl;
+}
+
+void Op_Diff_VEF_Face_PEMFC_Nafion::mettre_a_jour(double temps)
+{
+  remplir_nu(nu_);
 }

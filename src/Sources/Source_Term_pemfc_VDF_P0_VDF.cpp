@@ -80,12 +80,12 @@ DoubleTab& Source_Term_pemfc_VDF_P0_VDF::ajouter(DoubleTab& resu) const
   for (int poly = 0; poly < CL_a_.valeur().nb_elem_tot(); poly++)
     {
       int elem = CL_a_.valeur()(poly);
-      resu(elem) = eval_f(diffu_(elem), C_(elem), ci_(elem), T_(elem)) * inv_rhoCp;
+      resu(elem) = eval_f(diffu_(elem), C_(elem), ci_(elem), T_(elem)) * volumes_(elem) * inv_rhoCp;
     }
   for (int poly = 0; poly < CL_c_.valeur().nb_elem_tot(); poly++)
     {
       int elem = CL_c_.valeur()(poly);
-      resu(elem) = eval_f(diffu_(elem), C_(elem), ci_(elem), T_(elem)) * inv_rhoCp;
+      resu(elem) = eval_f(diffu_(elem), C_(elem), ci_(elem), T_(elem)) * volumes_(elem) * inv_rhoCp;
     }
   return resu;
 }
@@ -112,19 +112,19 @@ void Source_Term_pemfc_VDF_P0_VDF::contribuer_a_avec(const DoubleTab& inco, Matr
 void Source_Term_pemfc_VDF_P0_VDF::completer()
 {
   Source_Term_pemfc_base::completer();
-  T_.resize(0, 1);			// scalaire
-  C_.resize(0, 1);			// scalaire
-  ci_.resize(0, 1);			// scalaire
-  diffu_.resize(0,1);		// scalaire
-  ir_.resize(0,1);			// scalaire
-  ip_.resize(0,1);			// scalaire
+//  T_.resize(0, 1);			// scalaire
+//  C_.resize(0, 1);			// scalaire
+//  ci_.resize(0, 1);			// scalaire
+//  diffu_.resize(0,1);		// scalaire
+//  ir_.resize(0,1);			// scalaire
+//  ip_.resize(0,1);			// scalaire
 
   dom_.valeur().creer_tableau_elements(C_);
   dom_.valeur().creer_tableau_elements(diffu_);
   dom_.valeur().creer_tableau_elements(ci_);
   dom_.valeur().creer_tableau_elements(T_);
-  dom_.valeur().creer_tableau_elements(ir_);
-  dom_.valeur().creer_tableau_elements(ip_);
+//  dom_.valeur().creer_tableau_elements(ir_);
+//  dom_.valeur().creer_tableau_elements(ip_);
 }
 
 // mettre a jour les valeurs suivants: diffu_, C_, T_, ci_, ir_, ip_, op_
@@ -194,28 +194,28 @@ void Source_Term_pemfc_VDF_P0_VDF::mettre_a_jour(double temps)
         }
     }
 
-  if(ch_ir_.non_nul())
-    {
-      ch_ir_.valeur().valeur_aux(xp, ir_);
-    }
+//  if(ch_ir_.non_nul())
+//    {
+//      ch_ir_.valeur().valeur_aux(xp, ir_);
+//    }
 //	  else
 //	    {
 //	      ir_ = 0.;
 //	    }
 
-  if(ch_ip_.non_nul())
-    {
-      ch_ip_.valeur().valeur_aux(xp, ip_);
-    }
+//  if(ch_ip_.non_nul())
+//    {
+//      ch_ip_.valeur().valeur_aux(xp, ip_);
+//    }
 //	  else
 //	    {
 //	      ip_ = 0.;
 //	    }
 
-  if(ch_op_.non_nul())
-    {
-      ch_op_.valeur().valeur_aux(xp, op_);
-    }
+//  if(ch_op_.non_nul())
+//    {
+//      ch_op_.valeur().valeur_aux(xp, op_);
+//    }
   //  else
   //    {
   //      op_ = 0.;

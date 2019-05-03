@@ -48,8 +48,8 @@
 // + champ de flux de diffusion des especes dans Nafion i = H2, O2, N2
 //   N_i_naf = -D_i_eff * grad(C_i)
 //   ou bien champ de flux de diffusion de H20 dans Nafion
-//   N_H20_naf = nd/F*I_ion - Dw*grad(C_H20)
-//   avec I_ion est le champ de courant ionique
+//   N_H20_naf = nd/F*I_i - Dw*grad(C_H20)
+//   avec I_i est le champ de courant ionique
 // <Description of class Loi_Fermeture_Diffusion_Nafion>
 //
 /////////////////////////////////////////////////////////////////////////////
@@ -83,9 +83,12 @@ protected :
     return ref_equation_.valeur();
   } ;
 
-  // Motcles nom_especes_compris_ = {"H2", "O2", "H2O", "N2", "vap"};
-
-  Nom nom_espece_, nom_pb_T_, nom_champ_T_, nom_pb_phi_, nom_champ_I_;	// pour readOn
+  // pour readOn
+  Nom nom_espece_;			// dans la liste { H2, O2, N2, H2O , vap}
+  Nom nom_pb_T_;			// nom du probleme de chaleur
+  Nom nom_champ_T_;			// defaut temperature
+  Nom nom_pb_phi_;			// nom du probleme de transport ionique
+  Nom nom_champ_I_;			// nom du champ de courant ionique I_i = -kappa.grad(phi)
   double T_0_;				// dans le cas T constant
   double CSO3_;				// au cas ou "H2O" ou "vap"
   double por_naf_;			// porosite de Nafion
@@ -94,9 +97,10 @@ protected :
 
   REF(Champ_base) ch_T_;		// champ reference pour temperature (optionnel)
   REF(Champ_base) ch_I_;		// champ reference pour le courant ionique I = -kappa.grad(phi) (optionnel)
-  REF(Champ_Inc) ch_C_;			// champ reference du champ inconnu C
+  REF(Champ_Inc) ch_C_;			// champ reference du champ inconnu C (equation associee)
 
   DoubleTab T_, C_, I_;			// tableau des valeurs du champ T, C, I (P0)
+
   double eval_D_i_naf(double T, double C);
   double eval_diffu_(double T, double C);
 };

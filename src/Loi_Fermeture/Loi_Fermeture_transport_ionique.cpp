@@ -28,6 +28,7 @@
 #include <Operateur_base.h>
 #include <Zone_VF.h>
 #include <Domaine.h>
+#include <Milieu_base.h>
 
 Implemente_instanciable( Loi_Fermeture_transport_ionique, "Loi_Fermeture_transport_ionique", Loi_Fermeture_base ) ;
 
@@ -51,12 +52,15 @@ Entree& Loi_Fermeture_transport_ionique::readOn( Entree& is )
 void Loi_Fermeture_transport_ionique::set_param(Param& param)
 {
   param.ajouter("T_0", &T_0_, Param::REQUIRED);
+  param.ajouter("CSO3", &C_SO3_, Param::REQUIRED);
   param.ajouter("por_naf", &por_naf_, Param::REQUIRED);
   param.ajouter("eps_naf", &eps_naf_, Param::REQUIRED);
   param.ajouter("tor_naf", &tor_naf_, Param::REQUIRED);
+  param.ajouter("nom_ssz_MB", &nom_ssz_MB_, Param::REQUIRED);
+  param.ajouter("nom_ssz_CLc", &nom_ssz_CLc_, Param::REQUIRED);
+  param.ajouter("nom_ssz_CLa", &nom_ssz_CLa_, Param::REQUIRED);
   param.ajouter("nom_pb_T",&nom_pb_T_,Param::REQUIRED);
   param.ajouter("nom_champ_T",&nom_champ_T_,Param::REQUIRED);
-  param.ajouter("CSO3", &C_SO3_, Param::REQUIRED);
   param.ajouter("nom_pb_C_H2O",&nom_pb_C_,Param::REQUIRED);
   param.ajouter("nom_champ_C_H2O",&nom_champ_C_,Param::REQUIRED);
 }
@@ -72,9 +76,6 @@ void Loi_Fermeture_transport_ionique::discretiser( const Discretisation_base& di
   dis.discretiser_champ("champ_elem",equation().zone_dis().valeur(),"I_i","unit", dimension ,0. , I_i_);
   I_i_ -> fixer_nature_du_champ(vectoriel);
   champs_compris_.ajoute_champ(I_i_);
-
-  dis.discretiser_champ("temperature",equation().zone_dis().valeur(),"D_i","unit", 1 ,0. , D_i_);
-  champs_compris_.ajoute_champ(D_i_);
 }
 
 inline void Loi_Fermeture_transport_ionique::completer()
@@ -88,7 +89,9 @@ inline void Loi_Fermeture_transport_ionique::completer()
   ch_C_ = pb_phi.get_champ(nom_champ_C_);
   assert(ch_C_.valeur().que_suis_je().find("P1NC") != -1);
   ch_phi_ = equation().inconnue();
-  op_diff_phi_ = equation().operateur(0).l_op_base();				// verifier ?
+  MB_ = mon_probleme().domaine().ss_zone(nom_ssz_MB_);
+  CL_a_ = mon_probleme().domaine().ss_zone(nom_ssz_CLa_);
+  CL_c_ =  mon_probleme().domaine().ss_zone(nom_ssz_CLc_);
 }
 
 inline void Loi_Fermeture_transport_ionique::mettre_a_jour(double temps)
@@ -103,19 +106,23 @@ inline void Loi_Fermeture_transport_ionique::mettre_a_jour(double temps)
   ch_C_.valeur().mettre_a_jour(temps);
   ch_C_.valeur().valeur_aux(xp, C_);
 
-  // mettre a jour le champ kappa P0
+  // mettre a jour le champ kappa (seul membrane) P0
   DoubleTab& kappa = kappa_.valeurs();
-  int nb_elem = kappa.dimension(0);
-  for (int elem = 0; elem < nb_elem; ++elem)
+  const DoubleTab& diffu = mon_probleme().milieu().diffusivite().valeurs();				// reprende champ diffusivite
+  for (int poly = 0; poly < CL_a_.valeur().nb_elem_tot(); poly++)
     {
-      kappa(elem) = f_kappa(T_(elem), C_(elem));
+      int elem = CL_a_.valeur()(poly);
+      kappa(elem) = diffu(elem,0);
     }
-
-  // mettre a jour le champ D_i_ P1NC
-  DoubleTab& D_i = D_i_.valeurs();
-  if(ch_phi_.valeur().que_suis_je().find("P1NC") !=-1)
+  for (int poly = 0; poly < CL_c_.valeur().nb_elem_tot(); poly++)
     {
-      op_diff_phi_.valeur().calculer(ch_phi_.valeur().valeurs(), D_i);
+      int elem = CL_c_.valeur()(poly);
+      kappa(elem) = diffu(elem,0);
+    }
+  for (int poly = 0; poly < MB_.valeur().nb_elem_tot(); poly++)
+    {
+      int elem = MB_.valeur()(poly);
+      kappa(elem) = f_kappa(T_(elem), C_(elem));
     }
 
   // mettre a jour le champ I_i_ P0

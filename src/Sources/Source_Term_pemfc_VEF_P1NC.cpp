@@ -106,16 +106,16 @@ DoubleTab& Source_Term_pemfc_VEF_P1NC::ajouter(DoubleTab& resu) const
             }
         }
     }
-
-  if(nom_espece_ == "H2O" || nom_espece_ == "vap")
-    {
-      int nb_faces = la_zone_VEF.valeur().nb_faces();
-      // ajouter un terme source de type: -nd/F*op avec op = div(-kappa.grad(phi))
-      for (int face = 0; face < nb_faces; ++face)
-        {
-          resu(face) += -f_nd(C_(face))/F * op_(face) * volumes_(face) * inv_rhoCp;			// A VERIFIER
-        }
-    }
+//
+//  if(nom_espece_ == "H2O" || nom_espece_ == "vap")
+//    {
+//      int nb_faces = la_zone_VEF.valeur().nb_faces();
+//      // ajouter un terme source de type: -nd/F*op avec op = div(-kappa.grad(phi))
+//      for (int face = 0; face < nb_faces; ++face)
+//        {
+//          resu(face) += -f_nd(C_(face))/F * op_(face) * volumes_(face) * inv_rhoCp;			// A VERIFIER
+//        }
+//    }
 
   return resu;
 }
@@ -186,9 +186,9 @@ void Source_Term_pemfc_VEF_P1NC::completer()
   la_zone_VEF.valeur().creer_tableau_faces(diffu_);
   la_zone_VEF.valeur().creer_tableau_faces(ci_);
   la_zone_VEF.valeur().creer_tableau_faces(T_);
-  la_zone_VEF.valeur().creer_tableau_faces(ir_);
-  la_zone_VEF.valeur().creer_tableau_faces(ip_);
-  la_zone_VEF.valeur().creer_tableau_faces(op_);
+//  la_zone_VEF.valeur().creer_tableau_faces(ir_);
+//  la_zone_VEF.valeur().creer_tableau_faces(ip_);
+//  la_zone_VEF.valeur().creer_tableau_faces(op_);
 }
 
 // mettre a jour les valeurs suivants: diffu_, C_, T_, ci_, ir_, ip_, op_
@@ -296,28 +296,71 @@ void Source_Term_pemfc_VEF_P1NC::mettre_a_jour(double temps)
         }
     }
 
-  if(ch_ir_.non_nul())
+  // mettre a jour ch_S
+  DoubleTab& val_S = ch_S_.valeurs();
+  if(CL_a_.non_nul())
     {
-      ch_ir_.valeur().valeur_aux(xv, ir_);
+      IntTab faces_ssz;	// faces belong to the sous_zone -> flag = 1, if not, flag = 0
+      la_zone_VEF.valeur().creer_tableau_faces(faces_ssz);
+      faces_ssz = 0;	// init with no flag (all faces are unchecked)
+
+      for (int poly = 0; poly < CL_a_.valeur().nb_elem_tot(); poly++)
+        {
+          int elem = CL_a_.valeur()(poly);
+          for (int f = 0; f < la_zone_VEF.valeur().zone().nb_faces_elem(0); ++f)
+            {
+              int face = la_zone_VEF.valeur().elem_faces(elem, f);
+              if(!faces_ssz(face))
+                {
+                  val_S = eval_f(diffu_(face), C_(face), ci_(face), T_(face));
+                  faces_ssz(face) = 1;
+                }
+            }
+        }
     }
+
+  if(CL_c_.non_nul())
+    {
+      IntTab faces_ssz;	// faces belong to the sous_zone -> flag = 1, if not, flag = 0
+      la_zone_VEF.valeur().creer_tableau_faces(faces_ssz);
+      faces_ssz = 0;	// init with no flag (all faces are unchecked)
+      for (int poly = 0; poly < CL_c_.valeur().nb_elem_tot(); poly++)
+        {
+          int elem = CL_c_.valeur()(poly);
+          for (int f = 0; f < la_zone_VEF.valeur().zone().nb_faces_elem(0); ++f)
+            {
+              int face = la_zone_VEF.valeur().elem_faces(elem, f);
+              if(!faces_ssz(face))
+                {
+                  val_S = eval_f(diffu_(face), C_(face), ci_(face), T_(face));
+                  faces_ssz(face) = 1;		// marquer comme deja traite
+                }
+            }
+        }
+    }
+
+//  if(ch_ir_.non_nul())
+//    {
+//      ch_ir_.valeur().valeur_aux(xv, ir_);
+//    }
   //  else
   //    {
   //      ir_ = 0.;
   //    }
 
-  if(ch_ip_.non_nul())
-    {
-      ch_ip_.valeur().valeur_aux(xv, ip_);
-    }
+//  if(ch_ip_.non_nul())
+//    {
+//      ch_ip_.valeur().valeur_aux(xv, ip_);
+//    }
   //  else
   //    {
   //      ip_ = 0.;
   //    }
 
-  if(ch_op_.non_nul())
-    {
-      ch_op_.valeur().valeur_aux(xv, op_);
-    }
+//  if(ch_op_.non_nul())
+//    {
+//      ch_op_.valeur().valeur_aux(xv, op_);
+//    }
   //  else
   //    {
   //      op_ = 0.;

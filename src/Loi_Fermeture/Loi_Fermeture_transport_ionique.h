@@ -31,6 +31,7 @@
 #include <Ref_Champ_Inc.h>
 #include <Ref_Operateur_base.h>
 #include <DoubleTab.h>
+#include <Ref_Sous_Zone.h>
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -43,9 +44,6 @@
 // - champ de courant ionique Ii = - kappa*grad(phi)
 //   avec phi est le champ inconnu de l'equation de transport ionique
 //   div(-kappa.grad(phi)) = source_term_pemfc_transport_ionique
-// - champ de term diffusive ionique Di = div(-kappa.grad(phi))
-//   qui sert a coupler avec le terme source du probleme de l'absoption H20
-//   dans Nafion = -nd/F*div(-kappa.grad(phi))
 // <Description of class Loi_Fermeture_transport_ionique>
 //
 /////////////////////////////////////////////////////////////////////////////
@@ -71,25 +69,33 @@ public :
 protected :
   Champ_Fonc kappa_;	// champ de conductivite (scalaire) P0
   Champ_Fonc I_i_;		// champ de courant (vectoriel) P0
-  Champ_Fonc D_i_;		// champ de flux (scalaire) P1NC
 
   REF(Equation_base) ref_equation_;
+  REF(Sous_Zone) MB_;						// sous_zone membrane
+  REF(Sous_Zone) CL_a_;						// sous_zone anode
+  REF(Sous_Zone) CL_c_;						// sous_zone cathode
   const Equation_base& equation() const
   {
     return ref_equation_.valeur();
   } ;
 
-  Nom nom_pb_T_, nom_champ_T_, nom_pb_C_, nom_champ_C_;	// pour readOn
+  // pour readOn
+  Nom nom_ssz_MB_;
+  Nom nom_ssz_CLa_;
+  Nom nom_ssz_CLc_;
+  Nom nom_pb_T_;
+  Nom nom_champ_T_;
+  Nom nom_pb_C_;
+  Nom nom_champ_C_;
   double T_0_;				// dans le cas T constant
   double C_SO3_;			//
   double por_naf_;			// porosite de Nafion
   double eps_naf_;			// ionomer proportionnel de Nafion
   double tor_naf_;			// tortuosite de Nafion
 
-  REF(Champ_Inc) ch_phi_;
-  REF(Champ_base) ch_T_;			// champ reference pour temperature (optionnel)
-  REF(Champ_base) ch_C_;				// champ reference pour le courant ionique I = -kappa.grad(phi) (optionnel)
-  REF(Operateur_base) op_diff_phi_;			// operateur diffusion de l'equation op = div.(-kappa.grad(phi))
+  REF(Champ_Inc) ch_phi_;   // champ reference pour potentiel ionique
+  REF(Champ_base) ch_T_;	// champ reference pour temperature (optionnel)
+  REF(Champ_base) ch_C_;	// champ reference pour le courant ionique I = -kappa.grad(phi) (optionnel)
 
   DoubleTab T_, C_, phi_;			// tableau des valeurs du champ T, C, phi (P0)
   double f_kappa(double T, double C) const;
@@ -98,7 +104,8 @@ protected :
 inline double Loi_Fermeture_transport_ionique::f_kappa(double T, double C) const
 {
   double ld = C / C_SO3_;
-  return (1-por_naf_)*eps_naf_/(tor_naf_*tor_naf_)*exp(1268*(1./303.-1./T))*(-0.326+0.5139*ld);
+  double sigma = exp(1268*(1./303.-1./T))*(-0.326+0.5139*ld);
+  return sigma*(1-por_naf_)*eps_naf_/(tor_naf_*tor_naf_);
 }
 
 #endif /* Loi_Fermeture_transport_ionique_included */

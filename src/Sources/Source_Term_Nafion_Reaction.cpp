@@ -23,12 +23,10 @@
 #include <Probleme_base.h>
 #include <Equation_base.h>
 #include <Conduction.h>
-#include <Champ_P1NC.h>
+#include <Domaine.h>
 #include <Zone_VEF.h>
 #include <Zone_Cl_VEF.h>
-#include <Domaine.h>
-#include <Champ.h>
-#include <Champ_Generique_base.h>
+#include <Interprete.h>
 
 Implemente_instanciable( Source_Term_Nafion_Reaction, "Source_Term_Nafion_Reaction_VEF_P1NC", Source_base ) ;
 
@@ -40,6 +38,12 @@ Sortie& Source_Term_Nafion_Reaction::printOn( Sortie& os ) const
 
 Entree& Source_Term_Nafion_Reaction::readOn( Entree& is )
 {
+  Source_base::readOn( is );
+  Cerr << " Source_Term_Nafion_Reaction::readOn " << finl  ;
+  Param param(que_suis_je());
+  set_param(param);
+  param.lire_avec_accolades(is);
+
   Motcles nom_especes_compris_(5);
   nom_especes_compris_[0] = "H2";
   nom_especes_compris_[1] = "O2";
@@ -94,12 +98,14 @@ void Source_Term_Nafion_Reaction::associer_zones(const Zone_dis& zone_dis, const
 void Source_Term_Nafion_Reaction::set_param(Param& param)
 {
   param.ajouter("nom_espece",&nom_espece_,Param::REQUIRED);
-  param.ajouter("nom_domaine",&nom_domaine_,Param::REQUIRED);		// pas necessaire ? dom_ = equation().problem().domaine() ?
+  //param.ajouter("nom_domaine",&nom_domaine_,Param::REQUIRED);		// pas necessaire ? dom_ = equation().problem().domaine() ?
   param.ajouter("nom_CLa",&nom_ssz_CLa_,Param::OPTIONAL);					// requis pour H2, N2, H20, sauf O2
   param.ajouter("nom_CLc",&nom_ssz_CLc_,Param::OPTIONAL);					// requis pour O2, N2, H20, sauf H2
   param.ajouter("nom_pb_phi", &nom_pb_phi_, Param::REQUIRED);
   param.ajouter("nom_champ_ir", &nom_champ_ir_, Param::REQUIRED);
   param.ajouter("nom_champ_ip", &nom_champ_ip_, Param::REQUIRED);
+  param.ajouter("por_naf", &por_naf_, Param::REQUIRED);
+  param.ajouter("eps_naf", &eps_naf_, Param::REQUIRED);
 }
 
 void Source_Term_Nafion_Reaction::completer()
@@ -108,7 +114,7 @@ void Source_Term_Nafion_Reaction::completer()
   // get the reference to the coupling fields
   Probleme_base& pb_phi = ref_cast(Probleme_base,interprete().objet(nom_pb_phi_));
   ch_ir_ = pb_phi.get_champ(nom_champ_ir_);
-  ch_ir_ = pb_phi.get_champ(nom_champ_ir_);
+  ch_ip_ = pb_phi.get_champ(nom_champ_ip_);
   la_zone_VEF.valeur().creer_tableau_faces(ir_);
   la_zone_VEF.valeur().creer_tableau_faces(ip_);
 }
@@ -136,6 +142,8 @@ void Source_Term_Nafion_Reaction::remplir_volumes()
 
 DoubleTab& Source_Term_Nafion_Reaction::ajouter(DoubleTab& resu) const
 {
+  double inv_rhoCp = 1./((1-por_naf_)*eps_naf_);
+
   IntTab faces_ssz;	// faces belong to the sous_zone -> flag = 1, if not, flag = 0
   la_zone_VEF.valeur().creer_tableau_faces(faces_ssz);
   faces_ssz = 0;		// init with no flag (all faces are unchecked)
@@ -150,7 +158,7 @@ DoubleTab& Source_Term_Nafion_Reaction::ajouter(DoubleTab& resu) const
               int face = la_zone_VEF.valeur().elem_faces(elem, f);
               if(!faces_ssz(face))
                 {
-                  resu(face) += eval_f(ir_(face), ip_(face));
+                  resu(face) += eval_f(ir_(face), ip_(face)) * inv_rhoCp * volumes_(face);
                   faces_ssz(face) = 1;		// marquer comme deja traite
                 }
             }
@@ -167,7 +175,7 @@ DoubleTab& Source_Term_Nafion_Reaction::ajouter(DoubleTab& resu) const
               int face = la_zone_VEF.valeur().elem_faces(elem, f);
               if(!faces_ssz(face))
                 {
-                  resu(face) += eval_f(ir_(face), ip_(face));
+                  resu(face) += eval_f(ir_(face), ip_(face))* inv_rhoCp * volumes_(face);
                   faces_ssz(face) = 1;		// marquer comme deja traite
                 }
             }

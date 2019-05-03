@@ -14,39 +14,36 @@
 *****************************************************************************/
 /////////////////////////////////////////////////////////////////////////////
 //
-// File      : Source_Term_Nafion_Reaction.h
+// File      : Source_Term_Diffusion_Multiespeces.h
 // Directory : $PEMFC_ROOT/src/Sources
 //
 /////////////////////////////////////////////////////////////////////////////
 
-#ifndef Source_Term_Nafion_Reaction_included
-#define Source_Term_Nafion_Reaction_included
+#ifndef Source_Term_Diffusion_Multiespeces_included
+#define Source_Term_Diffusion_Multiespeces_included
 
 #include <Source_base.h>
-#include <Param.h>
 #include <Ref_Zone_VEF.h>
 #include <Ref_Zone_Cl_VEF.h>
 #include <Ref_Domaine.h>
-#include <Ref_Sous_Zone.h>
+#include <Param.h>
 #include <DoubleTab.h>
-#include <Champ_base.h>
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// .DESCRIPTION : class Source_Term_Nafion_Reaction
-//  Source terme Si qui vient de la reaction electro-chimique dans la couche active CLa, CLc
-//    S_H2 = -ir / (2F)
-//    S_O2 = (ir+ip) / (4F)
-//    S_N2 = 0
-//    S_H20 = -(ir+ip) / (2F)
-// <Description of class Source_Term_Nafion_Reaction>
+// .DESCRIPTION : class Source_Term_Diffusion_Multiespeces
+// Cette classe represente un term source couple:
+// Source = - Si
+//   avec Si champ de taux de gas dissous dans Nafion:
+//	Si = Da_i*gamma_CL/eps_naf()Ceq_i - C_i)
+// <Description of class Source_Term_Diffusion_Multiespeces>
 //
 /////////////////////////////////////////////////////////////////////////////
 
-class Source_Term_Nafion_Reaction : public Source_base
+class Source_Term_Diffusion_Multiespeces : public Source_base
 {
 
-  Declare_instanciable( Source_Term_Nafion_Reaction ) ;
+  Declare_instanciable( Source_Term_Diffusion_Multiespeces ) ;
 
 public :
   DoubleTab& ajouter(DoubleTab& ) const;
@@ -58,32 +55,25 @@ public :
   void set_param(Param& param);
 protected :
   void remplir_volumes();
-  double eval_f(double jr, double jp) const;
 
   REF(Zone_VEF) la_zone_VEF;
   REF(Zone_Cl_VEF) la_zcl_VEF;
   DoubleVect volumes_;
 
-  Nom nom_espece_;
-  //Nom nom_domaine_;
-  Nom nom_ssz_CLa_;
-  Nom nom_ssz_CLc_;
-  Nom nom_pb_phi_;				// transport ionique pour recuperer le champ electro chimique
-  Nom nom_champ_ir_;			// courant de reaction
-  Nom nom_champ_ip_;			// courant de permeation
+  Nom nom_pb_X2_;			// pb de dissous X2 = O2/H2 dans Nafion
+  Nom nom_pb_H2O_;			// pb de dissous X2 = O2/H2 dans Nafion
+  Nom nom_pb_N2_;			// pb de dissous X2 = O2/H2 dans Nafion
+  Nom nom_champ_S_X2_;		    // champ source couple
+  Nom nom_champ_S_H2O_;		    // champ source couple
+  Nom nom_champ_S_N2_;		    // champ source couple
 
-  REF(Domaine) dom_;
-  REF(Sous_Zone) CL_a_;
-  REF(Sous_Zone) CL_c_;
+  REF(Domaine) dom_;			// domaine
+  REF(Champ_base) ch_S_X2_;		// champ source couple P0 pour VDF, P1NC pour VEF
+  REF(Champ_base) ch_S_H2O_;	// champ source couple P0 pour VDF, P1NC pour VEF
+  REF(Champ_base) ch_S_N2_;		// champ source couple P0 pour VDF, P1NC pour VEF
 
-  REF(Champ_base) ch_ir_;
-  REF(Champ_base) ch_ip_;
-
-  DoubleTab ir_, ip_;
-
-  double por_naf_;			// porosite de Nafion
-  double eps_naf_;			// ionomer proportionnel de Nafion
+  DoubleTab S_;			// 3 composants, stockage de valeurs interpoles depuis ch_S_X2, ch_S_vap, ch_S_N2_
 
 };
 
-#endif /* Source_Term_Nafion_Reaction_included */
+#endif /* Source_Term_Diffusion_Multiespeces_included */

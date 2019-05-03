@@ -166,7 +166,7 @@ void Loi_Fermeture_Diffusion_Nafion::mettre_a_jour(double temps)
         {
           for (int j=0; j<dimension; j++)
             {
-              N_i_naf(elem,j)=nu(elem)*grad(elem,0,j);
+              N_i_naf(elem,j)= - nu(elem)*grad(elem,0,j);			// flux N_i = -D_i_eff.grad(C)
             }
         }
     }
@@ -180,7 +180,7 @@ void Loi_Fermeture_Diffusion_Nafion::mettre_a_jour(double temps)
           double nd = 1.0 + 0.0028*ld + 0.0026*ld*ld;
           for (int j=0; j<dimension; j++)
             {
-              N_i_naf(elem,j)=nd/F*I_(elem, j)-nu(elem)*grad(elem,0,j);
+              N_i_naf(elem,j) = nd/F*I_(elem, j) - nu(elem)*grad(elem,0,j);	// flux N_H2O = -nd/F*I_i - D_w.grad(C)
             }
         }
     }
@@ -210,7 +210,7 @@ double Loi_Fermeture_Diffusion_Nafion::eval_D_i_naf(double T, double C)
     {
       return 4.1e-7*exp((-2602.)/T);
     }
-  else if (nom_espece_ == "02")
+  else if (nom_espece_ == "O2")
     {
       return 4.24e-6*exp(-2246. / T);
     }
@@ -222,6 +222,11 @@ double Loi_Fermeture_Diffusion_Nafion::eval_D_i_naf(double T, double C)
     {
       double ld = C / CSO3_;
       return (6.707e-8*ld + 6.387e-7)*exp(-2416. / T);
+    }
+  else
+    {
+      Cerr <<" unknown species in the list "<<finl;
+      Process::exit();
     }
   // pour compilos.
   return 0.;

@@ -14,13 +14,13 @@
 *****************************************************************************/
 /////////////////////////////////////////////////////////////////////////////
 //
-// File      : Source_Term_Nafion_Reaction.h
+// File      : Source_Terme_Nafion_electro_osmotic.h
 // Directory : $PEMFC_ROOT/src/Sources
 //
 /////////////////////////////////////////////////////////////////////////////
 
-#ifndef Source_Term_Nafion_Reaction_included
-#define Source_Term_Nafion_Reaction_included
+#ifndef Source_Terme_Nafion_electro_osmotic_included
+#define Source_Terme_Nafion_electro_osmotic_included
 
 #include <Source_base.h>
 #include <Param.h>
@@ -29,24 +29,27 @@
 #include <Ref_Domaine.h>
 #include <Ref_Sous_Zone.h>
 #include <DoubleTab.h>
+#include <Ref_Champ_base.h>
+#include <Ref_Champ_Inc.h>
 #include <Champ_base.h>
+#include <Champ_Inc.h>
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// .DESCRIPTION : class Source_Term_Nafion_Reaction
-//  Source terme Si qui vient de la reaction electro-chimique dans la couche active CLa, CLc
-//    S_H2 = -ir / (2F)
-//    S_O2 = (ir+ip) / (4F)
-//    S_N2 = 0
-//    S_H20 = -(ir+ip) / (2F)
-// <Description of class Source_Term_Nafion_Reaction>
+// .DESCRIPTION : class Source_Terme_Nafion_electro_osmotic
+//  Terme source de type electro-osmotic pour le dissous de H2O dans Nafion:
+//  Source = -div(nd/F*I_i) avec I_i = -kappa.grad(phi)
+//  -> champ couple: C_H2O, I_i
+//  Donc la formulation integrale
+//  <Source>w = nd/F*(I_i.face_normale)
+// <Description of class Source_Terme_Nafion_electro_osmotic>
 //
 /////////////////////////////////////////////////////////////////////////////
 
-class Source_Term_Nafion_Reaction : public Source_base
+class Source_Terme_Nafion_electro_osmotic : public Source_base
 {
 
-  Declare_instanciable( Source_Term_Nafion_Reaction ) ;
+  Declare_instanciable( Source_Terme_Nafion_electro_osmotic ) ;
 
 public :
   DoubleTab& ajouter(DoubleTab& ) const;
@@ -58,32 +61,26 @@ public :
   void set_param(Param& param);
 protected :
   void remplir_volumes();
-  double eval_f(double jr, double jp) const;
 
   REF(Zone_VEF) la_zone_VEF;
   REF(Zone_Cl_VEF) la_zcl_VEF;
   DoubleVect volumes_;
-
-  Nom nom_espece_;
-  //Nom nom_domaine_;
-  Nom nom_ssz_CLa_;
-  Nom nom_ssz_CLc_;
   Nom nom_pb_phi_;				// transport ionique pour recuperer le champ electro chimique
-  Nom nom_champ_ir_;			// courant de reaction
-  Nom nom_champ_ip_;			// courant de permeation
-
-  REF(Domaine) dom_;
-  REF(Sous_Zone) CL_a_;
-  REF(Sous_Zone) CL_c_;
-
-  REF(Champ_base) ch_ir_;
-  REF(Champ_base) ch_ip_;
-
-  DoubleTab ir_, ip_;
-
+  Nom nom_champ_I_;			    // courant ionique
+  REF(Champ_base) ch_I_;
+  REF(Champ_Inc) ch_C_;
+  DoubleTab I_, C_;
   double por_naf_;			// porosite de Nafion
   double eps_naf_;			// ionomer proportionnel de Nafion
-
+  inline double f_nd(double C) const;
 };
 
-#endif /* Source_Term_Nafion_Reaction_included */
+const double C_SO3 = 2036.; 	// [mol/m^3], Concentration en sites sulfones dans le Nafion
+const double F = 96500;			// Faraday constant C/mol
+inline double Source_Terme_Nafion_electro_osmotic::f_nd(double C) const
+{
+  double ld = C / C_SO3;
+  return 1. + 0.0028*ld + 0.0026*ld*ld;
+}
+
+#endif /* Source_Terme_Nafion_electro_osmotic_included */

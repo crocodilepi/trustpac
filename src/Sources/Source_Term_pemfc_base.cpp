@@ -43,32 +43,8 @@ Entree& Source_Term_pemfc_base::readOn( Entree& is )
   //Source_base::readOn( is );
   Cerr << " Source_Term_pemfc_base::readOn " << finl  ;
   Param param(que_suis_je());
-  param.ajouter("nom_espece",&nom_espece_,Param::REQUIRED);
-  param.ajouter("nom_domaine",&nom_domaine_,Param::REQUIRED);		// pas necessaire ? dom_ = equation().problem().domaine() ?
-  param.ajouter("nom_CLa",&nom_ssz_CLa_,Param::OPTIONAL);					// requis pour H2, N2, H20
-  param.ajouter("nom_CLc",&nom_ssz_CLc_,Param::OPTIONAL);					// requis pour O2, N2, H20
-  param.ajouter("por_naf", &por_naf_, Param::REQUIRED);
-  param.ajouter("eps_naf", &eps_naf_, Param::REQUIRED);
-  param.ajouter("gamma_CL", &gamma_CL_, Param::REQUIRED);
-  param.ajouter("C_SO3", &C_SO3_, Param::REQUIRED);
-  param.ajouter("nom_champ_D", &nom_champ_D_, Param::REQUIRED);			// diffusion_nafion requis si couplage
-  param.ajouter("nom_pb_T", &nom_pb_T_, Param::REQUIRED);
-  param.ajouter("nom_champ_T", &nom_champ_T_, Param::REQUIRED);
-  param.ajouter("nom_pb_ci_cathode", &nom_pb_ci_cathode_, Param::OPTIONAL);
-  param.ajouter("nom_champ_ci_cathode", &nom_champ_ci_cathode_, Param::OPTIONAL);
-  param.ajouter("nom_pb_ci_anode", &nom_pb_ci_anode_, Param::OPTIONAL);
-  param.ajouter("nom_champ_ci_anode", &nom_champ_ci_anode_, Param::OPTIONAL);
-  param.ajouter("nom_pb_phi", &nom_pb_phi_, Param::OPTIONAL);
-  param.ajouter("nom_champ_ir", &nom_champ_ir_, Param::OPTIONAL);
-  param.ajouter("nom_champ_ip", &nom_champ_ip_, Param::OPTIONAL);
-  param.ajouter("nom_op_diff", &nom_op_diff_, Param::OPTIONAL);
+  set_param(param);
   param.lire_avec_accolades(is);
-
-//  eps_naf_ = 0.2;					// ionomer proportion
-//  por_naf_ = 0.47; 					// porosity
-//  gamma_CL_= 1.67e7; 				// specific surface m2/m3
-//  T_0_ = 353.15;
-//  C_SO3 = 2036.;
 
   Motcles nom_especes_compris_(5);
   nom_especes_compris_[0] = "H2";
@@ -105,13 +81,13 @@ Entree& Source_Term_pemfc_base::readOn( Entree& is )
       assert(nom_champ_ci_cathode_ != "??");
       assert(nom_pb_ci_anode_ != "??");
       assert(nom_champ_ci_anode_ != "??");
-      if (nom_espece_ == "H2O" || nom_espece_ == "vap")
-        {
-          assert(nom_pb_phi_ != "??");
-          assert(nom_champ_ir_ != "??");
-          assert(nom_champ_ip_ != "??");
-          assert(nom_op_diff_ != "??");
-        }
+//      if (nom_espece_ == "H2O" || nom_espece_ == "vap")
+//        {
+//          assert(nom_pb_phi_ != "??");
+//          assert(nom_champ_ir_ != "??");
+//          assert(nom_champ_ip_ != "??");
+//          assert(nom_op_diff_ != "??");
+//        }
     }
 
   if(nom_ssz_CLa_ != "??")
@@ -119,7 +95,40 @@ Entree& Source_Term_pemfc_base::readOn( Entree& is )
   if(nom_ssz_CLc_ != "??")
     CL_c_ = dom_.valeur().ss_zone(nom_ssz_CLc_);
 
+  // discretiser le champ source -> pour post-traiter (diffusion des multi-especes dans le milieu poreux)
+  discretiser(equation().discretisation());
+
   return is;
+}
+
+
+void Source_Term_pemfc_base::set_param(Param& param)
+{
+  param.ajouter("nom_espece",&nom_espece_,Param::REQUIRED);
+  param.ajouter("nom_domaine",&nom_domaine_,Param::REQUIRED);		// pas necessaire ? dom_ = equation().problem().domaine() ?
+  param.ajouter("nom_CLa",&nom_ssz_CLa_,Param::OPTIONAL);					// requis pour H2, N2, H20
+  param.ajouter("nom_CLc",&nom_ssz_CLc_,Param::OPTIONAL);					// requis pour O2, N2, H20
+  param.ajouter("por_naf", &por_naf_, Param::REQUIRED);
+  param.ajouter("eps_naf", &eps_naf_, Param::REQUIRED);
+  param.ajouter("gamma_CL", &gamma_CL_, Param::REQUIRED);
+  param.ajouter("C_SO3", &C_SO3_, Param::REQUIRED);
+  param.ajouter("nom_champ_D", &nom_champ_D_, Param::REQUIRED);			// diffusion_nafion requis si couplage
+  param.ajouter("nom_pb_T", &nom_pb_T_, Param::REQUIRED);
+  param.ajouter("nom_champ_T", &nom_champ_T_, Param::REQUIRED);
+  param.ajouter("nom_pb_ci_cathode", &nom_pb_ci_cathode_, Param::OPTIONAL);
+  param.ajouter("nom_champ_ci_cathode", &nom_champ_ci_cathode_, Param::OPTIONAL);
+  param.ajouter("nom_pb_ci_anode", &nom_pb_ci_anode_, Param::OPTIONAL);
+  param.ajouter("nom_champ_ci_anode", &nom_champ_ci_anode_, Param::OPTIONAL);
+  //param.ajouter("nom_pb_phi", &nom_pb_phi_, Param::OPTIONAL);
+  //param.ajouter("nom_champ_ir", &nom_champ_ir_, Param::OPTIONAL);
+  //param.ajouter("nom_champ_ip", &nom_champ_ip_, Param::OPTIONAL);
+  //param.ajouter("nom_op_diff", &nom_op_diff_, Param::OPTIONAL);
+}
+
+void Source_Term_pemfc_base::discretiser(const Discretisation_base& dis)
+{
+  dis.discretiser_champ("temperature",equation().zone_dis().valeur(),"S","unit", 1 , 0. , ch_S_);
+  champs_compris_.ajoute_champ(ch_S_);
 }
 
 double Source_Term_pemfc_base::eval_f(double diffu, double Ci, double ci, double T) const
@@ -176,12 +185,12 @@ void Source_Term_pemfc_base::mettre_a_jour(double temps)
     ch_ci_cathode_.valeur().mettre_a_jour(temps);
   if(ch_ci_anode_.non_nul())
     ch_ci_anode_.valeur().mettre_a_jour(temps);
-  if(ch_ir_.non_nul())
-    ch_ir_.valeur().mettre_a_jour(temps);
-  if(ch_ip_.non_nul())
-    ch_ip_.valeur().mettre_a_jour(temps);
-  if(ch_op_.non_nul())
-    ch_op_.valeur().mettre_a_jour(temps);
+//  if(ch_ir_.non_nul())
+//    ch_ir_.valeur().mettre_a_jour(temps);
+//  if(ch_ip_.non_nul())
+//    ch_ip_.valeur().mettre_a_jour(temps);
+//  if(ch_op_.non_nul())
+//    ch_op_.valeur().mettre_a_jour(temps);
 }
 
 void Source_Term_pemfc_base::completer()
@@ -203,13 +212,13 @@ void Source_Term_pemfc_base::completer()
       Probleme_base& pb_ci_anode = ref_cast(Probleme_base,interprete().objet(nom_pb_ci_anode_));
       ch_ci_anode_ = pb_ci_anode.get_champ(nom_champ_ci_anode_);
     }
-  if(nom_pb_phi_ != "??" )
-    {
-      Probleme_base& pb_phi = ref_cast(Probleme_base,interprete().objet(nom_pb_phi_));
-      ch_ir_ = pb_phi.get_champ(nom_champ_ir_);
-      ch_ir_ = pb_phi.get_champ(nom_champ_ir_);
-      ch_op_ = pb_phi.get_champ(nom_op_diff_);
-    }
+//  if(nom_pb_phi_ != "??" )
+//    {
+//      Probleme_base& pb_phi = ref_cast(Probleme_base,interprete().objet(nom_pb_phi_));
+//      ch_ir_ = pb_phi.get_champ(nom_champ_ir_);
+//      ch_ir_ = pb_phi.get_champ(nom_champ_ir_);
+//      ch_op_ = pb_phi.get_champ(nom_op_diff_);
+//    }
   ch_C_ = equation().inconnue();
   ch_D_i_naf_ = equation().probleme().get_champ(nom_champ_D_);
 }

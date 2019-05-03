@@ -32,23 +32,19 @@
 #include <Param.h>
 #include <Ref_Domaine.h>
 #include <Ref_Operateur_base.h>
+#include <Champ_Fonc.h>
+#include <Discretisation_base.h>
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // .DESCRIPTION : class Source_Term_pemfc_base
 //  Modele de source de dissolution des especes (H2, N2, O2, H20 ou vap) de type:
-//  Sa_i = D_i_naf * gamma_CL / e_naf * (Ceq_i - C_i) + S_i
+//    Sa_i = D_i_naf * gamma_CL / e_naf * (Ceq_i - C_i) / ((1-por_naf)eps_naf)
 //  avec
-//  Ceq_i = c_i * R * T * H_i		avec i = H3 O2 N2
-//  Ceq_i = C_SO3 * ld_eq(c_i*R*T/P_sat(T)) 	avec i = H2O
-//  ld_eq (a) = 0.043 + 17.81*a -39.85a^2+36a^3
-//  P_sat(T) = exp(23.1961-3816.44/(T-46.13))
-//  S_H2 = -ir / (2F)
-//  S_O2 = (ir+ip) / (4F)
-//  S_N2 = 0
-//  S_H20 = -(ir+ip) / (2F) dans CL_c et null dans les zones restants
-//  En particulier avec H20, un terme source supplementaire :
-//  S_H20_supp = -nd/F*div(kappa.grad(phi)) = -nd/F*Operateur_diff(0)
+//    Ceq_i = c_i * R * T * H_i					avec i = H2 O2 N2
+//    Ceq_i = C_SO3 * ld_eq(c_i*R*T/P_sat(T)) 	avec i = H2O
+//    ld_eq (a) = 0.043 + 17.81*a -39.85a^2+36a^3
+//    P_sat(T) = exp(23.1961-3816.44/(T-46.13))
 // <Description of class Source_Term_pemfc_base>
 //
 /////////////////////////////////////////////////////////////////////////////
@@ -66,7 +62,8 @@ public :
   //virtual void associer_zones(const Zone_dis& ,const Zone_Cl_dis& )=0;
   //virtual void associer_pb(const Probleme_base& )=0;
   virtual void completer();
-  //void set_param(Param& param);
+  void set_param(Param& param);
+  void discretiser(const Discretisation_base& dis);
 protected :
 
   Nom nom_espece_;						// nom d'espece dans la liste { H2 O2 N2 vap H2O}
@@ -80,10 +77,10 @@ protected :
   Nom nom_champ_ci_cathode_;
   Nom nom_pb_ci_anode_;
   Nom nom_champ_ci_anode_;
-  Nom nom_pb_phi_;
-  Nom nom_champ_ir_;
-  Nom nom_champ_ip_;
-  Nom nom_op_diff_;
+  //Nom nom_pb_phi_;
+  //Nom nom_champ_ir_;
+  //Nom nom_champ_ip_;
+  //Nom nom_op_diff_;
 
   REF(Domaine) dom_;						// domaine
   REF(Sous_Zone) CL_a_;						// sous_zone anode
@@ -93,9 +90,9 @@ protected :
   REF(Champ_Inc)   ch_C_;					// Champ_Inc dissolved concentration -> inconnu()
   REF(Champ_base)  ch_ci_cathode_;			// Champ concentration de  diffusion des multi-especes -> couple
   REF(Champ_base)  ch_ci_anode_;			// Champ concentration de  diffusion des multi-especes -> couple
-  REF(Champ_base)  ch_ir_;					// champ de courant de reaction -> couple
-  REF(Champ_base)  ch_ip_;					// champ de courant de permeration -> couple
-  REF(Champ_base)  ch_op_;					// champ de operateur diffusion du potentiel ionique div(-kappa.grad(phi)) -> couple
+  //REF(Champ_base)  ch_ir_;					// champ de courant de reaction -> couple
+  //REF(Champ_base)  ch_ip_;					// champ de courant de permeration -> couple
+  //REF(Champ_base)  ch_op_;					// champ de operateur diffusion du potentiel ionique div(-kappa.grad(phi)) -> couple
 
   double eps_naf_;					// ionomer proportion
   double por_naf_; 					// porosity
@@ -107,22 +104,24 @@ protected :
   DoubleTab C_;
   DoubleTab ci_;
   DoubleTab T_;
-  DoubleTab ir_;
-  DoubleTab ip_;
-  DoubleTab op_;
+  //DoubleTab ir_;
+  //DoubleTab ip_;
+  //DoubleTab op_;
 
   DoubleVect volumes_;
+
+  Champ_Fonc ch_S_;			// champ de terme source P0 pour VDF, P1NC pour VEF
 
   virtual void remplir_volumes()=0;
   double eval_f(double diffu, double Ci, double ci, double T) const;
   double eval_derivee_f(double diffu) const;
 
-  double f_nd(double C) const;
-  double f_Psat(double T) const;
-  double f_lambda(double a) const;
-  double f_Henry_H2(double T) const;
-  double f_Henry_O2(double T) const;
-  double f_Henry_N2(double T) const;
+  inline double f_nd(double C) const;
+  inline double f_Psat(double T) const;
+  inline double f_lambda(double a) const;
+  inline double f_Henry_H2(double T) const;
+  inline double f_Henry_O2(double T) const;
+  inline double f_Henry_N2(double T) const;
 };
 
 const double R = 8.314;
