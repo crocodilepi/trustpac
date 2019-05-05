@@ -101,10 +101,14 @@ protected :
   double f_kappa(double T, double C) const;
 };
 
+const double a_lim = 1.e-3;
+
 inline double Loi_Fermeture_transport_ionique::f_kappa(double T, double C) const
 {
   double ld = C / C_SO3_;
-  double sigma = exp(1268*(1./303.-1./T))*(-0.326+0.5139*ld);
+  double ad = 0.5139*ld-0.326;
+  double ad_lim = max(ad,1.e-3);
+  double sigma = exp(1268*(1./303.-1./T))*ad_lim;
   return sigma*(1-por_naf_)*eps_naf_/(tor_naf_*tor_naf_);
 }
 
