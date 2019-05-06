@@ -1,0 +1,1227 @@
+dimension 2
+
+domaine dom_phi         # domaine transport ionique phi CL_c-MB-CL_a #
+
+domaine dom_psi         # domaine transport electrique psi GDLc-MPLc-CLc et CLa-MPLc-GDLa #
+
+domaine dom_T           # domaine conduction de chaleur Temperature GDLc-MPLc-CLc-MB-CLa-MPLc-GDLa #
+
+domaine dom_ci_anode    # domaine diffusion multi-especes concentration H2 vap N2 (anode) CLa-MPLa-GDLa #
+
+domaine dom_ci_cathode  # domaine diffusion multi-especes concentration O2 vap N2 (cathode) GDLc-MPLc-CLc #
+
+domaine dom_C_H2         # domaine dissou H2 MB-CLa #
+
+domaine dom_C_O2         # domaine dissou O2 CLc-MB #
+
+domaine dom_C_H2O        # domaine dissou H2O CL_c-MB-CL_a # 
+
+domaine dom_C_N2        # domaine dissou N2 CL_c-MB-CL_a # 
+
+# BEGIN MESH #
+Mailler dom_phi
+{
+    Pave Cavite
+	{
+		Origine 0. -10.
+		Nombre_de_Noeuds  5 10
+		Longueurs 2 45
+	}
+	{
+		Bord Gauche X = 0.	-10 <= Y <= 35    
+		Bord Droit  X = 2	-10 <= Y <= 35    
+		Bord Haut   Y = 35	 0. <= X <= 2    
+		Bord Bas    Y = -10  0. <= X <= 2    
+	}
+}
+Transformer dom_phi x*1e-5 y*1e-6
+Trianguler_H dom_phi
+
+Sous_zone CLa_phi
+associer CLa_phi dom_phi
+Lire CLa_phi { fonction_sous_zone (y_GE_(-10.e-6))_AND_(y_LE_(0.0)) }
+
+Sous_zone CLc_phi
+associer CLc_phi dom_phi
+Lire CLc_phi { fonction_sous_zone (y_GE_(25.e-6))_AND_(y_LE_(35.e-6)) }
+
+# Sous_zone MB_phi
+associer MB_phi dom_phi
+Lire MB_phi { fonction_sous_zone (y_GE_(0.0))_AND_(y_LE_(25.e-6)) } #
+ 
+Mailler dom_psi
+{
+	Pave Cavite2
+		{
+		Origine 0. 25.
+		Nombre_de_Noeuds  5 51
+		Longueurs 2 250
+		}
+		{
+		Bord Gauche         X = 0.	25. <= Y <= 275    
+		Bord Droit          X = 2	25. <= Y <= 275    
+		Bord Haut           Y = 275	0.  <= X <= 2    
+		Bord I_MB_CL_c      Y = 25 	0.  <= X <= 2    
+		}
+, 	
+    Pave Cavite3
+		{
+		Origine 0. -250
+		Nombre_de_Noeuds  5 51
+		Longueurs 2 250
+		}
+		{
+		Bord Gauche X = 0.	  -250 <= Y <= 0    
+		Bord Droit  X = 2	  -250 <= Y <= 0    
+		Bord Bas    Y = -250	0. <= X <= 2    
+		Bord I_MB_CL_a    Y = 0	0. <= X <= 2    
+		}
+}
+Transformer dom_psi x*1e-5 y*1e-6
+Trianguler_H dom_psi
+
+Sous_zone GDL_psi
+associer GDL_psi dom_psi
+Lire GDL_psi { fonction_sous_zone (y_GE_(75.e-6)_OR_(y_LE_(-50.e-6))) }
+
+Sous_zone MPL_psi
+associer MPL_psi dom_psi
+Lire MPL_psi { fonction_sous_zone ((y_GE_(35.e-6))_AND_(y_LE_(75.e-6)))_OR_((y_GE_(-50.e-6))_AND_(y_LE_(-10.e-6))) }
+
+Sous_zone CLa_psi
+associer CLa_psi dom_psi
+Lire CLa_psi { fonction_sous_zone (y_GE_(-10.e-6))_AND_(y_LE_(0.0)) }
+
+Sous_zone CLc_psi
+associer CLc_psi dom_psi
+Lire CLc_psi { fonction_sous_zone (y_GE_(25.e-6))_AND_(y_LE_(35.e-6)) }
+
+
+
+
+Mailler dom_T
+{
+    Pave Cavite
+	{
+		Origine 0. -250.
+		Nombre_de_Noeuds  5 106
+		Longueurs 2 525
+	}
+	{
+		Bord Gauche X = 0.	-250 <= Y <= 275    
+		Bord Droit  X = 2	-250 <= Y <= 275    
+		Bord Haut   Y = 275	  0. <= X <= 2    
+		Bord Bas    Y = -250  0. <= X <= 2    
+	}
+}
+Transformer dom_T x*1e-5 y*1e-6
+Trianguler_H dom_T
+Sous_zone GDL_T
+associer GDL_T dom_T
+Lire GDL_T { fonction_sous_zone (y_GE_(75.e-6)_OR_(y_LE_(-50.e-6))) }
+
+Sous_zone MPL_T
+associer MPL_T dom_T
+Lire MPL_T { fonction_sous_zone ((y_GE_(35.e-6))_AND_(y_LE_(75.e-6)))_OR_((y_GE_(-50.e-6))_AND_(y_LE_(-10.e-6))) }
+
+Sous_zone CL_T 
+associer CL_T dom_T
+Lire CL_T { fonction_sous_zone (y_GE_(-10.e-6))_AND_(y_LE_(0.0))_OR_((y_GE_(25.e-6))_AND_(y_LE_(35.e-6))) }
+
+
+
+Mailler dom_ci_anode
+{
+	Pave Cavite2
+		{
+		Origine 0. 25.
+		Nombre_de_Noeuds  5 51
+		Longueurs 2 250
+		}
+		{
+		Bord Gauche         X = 0.	25. <= Y <= 275    
+		Bord Droit          X = 2	25. <= Y <= 275    
+		Bord Haut           Y = 275	0.  <= X <= 2    
+		Bord Bas            Y = 25 	0.  <= X <= 2    
+		}
+}
+Transformer dom_ci_anode x*1e-5 y*1e-6
+Trianguler_H dom_ci_anode
+
+
+
+Mailler dom_ci_cathode
+{
+	Pave Cavite3
+		{
+		Origine 0. -250
+		Nombre_de_Noeuds  5 51
+		Longueurs 2 250
+		}
+		{
+		Bord Gauche X = 0.	  -250 <= Y <= 0    
+		Bord Droit  X = 2	  -250 <= Y <= 0    
+		Bord Bas    Y = -250	0. <= X <= 2    
+		Bord Haut   Y = 0	    0. <= X <= 2    
+		}
+}
+Transformer dom_ci_cathode x*1e-5 y*1e-6
+Trianguler_H dom_ci_cathode
+
+
+
+
+Mailler dom_C_H2
+{
+	Pave Cavite
+	{
+		Origine 0. -10.
+		Nombre_de_Noeuds  5 8
+		Longueurs 2 35
+	}
+	{
+		Bord Gauche X = 0.	-10 <= Y <= 25    
+		Bord Droit  X = 2	-10 <= Y <= 25    
+		Bord Haut   Y = 25	 0. <= X <= 2    
+		Bord Bas    Y = -10  0. <= X <= 2    
+	}
+}
+Transformer dom_C_H2 x*1e-5 y*1e-6
+Trianguler_H dom_C_H2
+
+Sous_zone CLa_C_H2 
+associer CLa_C_H2 dom_C_H2
+Lire CLa_C_H2 { fonction_sous_zone (y_GE_(-10.e-6))_AND_(y_LE_(0.0)) }
+
+Mailler dom_C_O2
+{
+	Pave Cavite
+	{
+		Origine 0. 0.
+		Nombre_de_Noeuds  5 8
+		Longueurs 2 35
+	}
+	{
+		Bord Gauche X = 0.	0 <= Y <= 35    
+		Bord Droit  X = 2	0 <= Y <= 35    
+		Bord Haut   Y = 35	0 <= X <= 2    
+		Bord Bas    Y = 0   0 <= X <= 2    
+	}
+}
+Transformer dom_C_O2 x*1e-5 y*1e-6
+Trianguler_H dom_C_O2
+
+Sous_zone CLc_C_O2 
+associer CLc_C_O2 dom_C_O2
+Lire CLc_C_O2 { fonction_sous_zone (y_GE_(25.e-6))_AND_(y_LE_(35.e-6)) }
+
+
+Mailler dom_C_H2O
+{
+    Pave Cavite
+	{
+		Origine 0. -10.
+		Nombre_de_Noeuds  5 10
+		Longueurs 2 45
+	}
+	{
+		Bord Gauche X = 0.	-10 <= Y <= 35    
+		Bord Droit  X = 2	-10 <= Y <= 35    
+		Bord Haut   Y = 35	 0. <= X <= 2    
+		Bord Bas    Y = -10  0. <= X <= 2    
+	}
+}
+Transformer dom_C_H2O x*1e-5 y*1e-6
+Trianguler_H dom_C_H2O
+
+Sous_zone CLa_C_H2O
+associer CLa_C_H2O dom_C_H2O
+Lire CLa_C_H2O { fonction_sous_zone (y_GE_(-10.e-6))_AND_(y_LE_(0.0)) }
+
+Sous_zone CLc_C_H2O
+associer CLc_C_H2O dom_C_H2O
+Lire CLc_C_H2O { fonction_sous_zone (y_GE_(25.e-6))_AND_(y_LE_(35.e-6)) }
+
+
+
+Mailler dom_C_N2
+{
+    Pave Cavite
+	{
+		Origine 0. -10.
+		Nombre_de_Noeuds  5 10
+		Longueurs 2 45
+	}
+	{
+		Bord Gauche X = 0.	-10 <= Y <= 35    
+		Bord Droit  X = 2	-10 <= Y <= 35    
+		Bord Haut   Y = 35	 0. <= X <= 2    
+		Bord Bas    Y = -10  0. <= X <= 2    
+	}
+}
+Transformer dom_C_N2 x*1e-5 y*1e-6
+Trianguler_H dom_C_N2
+
+Sous_zone CLa_C_N2
+associer CLa_C_N2 dom_C_N2
+Lire CLa_C_N2 { fonction_sous_zone (y_GE_(-10.e-6))_AND_(y_LE_(0.0)) }
+
+Sous_zone CLc_C_N2
+associer CLc_C_N2 dom_C_N2
+Lire CLc_C_N2 { fonction_sous_zone (y_GE_(25.e-6))_AND_(y_LE_(35.e-6)) }
+
+postraiter_domaine { domaines { dom_phi dom_psi dom_T dom_ci_anode dom_ci_cathode dom_C_H2 dom_C_O2 dom_C_H2O dom_C_N2 } format med }
+# END MESH #
+
+# transport ionique #
+# equation dphi/dt = 1/Cdl.div(-kappa.grad(phi)) + 1/Cdl.Si #
+Pb_Conduction pb_phi
+
+# transport electrique #
+# equation dpsi/dt = 1/Cdl.div(-sigma.grad(psi)) + 1/Cdl.Se #
+Pb_Conduction pb_psi
+
+# conduction de la chaleur #
+# modele de la chaleur: dT/dt = 1/rhoCp.div(-lambda.gradT) + 1/rhoCp.Source #
+Pb_Conduction pb_T
+
+# transport multi-especes H2 vap N2 dans anode #
+Pb_hydraulique_Concentration pb_ci_anode
+
+# transport multi-especes O2 vap N2 dans cathode #
+Pb_hydraulique_Concentration pb_ci_cathode
+
+# dissous de H2 dans Nafion #
+# equation: dC_H2/dt + 1/(1-por_naf)eps_naf.div(-D_H2_eff.grad(C_H2)) = 1/(1-por_naf)eps_naf.Sa_H2 #
+Pb_Conduction pb_C_H2
+
+# dissous de O2 dans Nafion #
+# equation: dC_O2/dt + 1/(1-por_naf)eps_naf.div(-D_O2_eff.grad(C_O2)) = 1/(1-por_naf)eps_naf.Sa_O2 #
+Pb_Conduction pb_C_O2
+
+# dissous de H2O dans Nafion #
+# equation: dC_H2O/dt + 1/(1-por_naf)eps_naf.div(-D_w.grad(C)) = 1/(1-por_naf)eps_naf.Sa_H2O #
+Pb_Conduction pb_C_H2O
+
+# dissous de N2 dans Nafion #
+# equation: dC_N2/dt + 1/(1-por_naf)eps_naf.div(-D_w.grad(C)) = 1/(1-por_naf)eps_naf.Sa_N2 #
+Pb_Conduction pb_C_N2
+
+# schema discretisation #
+VEFPrep1B dis
+
+# schema en temps #
+Scheme_euler_implicit sch
+Read sch
+{
+    tinit 0.
+    tmax 100.
+    nb_pas_dt_max 100
+    dt_min 1.e-20
+    dt_max 1.
+    dt_impr 0.001
+    dt_sauv 400.
+    seuil_statio 1.e-9
+    max_iter_implicite 50
+    solveur implicite 
+    { 
+        solveur  gmres { diag seuil -1 nb_it_max 5 } 
+        seuil_convergence_implicite 100. 
+    }
+    facsec 1
+    facsec_max 30.
+}
+
+# proprietaire pour le transport ionique #
+Solide prop_phi
+Read prop_phi
+{
+    rho     champ_uniforme 1 1.
+    Cp      champ_uniforme 1 1.
+    lambda  champ_uniforme_morceaux dom_phi 1 { defaut 12. CLa_phi 1.5 CLc_phi 1.5 }    # negliger l'anisotropie # 
+    # lambda doit etre remplace par kappa <- Loi_Fermeture_transport_ionique #
+}
+
+# couplage de conductivite kappa, courant Ii = kappa.gradT, laplacien Di = div(kappa.gradT) avec T,  C_H2O #
+Loi_Fermeture_transport_ionique loi_trans_ion
+associer pb_phi loi_trans_ion
+
+# proprietaire pour le transport electrique #
+Solide prop_psi
+Read prop_psi
+{
+    rho     champ_uniforme 1 1.
+    Cp      champ_uniforme 1 1.
+    lambda  champ_uniforme_morceaux dom_psi 1 { defaut 20 GDL_psi 23. MPL_psi 200. }    # negliger l'anisotropie #
+}
+
+# proprietaire solide pour la chaleur isotrope, homogene #
+Solide prop_T
+Read prop_T 
+{
+    # masse volumique kg/m3 #
+    rho     champ_uniforme 1 2250.
+    # capacite thermique J/kg/K #
+    Cp      champ_uniforme 1 708.
+    # conductivite thermique W/m/K #
+    lambda  champ_uniforme_morceaux dom_T 1 { defaut 0.186 GDL_T 0.35 MPL_T 10. CL_T 3. }
+}
+
+# proprietaire fluid pour la diffusion multi-especes anode H2 vap N2 #
+Fluide_Incompressible fluide_anode
+Read fluide_anode
+{
+    mu	Champ_Uniforme 1 1.85e-5	# Dynamic viscosity kg/m/s #  # depend de c et de T #
+    rho	Champ_Uniforme 1 1.17		# Density kg/m3 # # depend de c et de T #
+    beta_co Champ_Uniforme 3 1e-4 1e-4 1e-4 # Volume expansion coefficient values in concentration #
+}
+# diffusion coefficient pour multi-especes #
+Constituant c_anode
+Read c_anode
+{
+  coefficient_diffusion Champ_Uniforme 3 5e-2 5e-2 5e-2 # depend de P et T #
+}
+associate pb_ci_anode c_anode
+
+# champ de diffusion matriciel multi-scalaire pemfc_cas2  #
+loi_fermeture_pemfc_cas2 loi_diffusion_anode
+associate pb_ci_anode loi_diffusion_anode
+
+# proprietaire fluid pour la diffusion multi-especes cathode O2 vap N2 #
+Fluide_Incompressible fluide_cathode
+Read fluide_cathode
+{
+    mu	Champ_Uniforme 1 1.85e-5	# Dynamic viscosity kg/m/s #
+    rho	Champ_Uniforme 1 1.17		# Density kg/m3 #
+    beta_co Champ_Uniforme 3 1e-4 1e-4 1e-4 # Volume expansion coefficient values in concentration #
+}
+# diffusion coefficient pour multi-especes #
+Constituant c_cathode
+Read c_cathode
+{
+  coefficient_diffusion Champ_Uniforme 3 5e-2 5e-2 5e-2 
+}
+associate pb_ci_cathode c_cathode
+
+# champ de diffusion matriciel multi-scalaire pemfc_cas2  #
+loi_fermeture_pemfc_cas2 loi_diffusion_cathode
+associer pb_ci_cathode loi_diffusion_cathode
+
+# Nafion H2 #
+Solide prop_C_H2
+Read prop_C_H2
+{
+	rho     champ_uniforme 1 1.
+	Cp      champ_uniforme 1 1.
+	lambda  champ_uniforme 1 1.
+}
+
+# champ de diffusion effective diffusion_nafion, normal D_i_naf, flux N_i_naf #
+Loi_Fermeture_Diffusion_Nafion loi_nafion_H2 
+associate pb_C_H2 loi_nafion_H2
+
+# Nafion O2 #
+Solide prop_C_O2
+Read prop_C_O2
+{
+	rho     champ_uniforme 1 1.
+	Cp      champ_uniforme 1 1.
+	lambda  champ_uniforme 1 1.
+}
+
+# champ de diffusion effective diffusion_nafion, normal D_i_naf, flux N_i_naf #
+Loi_Fermeture_Diffusion_Nafion loi_nafion_O2
+associate pb_C_O2 loi_nafion_O2
+
+# Nafion H2O #
+Solide prop_C_H2O
+Read prop_C_H2O
+{
+	rho     champ_uniforme 1 1.
+	Cp      champ_uniforme 1 1.
+	lambda  champ_uniforme 1 1.
+}
+
+# champ de diffusion effective diffusion_nafion, normal D_i_naf, flux N_i_naf #
+Loi_Fermeture_Diffusion_Nafion loi_nafion_H2O
+associate pb_C_H2O loi_nafion_H2O
+
+# Nafion H2O #
+Solide prop_C_N2
+Read prop_C_N2
+{
+	rho     champ_uniforme 1 1.
+	Cp      champ_uniforme 1 1.
+	lambda  champ_uniforme 1 1.
+}
+
+# champ de diffusion effective diffusion_nafion, normal D_i_naf, flux N_i_naf #
+Loi_Fermeture_Diffusion_Nafion loi_nafion_N2
+associate pb_C_N2 loi_nafion_N2
+
+Associate pb_phi dom_phi
+Associate pb_phi prop_phi
+
+Associate pb_psi dom_psi
+Associate pb_psi prop_psi
+
+Associate pb_T dom_T
+Associate pb_T prop_T
+
+Associate pb_ci_anode dom_ci_anode
+associate pb_ci_anode fluide_anode
+
+Associate pb_ci_cathode dom_ci_cathode
+associate pb_ci_cathode fluide_cathode
+
+Associate pb_C_H2 dom_C_H2
+Associate pb_C_H2 prop_C_H2
+
+Associate pb_C_O2 dom_C_O2
+Associate pb_C_O2 prop_C_O2
+
+Associate pb_C_H2O dom_C_H2O
+Associate pb_C_H2O prop_C_H2O
+
+Associate pb_C_N2 dom_C_N2
+Associate pb_C_N2 prop_C_N2
+
+
+Probleme_Couple pbc
+Associate pbc pb_phi
+Associate pbc pb_psi
+Associate pbc pb_T
+Associate pbc pb_ci_anode
+Associate pbc pb_ci_cathode
+Associate pbc pb_C_H2
+Associate pbc pb_C_O2
+Associate pbc pb_C_H2O
+Associate pbc pb_C_N2
+
+Associate pbc sch
+
+Discretize pbc dis
+
+Read loi_trans_ion
+{
+   T_0 		353.15		# default value #
+   CSO3 	2036.
+   por_naf 	0.47		# porosite de Nafion #
+   eps_naf 	0.2		# ionomer proportionnel de Nafion #
+   tor_naf 	1.		# tortuosite de Nafion # 
+   nom_ssz_CLc CLc_phi
+   nom_ssz_CLa CLa_phi
+   nom_pb_T 	pb_T
+   nom_champ_T 	temperature
+   nom_pb_C_H2 pb_C_H2
+  nom_champ_C_H2 temperature
+  nom_pb_C_O2 pb_C_O2 
+  nom_champ_C_O2 temperature
+  nom_pb_C_H2O pb_C_H2O
+  nom_champ_C_H2O temperature
+  nom_pb_psi pb_psi
+  nom_champ_psi temperature
+  nom_pb_phi pb_phi
+  nom_champ_phi temperature
+}
+
+read loi_diffusion_anode { }
+
+read loi_diffusion_cathode { }
+
+# champ de diffusion effective de H2 diffusion_nafion, normal D_i_naf, flux N_i_naf #
+Read loi_nafion_H2
+{
+   nom_espece H2
+   T_0 		353.15		# default value #
+   por_naf 	0.47		# porosite de Nafion #
+   eps_naf 	0.2		# ionomer proportionnel de Nafion #
+   tor_naf 	1.		# tortuosite de Nafion # 
+   nom_pb_T pb_T
+   nom_champ_T temperature
+   CSO3 2036.
+}
+
+# champ de diffusion effective O2 diffusion_nafion, normal D_i_naf, flux N_i_naf #
+Read loi_nafion_O2
+{
+   nom_espece O2
+   T_0 		353.15		# default value #
+   por_naf 	0.47		# porosite de Nafion #
+   eps_naf 	0.2		# ionomer proportionnel de Nafion #
+   tor_naf 	1.		# tortuosite de Nafion # 
+   nom_pb_T pb_T
+   nom_champ_T temperature
+   CSO3 2036.
+}
+
+# champ de diffusion effective  H20 diffusion_nafion, normal D_i_naf, flux N_i_naf #
+Read loi_nafion_H2O
+{
+   nom_espece H2O
+   T_0 		353.15		# default value #
+   por_naf 	0.47		# porosite de Nafion #
+   eps_naf 	0.2		# ionomer proportionnel de Nafion #
+   tor_naf 	1.		# tortuosite de Nafion # 
+   nom_pb_T pb_T
+   nom_champ_T temperature
+   CSO3 2036.
+   nom_pb_phi pb_phi
+   nom_champ_I I_i		# le courant ionique du pb_phi #
+}
+
+# champ de diffusion effective N2 diffusion_nafion, normal D_i_naf, flux N_i_naf #
+Read loi_nafion_N2
+{
+   nom_espece N2
+   T_0 		353.15		# default value #
+   por_naf 	0.47		# porosite de Nafion #
+   eps_naf 	0.2		# ionomer proportionnel de Nafion #
+   tor_naf 	1.		# tortuosite de Nafion # 
+   nom_pb_T pb_T
+   nom_champ_T temperature
+   CSO3 2036.
+}
+
+Read pb_phi
+{
+	Conduction
+	{
+		diffusion 
+		{ 
+			transport_ie 
+			{ 
+			    diffusivity_fieldname kappa             # kappa <- loi_fermeture_transport_ionique #
+			    Cdl champ_uniforme_morceaux dom_phi 1 { defaut 10000. CLa_phi 10. CLc_phi 10. }
+			} 
+		}
+		# the ionic potential is treated such as the temperature #
+		initial_conditions { temperature Champ_Uniforme 1 0. }          # ??? #
+		
+		boundary_conditions {
+			Gauche  paroi_adiabatique
+			Droit   paroi_adiabatique
+			Haut    paroi_adiabatique
+			Bas     paroi_adiabatique
+		}
+	
+		sources {  
+		    # couplage phi avec psi, T, C_H2, C_O2, C_H2O #
+		    Source_Term_pemfc_transport_ionique {
+		        nom_ssz_CLc CLc_phi
+		        nom_ssz_CLa CLa_phi
+		        nom_pb_phi pb_phi
+		        nom_champ_ir ir
+		        nom_champ_ip ip
+		        sign 1.
+		        Cdl champ_uniforme_morceaux dom_phi 1 { defaut 10000. CLa_phi 10. CLc_phi 10. }
+		    }
+	    }
+    }
+    
+	Post_processing
+	{
+	    Definition_champs 
+	    {
+	        diff_i operateur_eqn { numero_op 0 source refchamp {  pb_champ pb_phi temperature } }
+		    s_i operateur_eqn { numero_source 0 source refchamp {  pb_champ pb_phi temperature } }
+        }	
+		Format lata
+		fields dt_post 10.
+		{
+		    TEMPERATURE ELEM	# ionic potential #	
+		    s_i 
+		    diff_i
+	        conductivite elem
+	        kappa elem
+	        I_i elem	        
+		}
+	}
+	
+}
+
+
+Read pb_psi
+{
+	
+	Conduction {
+	
+		diffusion 
+		{ 
+			transport_ie 
+			{
+			    Cdl champ_uniforme_morceaux dom_psi 1 { defaut 10000. CLa_psi 10. CLc_psi 10. }
+			} 
+		}
+		
+		initial_conditions {
+			temperature Champ_Uniforme 1 0.7
+		}
+		boundary_conditions {
+			Gauche    paroi_adiabatique
+			Droit     paroi_adiabatique
+			Haut      paroi_temperature_imposee Champ_Front_Uniforme 1 0.7
+			Bas       paroi_temperature_imposee Champ_Front_Uniforme 1 0.
+		 	I_MB_CL_c paroi_adiabatique
+		 	I_MB_CL_a paroi_adiabatique
+		}
+	    sources { 
+	        # seul couplage psi avec phi #
+	        # puissance_thermique Champ_couplage_transport_ie 
+	        {
+		        nom_pb_electrique pb_electrique 
+		        nom_dom_electrique dom_electrique 
+		        nom_szz_electrique CL_electrique 
+		        nom_pb_ionique pb_ionique 
+		        nom_dom_ionique dom_ionique 
+		        nom_szz_ionique CL_ionique 
+		        nom_pb pb_electrique
+		    } #
+		    
+		    # couplage psi avec: phi, T, C_H2, C_O2, C_H2O #  # TO-DO #
+		    Source_Term_pemfc_transport_ionique {
+		        nom_ssz_CLc CLc_psi
+		        nom_ssz_CLa CLa_psi
+		        nom_pb_phi pb_phi
+		        nom_champ_ir ir
+		        nom_champ_ip ip
+		        sign -1.
+		        Cdl champ_uniforme_morceaux dom_psi 1 { defaut 10000. CLa_psi 10. CLc_psi 10. }
+		    }
+	    }
+	}
+
+	Post_processing
+	{
+	    Definition_champs 
+	    {
+            diff_e operateur_eqn { numero_op 0 source refchamp {  pb_champ pb_psi temperature } }
+		    s_e operateur_eqn { numero_source 0 source refchamp {  pb_champ pb_psi temperature } }
+	    }
+		Format lata
+		fields dt_post 10.
+		{
+		    TEMPERATURE ELEM		# electric potential #
+		    s_e elem
+		    diff_e elem
+		    conductivite elem
+		}
+	}
+	
+}
+
+
+# chaleur #
+read pb_T
+{
+    Conduction
+	{
+	    equation_non_resolue 1
+		diffusion { }
+		# the dissolved concentration of H2 treated such as the temperature #
+		initial_conditions { temperature Champ_Uniforme 1 353.15 }
+		Boundary_conditions {
+			Gauche  paroi_adiabatique
+			Droit   paroi_adiabatique
+			Haut    paroi_temperature_imposee Champ_Front_Uniforme 1 353.15
+			Bas     paroi_temperature_imposee Champ_Front_Uniforme 1 353.15
+		}
+		# TO-DO: add the source terms #
+    }
+    Post_processing
+	{
+	    Definition_champs 
+	    {
+            diff_T operateur_eqn { numero_op 0 source refchamp {  pb_champ pb_T temperature } }
+	    }
+	    
+		Format lata
+		fields dt_post 10.
+		{
+		    TEMPERATURE ELEM
+		    diff_T elem
+		}
+	}
+}
+
+# main problem : dissolved concentration H2 in the Nafion #
+read pb_C_H2
+{
+   Conduction
+	{
+	    # operateur diffusion: div(-D_eff*gradC) / ((1-por)eps) #
+		diffusion { nafion { 
+		    diffusivity_fieldname diffusion_nafion 
+		    por_naf 0.47	# porosite de Nafion #
+            eps_naf 0.2		# ionomer proportionnel de Nafion #
+		    } 
+		}
+		
+		initial_conditions { temperature Champ_Uniforme 1 16.5 }  
+		# preprocessing Henry si possible #
+		# H_H2 = 1/4.5e3 , C_H2 = c_H2.R.T.H = 30.*8.314*298/4500 = 16.5 #
+		
+		boundary_conditions {
+			Gauche  paroi_adiabatique
+			Droit   paroi_adiabatique
+			Haut    paroi_temperature_imposee Champ_Front_Uniforme 1 0. # C_H2 at I_MB_CLc = 0 #
+			Bas     paroi_adiabatique
+		}
+	
+		sources { 
+		    # source term S comming from the electrochemical reactions in CL: S_i /((1-por)eps) #
+		    Source_term_nafion_reaction
+		    {
+		        nom_espece H2
+		        nom_CLa CLa_C_H2
+		        nom_pb_phi pb_phi
+		        nom_champ_ir ir
+		        nom_champ_ip ip
+		        por_naf 0.47	# porosite de Nafion #
+                eps_naf 0.2		# ionomer proportionnel de Nafion #
+		    }		    
+		    ,
+		    # source term comming from the diffusion flux of gaz Sa_i = (D_naf * gamma_CL / e_ionomer *(Ceq - C))/((1-por)eps) #
+		    /* Source_term_pemfc
+		    {
+		        nom_espece H2           # in the list of H2 O2 N2 vap #
+		        nom_domaine dom_C_H2
+		        nom_CLa CLa_C_H2
+		        por_naf 0.47
+		        eps_naf 0.2
+		        gamma_CL 1.67e7
+		        C_SO3 2036.
+		        nom_champ_D diffusion_nafion # champ de diffusion #
+		        nom_pb_T pb_T
+		        nom_champ_T temperature
+		        nom_pb_ci_anode pb_ci_anode
+		        nom_champ_ci_anode concentration # H2 dans la liste multi-especes H2 vap N2 #
+		    } */ 
+		    Source_Term_Nafion_diffusion 
+		    {
+		        nom_espece H2           # in the list of H2 O2 N2 vap #
+		        nom_domaine dom_C_H2
+		        nom_CLa CLa_C_H2
+		        por_naf 0.47
+		        eps_naf 0.2
+		        gamma_CL 1.67e7
+		        C_SO3 2036.
+		        nom_pb_C pb_C_H2
+		        nom_champ_C temperature
+		        nom_champ_D diffusion_nafion # champ de diffusion #
+		        nom_pb_T pb_T
+		        nom_champ_T temperature
+		        nom_pb_ci_anode pb_ci_anode
+		        nom_champ_ci_anode concentration # H2 dans la liste multi-especes H2 vap N2 #
+		    }		    
+        }	
+    }
+    Post_processing
+	{
+        format lata
+        fields dt_post 10.
+		{
+		    temperature som
+		}
+	}
+}
+
+read pb_C_O2
+{
+   Conduction
+	{
+		diffusion { nafion { 
+		    diffusivity_fieldname diffusion_nafion 
+		    por_naf 0.47	# porosite de Nafion #
+            eps_naf 0.2		# ionomer proportionnel de Nafion #
+		    } 
+		}
+		
+		initial_conditions { temperature Champ_Uniforme 1 1.6 }  
+		# preprocessing Henry si possible #
+		# H_O2 = 7.03e-5 , C_O2 = c_O2.R.T.H = 9*8.314*298*7.03e-5 = 1.6 #
+		
+		boundary_conditions {
+			Gauche  paroi_adiabatique
+			Droit   paroi_adiabatique
+			Haut    paroi_adiabatique
+			Bas     paroi_adiabatique
+		}
+	
+		sources {     
+		    # source term S comming from the electrochemical reactions in CL #
+		    Source_term_nafion_reaction
+		    {
+		        nom_espece O2
+		        nom_CLc CLc_C_O2
+		        nom_pb_phi pb_phi
+		        nom_champ_ir ir
+		        nom_champ_ip ip
+		        por_naf 0.47	# porosite de Nafion #
+                eps_naf 0.2		# ionomer proportionnel de Nafion #
+		    }
+		    ,
+		    # source term comming from the diffusion flux of gaz S = diffu * gamma_CL / e_ionomer *(Ceq - C) #
+		    /* Source_term_pemfc
+		    {
+		        nom_espece O2           # in the list of H2 O2 N2 vap #
+		        nom_domaine dom_C_O2
+		        nom_CLc CLc_C_O2
+		        por_naf 0.47
+		        eps_naf 0.2
+		        gamma_CL 1.67e7
+		        C_SO3 2036.
+		        nom_champ_D diffusion_nafion # champ de diffusion #
+		        nom_pb_T pb_T
+		        nom_champ_T temperature
+		        nom_pb_ci_cathode pb_ci_cathode
+		        nom_champ_ci_cathode concentration # O2 dans la liste multi-especes O2 vap N2 #
+		    } */
+		    Source_Term_Nafion_diffusion 
+		    {
+		        nom_espece O2           # in the list of H2 O2 N2 vap #
+		        nom_domaine dom_C_O2
+		        nom_CLc CLc_C_O2
+		        por_naf 0.47
+		        eps_naf 0.2
+		        gamma_CL 1.67e7
+		        C_SO3 2036.
+		        nom_pb_C pb_C_O2
+		        nom_champ_C temperature
+		        nom_champ_D diffusion_nafion # champ de diffusion #
+		        nom_pb_T pb_T
+		        nom_champ_T temperature
+		        nom_pb_ci_cathode pb_ci_cathode
+		        nom_champ_ci_cathode concentration # O2 dans la liste multi-especes O2 vap N2 #
+		    }
+        }	
+    }
+    Post_processing
+	{
+        format lata
+        fields dt_post 10.
+		{
+		    temperature som
+		}
+	}
+}
+
+read pb_C_H2O
+{
+   Conduction
+	{
+		diffusion { nafion { 
+		    diffusivity_fieldname diffusion_nafion 
+		    por_naf 0.47	# porosite de Nafion #
+            eps_naf 0.2		# ionomer proportionnel de Nafion #
+		    } 
+		}
+		
+		initial_conditions { temperature Champ_Uniforme 1 10. }             # TO-DO: VERIFIER #
+		# P_sat = exp(23.19-3816/(T-46)) = 2980. #  
+		# a_H2O = c_H2O.R.T / P_sat = 8*8.314*298/2980. = 6.65 #
+		# ld = 0.043+17.81a-39.85a^2+36a^3 = 4877 #
+		# C_H2O = C_SO3*ld = 9.931e6 -> ??? #
+		
+		boundary_conditions {
+			Gauche  paroi_adiabatique
+			Droit   paroi_adiabatique
+			Haut    paroi_adiabatique
+			Bas     paroi_adiabatique
+		}
+	
+		sources {     
+		    # source term S comming from the electrochemical reactions in CL #
+		    Source_term_nafion_reaction
+		    {
+		        nom_espece H2O
+		        nom_CLc CLc_C_H2O
+		        nom_CLa CLa_C_H2O
+		        nom_pb_phi pb_phi
+		        nom_champ_ir ir
+		        nom_champ_ip ip
+		        por_naf 0.47	# porosite de Nafion #
+                eps_naf 0.2		# ionomer proportionnel de Nafion #
+		    }	
+		    ,
+		    # source term comming from the diffusion flux of gaz S = diffu * gamma_CL / e_ionomer *(Ceq - C) #
+		    /* Source_term_pemfc
+		    {
+		        nom_espece H2O           # in the list of H2 O2 N2 vap #
+		        nom_domaine dom_C_H2O
+		        nom_CLc CLc_C_H2O
+		        nom_CLa CLa_C_H2O
+		        por_naf 0.47
+		        eps_naf 0.2
+		        gamma_CL 1.67e7
+		        C_SO3 2036.
+		        nom_champ_D diffusion_nafion # champ de diffusion #
+		        nom_pb_T pb_T
+		        nom_champ_T temperature
+		        nom_pb_ci_cathode pb_ci_cathode         # ATTENTION: with H2O need both CL_a and CL_c #
+		        nom_champ_ci_cathode concentration      # H2O dans la liste multi-especes O2 vap N2 #
+		        nom_pb_ci_anode pb_ci_anode             # ATTENTION: with H2O need both CL_a and CL_c #
+		        nom_champ_ci_anode concentration        # H2O dans la liste multi-especes H2 vap N2 #
+		    } */
+		    Source_Term_Nafion_diffusion 
+		    {
+		        nom_espece H2O           # in the list of H2 O2 N2 vap #
+		        nom_domaine dom_C_H2O
+		        nom_CLc CLc_C_H2O
+		        nom_CLa CLa_C_H2O
+		        por_naf 0.47
+		        eps_naf 0.2
+		        gamma_CL 1.67e7
+		        C_SO3 2036.
+		        nom_pb_C pb_C_H2O
+		        nom_champ_C temperature
+		        nom_champ_D diffusion_nafion # champ de diffusion #
+		        nom_pb_T pb_T
+		        nom_champ_T temperature
+		        nom_pb_ci_cathode pb_ci_cathode         # ATTENTION: with H2O need both CL_a and CL_c #
+		        nom_champ_ci_cathode concentration      # H2O dans la liste multi-especes O2 vap N2 #
+		        nom_pb_ci_anode pb_ci_anode             # ATTENTION: with H2O need both CL_a and CL_c #
+		        nom_champ_ci_anode concentration        # H2O dans la liste multi-especes H2 vap N2 #
+		    }		    
+		    ,
+		    Source_terme_Nafion_electro_osmotic
+		    {
+		        nom_pb_phi pb_phi
+                nom_champ_I I_i
+                por_naf 0.47
+		        eps_naf 0.2
+		    }
+        }	
+    }
+    Post_processing
+	{
+        format lata
+        fields dt_post 10.
+		{
+		    temperature som
+		}
+	}
+}
+
+read pb_C_N2
+{
+   Conduction
+	{
+		diffusion { nafion { 
+		    diffusivity_fieldname diffusion_nafion 
+		    por_naf 0.47	# porosite de Nafion #
+            eps_naf 0.2		# ionomer proportionnel de Nafion #
+		    } 
+		}
+		
+		initial_conditions { temperature Champ_Uniforme 1 1. }             # TO-DO: VERIFIER #
+		
+		boundary_conditions {
+			Gauche  paroi_adiabatique
+			Droit   paroi_adiabatique
+			Haut    paroi_adiabatique
+			Bas     paroi_adiabatique
+		}
+	
+		sources {     
+		    # source term S comming from the electrochemical reactions in CL #
+		    Source_term_nafion_reaction
+		    {
+		        nom_espece N2
+		        nom_CLc CLc_C_N2
+		        nom_CLa CLa_C_N2
+		        nom_pb_phi pb_phi
+		        nom_champ_ir ir
+		        nom_champ_ip ip
+		        por_naf 0.47	# porosite de Nafion #
+                eps_naf 0.2		# ionomer proportionnel de Nafion #
+		    }	
+		    ,
+		    # source term comming from the diffusion flux of gaz S = diffu * gamma_CL / e_ionomer *(Ceq - C) #
+		    /* Source_term_pemfc
+		    {
+		        nom_espece N2           # in the list of H2 O2 N2 vap #
+		        nom_domaine dom_C_N2
+		        nom_CLc CLc_C_N2
+		        nom_CLa CLa_C_N2
+		        por_naf 0.47
+		        eps_naf 0.2
+		        gamma_CL 1.67e7
+		        C_SO3 2036.
+		        nom_champ_D diffusion_nafion # champ de diffusion #
+		        nom_pb_T pb_T
+		        nom_champ_T temperature
+		        nom_pb_ci_cathode pb_ci_cathode         # ATTENTION: with N2 need both CL_a and CL_c #
+		        nom_champ_ci_cathode concentration      # N2 dans la liste multi-especes O2 vap N2 #
+		        nom_pb_ci_anode pb_ci_anode             # ATTENTION: with N2 need both CL_a and CL_c #
+		        nom_champ_ci_anode concentration        # N2 dans la liste multi-especes H2 vap N2 #
+		    } */
+		    Source_Term_Nafion_diffusion 
+		    {
+		        nom_espece N2           # in the list of H2 O2 N2 vap #
+		        nom_domaine dom_C_N2
+		        nom_CLc CLc_C_N2
+		        nom_CLa CLa_C_N2
+		        por_naf 0.47
+		        eps_naf 0.2
+		        gamma_CL 1.67e7
+		        C_SO3 2036.
+		        nom_pb_C pb_C_N2
+		        nom_champ_C temperature
+		        nom_champ_D diffusion_nafion # champ de diffusion #
+		        nom_pb_T pb_T
+		        nom_champ_T temperature
+		        nom_pb_ci_cathode pb_ci_cathode         # ATTENTION: with H2O need both CL_a and CL_c #
+		        nom_champ_ci_cathode concentration      # H2O dans la liste multi-especes O2 vap N2 #
+		        nom_pb_ci_anode pb_ci_anode             # ATTENTION: with H2O need both CL_a and CL_c #
+		        nom_champ_ci_anode concentration        # H2O dans la liste multi-especes H2 vap N2 #
+		    }
+        }	
+    }
+    Post_processing
+	{
+        format lata
+        fields dt_post 10.
+		{
+		    temperature som
+		}
+	}
+}
+
+
+# diffusion multi-especes H2 vap N2 dans GDL-MPL-CL anode #
+read pb_ci_anode
+{
+    Navier_Stokes_standard
+	{
+	    equation_non_resolue 1
+	 	solveur_pression GCP {  precond ssor { omega 1.500000 } seuil 1.e-14 impr }
+        projection_initiale 0								
+		convection { amont }
+		diffusion { }
+		initial_conditions
+		{
+			vitesse Champ_Uniforme 2 0. 0.
+		}
+		boundary_conditions
+		{
+			Haut    Paroi_fixe
+			Droit	Paroi_fixe
+			Bas	    Paroi_fixe
+			Gauche	Paroi_fixe
+		}
+		
+	}
+	Convection_diffusion_Concentration
+	{
+		diffusion { pemfc { diffusivity_fieldname pemfc_cas2 } }
+		convection { negligeable }
+		initial_conditions
+		{
+			concentration Champ_Fonc_XYZ dom_ci_anode 3 30. 8. 13.
+		}
+		boundary_conditions
+		{
+			   Haut	  Paroi # flux null #
+			   Droit  Paroi
+			   Gauche Paroi
+			   Bas    Scalaire_impose_paroi Champ_Front_uniforme 3 30. 8. 13. 
+		}
+		Sources
+		{
+		    Source_Term_Diffusion_Multiespeces {
+		        nom_pb_X2 pb_C_H2
+		        nom_champ_S_X2 S
+		        nom_pb_H2O pb_C_H2O
+		        nom_champ_S_H2O S
+		        nom_pb_N2 pb_C_N2
+		        nom_champ_S_N2 S
+		    }
+		}
+	}
+	Post_processing
+    {
+	    Definition_champs 
+	    {
+		    diffusion_matrice_a operateur_eqn { sources { refchamp { pb_champ pb_ci_anode concentration } } numero_op 0 }
+	    }
+      	format lata
+        fields dt_post 10.
+        {
+            concentration   elem 
+            pemfc_cas2      elem
+	    }
+    }
+}
+
+# diffusion multi-especes O2 vap N2 dans GDL-MPL-CL cathode #
+read pb_ci_cathode
+{
+    Navier_Stokes_standard
+	{
+	    equation_non_resolue 1
+	 	solveur_pression GCP {  precond ssor { omega 1.500000 } seuil 1.e-14 impr }
+        projection_initiale 0								
+		convection { amont }
+		diffusion { }
+		initial_conditions
+		{
+			vitesse Champ_Uniforme 2 0. 0.
+		}
+		boundary_conditions
+		{
+			Haut    Paroi_fixe
+			Droit	Paroi_fixe
+			Bas	    Paroi_fixe
+			Gauche	Paroi_fixe
+		}
+		
+	}
+	Convection_diffusion_Concentration
+	{
+		diffusion { pemfc { diffusivity_fieldname pemfc_cas2 } }
+		convection { negligeable }
+		initial_conditions
+		{
+			concentration Champ_Fonc_XYZ dom_ci_anode 3 9. 8. 34.
+		}
+		boundary_conditions
+		{
+			   Haut	  Scalaire_impose_paroi Champ_Front_uniforme 3 9. 8. 34.
+			   Droit  Paroi # flux null #
+			   Gauche Paroi # flux null #
+			   Bas    Paroi # flux null #
+		}
+		Sources
+		{
+			Source_Term_Diffusion_Multiespeces {
+		        nom_pb_X2 pb_C_H2
+		        nom_champ_S_X2 S
+		        nom_pb_H2O pb_C_H2O
+		        nom_champ_S_H2O S
+		        nom_pb_N2 pb_C_N2
+		        nom_champ_S_N2 S
+		    }
+		}
+		
+	}
+	Post_processing
+    {
+	    Definition_champs 
+	    {
+		    diffusion_matrice_c operateur_eqn { sources { refchamp { pb_champ pb_ci_cathode concentration } } numero_op 0 }
+	    }
+      	format lata
+        fields dt_post 10.
+        {
+            concentration   elem 
+            pemfc_cas2      elem
+	    }
+    }
+	    
+}
+
+Solve pbc
+
+End
+
