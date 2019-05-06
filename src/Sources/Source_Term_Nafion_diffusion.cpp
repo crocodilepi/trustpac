@@ -114,7 +114,9 @@ void Source_Term_Nafion_diffusion::set_param(Param& param)
   param.ajouter("por_naf", &por_naf_, Param::REQUIRED);
   param.ajouter("eps_naf", &eps_naf_, Param::REQUIRED);
   param.ajouter("gamma_CL", &gamma_CL_, Param::REQUIRED);
-  param.ajouter("C_SO3", &C_SO3_, Param::REQUIRED);
+  param.ajouter("C_SO3", &C_SO3_, Param::OPTIONAL);
+  param.ajouter("nom_pb_C", &nom_pb_C_, Param::REQUIRED);
+  param.ajouter("nom_champ_C", &nom_champ_C_, Param::REQUIRED);
   param.ajouter("nom_champ_D", &nom_champ_D_, Param::REQUIRED);			// diffusion_nafion requis si couplage
   param.ajouter("nom_pb_T", &nom_pb_T_, Param::REQUIRED);
   param.ajouter("nom_champ_T", &nom_champ_T_, Param::REQUIRED);
@@ -137,7 +139,8 @@ double Source_Term_Nafion_diffusion::eval_f(double diffu, double Ci, double ci, 
     {
       double Psat = f_Psat(T);
       double a_H20 = ci * R * T / Psat;
-      double lambda_eq = f_lambda(a_H20);
+      double a_H20_lim = max(a_lim, a_H20);
+      double lambda_eq = f_lambda(a_H20_lim);
       Ceq = lambda_eq * C_SO3_;
     }
   else
@@ -187,7 +190,8 @@ void Source_Term_Nafion_diffusion::mettre_a_jour(double temps)
     ch_ci_anode_.valeur().mettre_a_jour(temps);
 
   const DoubleTab& xp=la_zone_.valeur().xp();
-  ch_C_.valeur().valeur().valeur_aux(xp, C_);
+  //ch_C_.valeur().valeur().valeur_aux(xp, C_);
+  ch_C_.valeur().valeur_aux(xp, C_);
   ch_D_i_naf_.valeur().valeur_aux(xp, diffu_);
   ch_T_.valeur().valeur_aux(xp, T_);
 
@@ -249,6 +253,9 @@ void Source_Term_Nafion_diffusion::mettre_a_jour(double temps)
           val_S(elem) = eval_f(diffu_(elem), C_(elem), ci_(elem), T_(elem));
         }
     }
+
+  Cerr << "Source_Term_Nafion_diffusion::mettre_a_jour" << finl;
+  //Cerr << "val ch_S min max " << mp_min_vect(val_S)<< " " <<mp_max_vect(val_S) << finl;
 }
 
 void Source_Term_Nafion_diffusion::completer()
@@ -269,8 +276,12 @@ void Source_Term_Nafion_diffusion::completer()
       Probleme_base& pb_ci_anode = ref_cast(Probleme_base,interprete().objet(nom_pb_ci_anode_));
       ch_ci_anode_ = pb_ci_anode.get_champ(nom_champ_ci_anode_);
     }
-  ch_C_ = equation().inconnue();
-  ch_D_i_naf_ = equation().probleme().get_champ(nom_champ_D_);
+
+  Probleme_base& pb_C = ref_cast(Probleme_base,interprete().objet(nom_pb_C_));
+  ch_C_ = pb_C.get_champ(nom_champ_C_);
+  ch_D_i_naf_ = pb_C.get_champ(nom_champ_D_);
+  //ch_C_ = equation().inconnue();
+  //ch_D_i_naf_ = equation().probleme().get_champ(nom_champ_D_);
 
   la_zone_.valeur().zone().creer_tableau_elements(C_);
   la_zone_.valeur().zone().creer_tableau_elements(diffu_);

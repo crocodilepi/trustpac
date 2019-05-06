@@ -67,6 +67,8 @@ protected :
   Nom nom_domaine_;
   Nom nom_ssz_CLa_;
   Nom nom_ssz_CLc_;
+  Nom nom_pb_C_;
+  Nom nom_champ_C_;
   Nom nom_champ_D_;
   Nom nom_pb_T_;
   Nom nom_champ_T_;
@@ -80,15 +82,15 @@ protected :
   REF(Sous_Zone) CL_c_;						// sous_zone cathode
   REF(Champ_base)  ch_T_;   				// Champ Temperature de conduction de la chaleur   -> couple
   REF(Champ_base)  ch_D_i_naf_;				// champ conductivite Da -> get_champ
-  REF(Champ_Inc)   ch_C_;					// Champ_Inc dissolved concentration -> inconnu()
+  REF(Champ_base)  ch_C_;					// Champ_Inc dissolved concentration -> inconnu()
   REF(Champ_base)  ch_ci_cathode_;			// Champ concentration de  diffusion des multi-especes -> couple
   REF(Champ_base)  ch_ci_anode_;			// Champ concentration de  diffusion des multi-especes -> couple
 
-  double eps_naf_=0.2;					// ionomer proportion
-  double por_naf_=0.47; 					// porosity
-  double gamma_CL_=1.67e7; 				// specific surface m2/m3
-  double T_0_=353.15;
-  double C_SO3_=2036.;
+  double eps_naf_;					// ionomer proportion
+  double por_naf_; 					// porosity
+  double gamma_CL_; 				// specific surface m2/m3
+  double T_0_;
+  double C_SO3_;
 
   DoubleTab diffu_;
   DoubleTab C_;
@@ -97,7 +99,7 @@ protected :
 
   REF(Zone_VF) la_zone_;
 
-  Champ_Fonc ch_S_;			// champ de terme source P0 pour VDF, P1NC pour VEF
+  Champ_Fonc ch_S_;			// champ de terme source P0
 
   double eval_f(double diffu, double Ci, double ci, double T) const;
   double eval_derivee_f(double diffu) const;
@@ -111,6 +113,7 @@ protected :
 };
 const double R = 8.314;
 const double F = 96500;
+const double a_lim = 1e-3;				// Activit minimale en dessous de laquelle son effet est linearise
 
 inline double Source_Term_Nafion_diffusion::f_Psat(double T) const
 {

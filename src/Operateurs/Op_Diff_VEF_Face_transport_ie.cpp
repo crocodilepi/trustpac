@@ -76,7 +76,7 @@ void Op_Diff_VEF_Face_transport_ie::remplir_nu(DoubleTab& nu) const
     }
 
   Cerr << "Op_Diff_VEF_Face_transport_ie::remplir_nu" << finl;
-  Cerr << "nu min max " << mp_min_vect(nu) << " " << mp_max_vect(nu) << finl;
+  //Cerr << "nu min max " << mp_min_vect(nu) << " " << mp_max_vect(nu) << finl;
 }
 
 void Op_Diff_VEF_Face_transport_ie::mettre_a_jour(double temps)

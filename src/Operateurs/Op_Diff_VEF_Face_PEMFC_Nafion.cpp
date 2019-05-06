@@ -61,7 +61,7 @@ void Op_Diff_VEF_Face_PEMFC_Nafion::remplir_nu(DoubleTab& nu) const
   double inv_rhoCp = 1./((1-por_naf_)*eps_naf_);
   nu *= inv_rhoCp;
   Cerr << "Op_Diff_VEF_Face_PEMFC_Nafion::remplir_nu" << finl;
-  Cerr << "nu min max " << mp_min_vect(nu) << " " << mp_max_vect(nu) << finl;
+  //Cerr << "nu min max " << mp_min_vect(nu) << " " << mp_max_vect(nu) << finl;
 }
 
 void Op_Diff_VEF_Face_PEMFC_Nafion::mettre_a_jour(double temps)

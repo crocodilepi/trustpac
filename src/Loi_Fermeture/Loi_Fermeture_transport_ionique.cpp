@@ -205,7 +205,7 @@ inline void Loi_Fermeture_transport_ionique::mettre_a_jour(double temps)
       double ld = C_H2O_(elem)/C_SO3;
       if(ld <= 0.)
         {
-          Cerr << "ld <= 0. -> set to a_lim" << finl;
+          //Cerr << "ld <= 0. -> set to a_lim" << finl;
           ld = a_lim;
         }
       double a_H = f_lambda(1.) / (ld);							// ATTENTION divise by zero
@@ -236,7 +236,7 @@ inline void Loi_Fermeture_transport_ionique::mettre_a_jour(double temps)
       double ld = C_H2O_(elem)/C_SO3;
       if(ld <= 0.)
         {
-          Cerr << "ld <= 0. -> set to a_lim" << finl;
+          //Cerr << "ld <= 0. -> set to a_lim" << finl;
           ld = a_lim;
         }
       double a_H2O = f_lambda_inv(ld);				// a_H20 = f_lambda_inv(ld) -> need testing -> dvq: tested OK

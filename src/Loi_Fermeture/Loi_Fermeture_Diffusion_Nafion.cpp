@@ -187,7 +187,7 @@ void Loi_Fermeture_Diffusion_Nafion::mettre_a_jour(double temps)
 
 
   Cerr << "Loi_Fermeture_Diffusion_Nafion::mettre_a_jour" << finl;
-  Cerr << "diffu min max " << mp_min_vect(diffu)<< " " <<mp_max_vect(diffu) << finl;
+  //Cerr << "diffu min max " << mp_min_vect(diffu)<< " " <<mp_max_vect(diffu) << finl;
 }
 
 void Loi_Fermeture_Diffusion_Nafion::set_param(Param& param)
