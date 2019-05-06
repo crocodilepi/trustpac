@@ -20,12 +20,11 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include <Source_Term_pemfc_transport_ionique.h>
-#include <Zone_VEF.h>
-#include <Zone_Cl_VEF.h>
 #include <Probleme_base.h>
 #include <Equation_base.h>
 #include <Interprete.h>
 #include <Domaine.h>
+#include <Zone_VF.h>
 
 Implemente_instanciable( Source_Term_pemfc_transport_ionique, "Source_Term_pemfc_transport_ionique_VEF_P1NC", Source_base ) ;
 

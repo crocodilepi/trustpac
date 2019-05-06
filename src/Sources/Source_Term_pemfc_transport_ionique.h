@@ -23,15 +23,12 @@
 #define Source_Term_pemfc_transport_ionique_included
 
 #include <Source_base.h>
-#include <Ref_Zone_VEF.h>
-#include <Ref_Zone_Cl_VEF.h>
+#include <Ref_Zone_VF.h>
 #include <Ref_Domaine.h>
 #include <Ref_Sous_Zone.h>
 #include <Param.h>
 #include <DoubleTab.h>
 #include <Champ_Don.h>
-#include <Discretisation_base.h>
-#include <Ref_Zone_VF.h>
 
 /////////////////////////////////////////////////////////////////////////////
 //

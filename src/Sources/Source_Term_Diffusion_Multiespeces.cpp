@@ -20,12 +20,11 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include <Source_Term_Diffusion_Multiespeces.h>
-#include <Zone_VEF.h>
-#include <Zone_Cl_VEF.h>
 #include <Probleme_base.h>
 #include <Equation_base.h>
 #include <Interprete.h>
 #include <Domaine.h>
+#include <Zone_VF.h>
 
 Implemente_instanciable( Source_Term_Diffusion_Multiespeces, "Source_Term_Diffusion_Multiespeces_VEF_P1NC", Source_base ) ;
 
@@ -47,20 +46,25 @@ Entree& Source_Term_Diffusion_Multiespeces::readOn( Entree& is )
 
 DoubleTab& Source_Term_Diffusion_Multiespeces::ajouter(DoubleTab& resu) const
 {
-  assert(resu.dimension(0)==volumes_.size());
-  assert(resu.dimension(0)==S_.dimension(0));
-  assert(resu.dimension(1)==S_.dimension(1));
+  assert(resu.dimension(0)==la_zone_.valeur().nb_faces());
+  assert(resu.dimension(1)==S_.dimension(1));			// 3 composants
 
-  int nb_faces = la_zone_VEF.valeur().nb_faces();
-  for (int face = 0; face < nb_faces; ++face)
+  DoubleVect vol = la_zone_.valeur().volumes();
+  for (int elem = 0; elem < la_zone_.valeur().nb_elem(); ++elem)
     {
-      // champ ir doit etre mettre_a_jour() avant ajouter()
-      for (int comp = 0; comp < resu.dimension(1); ++comp)
+      int nb_face_elem = la_zone_.valeur().zone().nb_faces_elem(0);
+      for (int f = 0; f < nb_face_elem; ++f)
         {
-          resu(face, comp) += - S_(face, comp) * volumes_(face);					// -> NEEDS VERIFYING
-        }
+          int face = la_zone_.valeur().elem_faces(elem, f);
 
+          // champ ir doit etre mettre_a_jour() avant ajouter()
+          for (int comp = 0; comp < resu.dimension(1); ++comp)
+            {
+              resu(face, comp) += - S_(elem, comp) * vol(elem) / nb_face_elem;
+            }
+        }
     }
+
   return resu;
 }
 
@@ -79,32 +83,30 @@ void Source_Term_Diffusion_Multiespeces::mettre_a_jour(double temps)
   ch_S_H2O_.valeur().mettre_a_jour(temps);
   ch_S_N2_.valeur().mettre_a_jour(temps);
 
-  const DoubleTab& xv=la_zone_VEF.valeur().xv(); // centre de gravite des faces pour P1NC
+  const DoubleTab& xp=la_zone_.valeur().xp(); // centre de gravite des faces pour P0
 
-  // interpolation vers P1NC
+  // interpolation P0
   DoubleTab S_X2, S_vap, S_N2;
-  la_zone_VEF.valeur().creer_tableau_faces(S_X2);
-  la_zone_VEF.valeur().creer_tableau_faces(S_vap);
-  la_zone_VEF.valeur().creer_tableau_faces(S_N2);
-  ch_S_X2_.valeur().valeur_aux( xv, S_X2 );
-  ch_S_H2O_.valeur().valeur_aux( xv, S_vap );
-  ch_S_N2_.valeur().valeur_aux( xv, S_N2 );
+  la_zone_.valeur().zone().creer_tableau_elements(S_X2);
+  la_zone_.valeur().zone().creer_tableau_elements(S_vap);
+  la_zone_.valeur().zone().creer_tableau_elements(S_N2);
+  ch_S_X2_.valeur().valeur_aux( xp, S_X2 );
+  ch_S_H2O_.valeur().valeur_aux( xp, S_vap );
+  ch_S_N2_.valeur().valeur_aux( xp, S_N2 );
 
-  int nb_faces = la_zone_VEF.valeur().nb_faces();
-  for (int face = 0; face < nb_faces; ++face)
+  int nb_elem = la_zone_.valeur().nb_elem();
+  for (int elem = 0; elem < nb_elem; ++elem)
     {
-      S_(face, 0) = S_X2(face);
-      S_(face, 1) = S_vap(face);
-      S_(face, 2) = S_N2(face);
+      S_(elem, 0) = S_X2(elem);
+      S_(elem, 1) = S_vap(elem);
+      S_(elem, 2) = S_N2(elem);
     }
 
 }
 
 void Source_Term_Diffusion_Multiespeces::associer_zones(const Zone_dis& zone_dis, const Zone_Cl_dis& zcl_dis)
 {
-  la_zone_VEF = ref_cast(Zone_VEF,zone_dis.valeur());
-  la_zcl_VEF = ref_cast(Zone_Cl_VEF,zcl_dis.valeur());
-  remplir_volumes();
+  la_zone_ = ref_cast(Zone_VF,zone_dis.valeur());
 }
 
 void Source_Term_Diffusion_Multiespeces::associer_pb(const Probleme_base& pb)
@@ -124,19 +126,19 @@ void Source_Term_Diffusion_Multiespeces::completer()
   dom_ = equation().probleme().domaine();
   int dim = equation().inconnue().valeur().nb_comp();			// =3, multi-especes = X2, vap, N2
   S_.resize(0, dim);
-  la_zone_VEF.valeur().creer_tableau_faces(S_);
+  la_zone_.valeur().zone().creer_tableau_elements(S_);
 
   Probleme_base& pb_X2 = ref_cast(Probleme_base,interprete().objet(nom_pb_X2_));
   ch_S_X2_ = pb_X2.get_champ(nom_champ_S_X2_);
-  assert(ch_S_X2_.valeur().que_suis_je().find("P1NC") !=-1);
+  assert(ch_S_X2_.valeur().que_suis_je().find("P0") !=-1);
 
   Probleme_base& pb_H2O = ref_cast(Probleme_base,interprete().objet(nom_pb_H2O_));
   ch_S_H2O_ = pb_H2O.get_champ(nom_champ_S_H2O_);
-  assert(ch_S_H2O_.valeur().que_suis_je().find("P1NC") !=-1);
+  assert(ch_S_H2O_.valeur().que_suis_je().find("P0") !=-1);
 
   Probleme_base& pb_N2 = ref_cast(Probleme_base,interprete().objet(nom_pb_N2_));
   ch_S_N2_ = pb_N2.get_champ(nom_champ_S_N2_);
-  assert(ch_S_N2_.valeur().que_suis_je().find("P1NC") !=-1);
+  assert(ch_S_N2_.valeur().que_suis_je().find("P0") !=-1);
 }
 
 void Source_Term_Diffusion_Multiespeces::set_param(Param& param)
@@ -147,9 +149,4 @@ void Source_Term_Diffusion_Multiespeces::set_param(Param& param)
   param.ajouter("nom_champ_S_H2O", &nom_champ_S_H2O_, Param::REQUIRED);
   param.ajouter("nom_pb_N2", &nom_pb_N2_, Param::REQUIRED);
   param.ajouter("nom_champ_S_N2", &nom_champ_S_N2_, Param::REQUIRED);
-}
-
-void Source_Term_Diffusion_Multiespeces::remplir_volumes()
-{
-  volumes_.ref(la_zone_VEF.valeur().volumes_entrelaces());
 }

@@ -23,13 +23,12 @@
 #define Source_Term_Nafion_Reaction_included
 
 #include <Source_base.h>
-#include <Param.h>
-#include <Ref_Zone_VEF.h>
-#include <Ref_Zone_Cl_VEF.h>
+#include <Ref_Zone_VF.h>
 #include <Ref_Domaine.h>
 #include <Ref_Sous_Zone.h>
+#include <Param.h>
 #include <DoubleTab.h>
-#include <Champ_base.h>
+#include <Champ_Don.h>
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -57,29 +56,24 @@ public :
   void completer();
   void set_param(Param& param);
 protected :
-  void remplir_volumes();
   double eval_f(double jr, double jp) const;
 
-  REF(Zone_VEF) la_zone_VEF;
-  REF(Zone_Cl_VEF) la_zcl_VEF;
-  DoubleVect volumes_;
+  REF(Zone_VF) la_zone_;
 
   Nom nom_espece_;
-  //Nom nom_domaine_;
-  Nom nom_ssz_CLa_;
-  Nom nom_ssz_CLc_;
-  Nom nom_pb_phi_;				// transport ionique pour recuperer le champ electro chimique
-  Nom nom_champ_ir_;			// courant de reaction
-  Nom nom_champ_ip_;			// courant de permeation
+  Nom nom_ssz_CLc_;			// le sous zone situant le terme source
+  Nom nom_ssz_CLa_;			// le sous zone situant le terme source
+  Nom nom_pb_phi_;			// transport ionique
+  Nom nom_champ_ir_;
+  Nom nom_champ_ip_;
 
   REF(Domaine) dom_;
   REF(Sous_Zone) CL_a_;
   REF(Sous_Zone) CL_c_;
-
   REF(Champ_base) ch_ir_;
   REF(Champ_base) ch_ip_;
 
-  DoubleTab ir_, ip_;
+  DoubleTab ir_, ip_;	// P0
 
   double por_naf_;			// porosite de Nafion
   double eps_naf_;			// ionomer proportionnel de Nafion

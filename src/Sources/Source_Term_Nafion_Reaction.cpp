@@ -22,11 +22,9 @@
 #include <Source_Term_Nafion_Reaction.h>
 #include <Probleme_base.h>
 #include <Equation_base.h>
-#include <Conduction.h>
-#include <Domaine.h>
-#include <Zone_VEF.h>
-#include <Zone_Cl_VEF.h>
 #include <Interprete.h>
+#include <Domaine.h>
+#include <Zone_VF.h>
 
 Implemente_instanciable( Source_Term_Nafion_Reaction, "Source_Term_Nafion_Reaction_VEF_P1NC", Source_base ) ;
 
@@ -78,6 +76,8 @@ Entree& Source_Term_Nafion_Reaction::readOn( Entree& is )
   if(nom_ssz_CLc_ != "??")
     CL_c_ = dom_.valeur().ss_zone(nom_ssz_CLc_);
 
+  dom_.valeur().creer_tableau_elements(ir_);
+  dom_.valeur().creer_tableau_elements(ip_);
   return is;
 }
 
@@ -89,10 +89,7 @@ void Source_Term_Nafion_Reaction::associer_pb(const Probleme_base& pb)
 
 void Source_Term_Nafion_Reaction::associer_zones(const Zone_dis& zone_dis, const Zone_Cl_dis& zcl_dis)
 {
-  // cast VEF
-  la_zone_VEF = ref_cast(Zone_VEF,zone_dis.valeur());
-  la_zcl_VEF = ref_cast(Zone_Cl_VEF,zcl_dis.valeur());
-  remplir_volumes();
+  la_zone_ = ref_cast(Zone_VF,zone_dis.valeur());
 }
 
 void Source_Term_Nafion_Reaction::set_param(Param& param)
@@ -112,20 +109,21 @@ void Source_Term_Nafion_Reaction::completer()
 {
   Source_base::completer();
   // get the reference to the coupling fields
+  Source_base::completer();
   Probleme_base& pb_phi = ref_cast(Probleme_base,interprete().objet(nom_pb_phi_));
   ch_ir_ = pb_phi.get_champ(nom_champ_ir_);
+  assert(ch_ir_.valeur().que_suis_je().find("P0") !=-1);
   ch_ip_ = pb_phi.get_champ(nom_champ_ip_);
-  la_zone_VEF.valeur().creer_tableau_faces(ir_);
-  la_zone_VEF.valeur().creer_tableau_faces(ip_);
+  assert(ch_ip_.valeur().que_suis_je().find("P0") !=-1);
 }
 
 void Source_Term_Nafion_Reaction::mettre_a_jour(double temps)
 {
   ch_ir_.valeur().mettre_a_jour(temps);
   ch_ip_.valeur().mettre_a_jour(temps);
-  const DoubleTab& xv=la_zone_VEF.valeur().xv(); // centre de gravite des faces pour P1NC
-  ch_ir_.valeur().valeur_aux( xv, ir_ );
-  ch_ip_.valeur().valeur_aux( xv, ip_ );
+  const DoubleTab& xp=la_zone_.valeur().xp(); // Recuperation des centre de gravite des elements pour P0
+  ch_ir_.valeur().valeur_aux( xp, ir_ );			// ir
+  ch_ip_.valeur().valeur_aux( xp, ip_ );		    // ip
 }
 
 DoubleTab& Source_Term_Nafion_Reaction::calculer(DoubleTab& resu) const
@@ -135,55 +133,41 @@ DoubleTab& Source_Term_Nafion_Reaction::calculer(DoubleTab& resu) const
   return resu;
 }
 
-void Source_Term_Nafion_Reaction::remplir_volumes()
-{
-  volumes_.ref(la_zone_VEF.valeur().volumes_entrelaces());
-}
-
 DoubleTab& Source_Term_Nafion_Reaction::ajouter(DoubleTab& resu) const
 {
+  assert(resu.dimension(0)==la_zone_.valeur().nb_faces());
   double inv_rhoCp = 1./((1-por_naf_)*eps_naf_);
 
-  IntTab faces_ssz;	// faces belong to the sous_zone -> flag = 1, if not, flag = 0
-  la_zone_VEF.valeur().creer_tableau_faces(faces_ssz);
-  faces_ssz = 0;		// init with no flag (all faces are unchecked)
-  // to-do
+  DoubleVect vol = la_zone_.valeur().volumes();
+
   if(CL_a_.non_nul())
     {
-      for (int poly = 0; poly < CL_a_.valeur().nb_elem_tot(); poly++)
+      for (int poly = 0; poly < CL_a_.valeur().nb_elem_tot(); ++poly)
         {
           int elem = CL_a_.valeur()(poly);
-          for (int f = 0; f < la_zone_VEF.valeur().zone().nb_faces_elem(0); ++f)
+          int nb_face_elem = la_zone_.valeur().zone().nb_faces_elem(0);
+          for (int f = 0; f < nb_face_elem; ++f)
             {
-              int face = la_zone_VEF.valeur().elem_faces(elem, f);
-              if(!faces_ssz(face))
-                {
-                  resu(face) += eval_f(ir_(face), ip_(face)) * inv_rhoCp * volumes_(face);
-                  faces_ssz(face) = 1;		// marquer comme deja traite
-                }
+              int face = la_zone_.valeur().elem_faces(elem, f);
+              resu(face) += eval_f(ir_(elem), ip_(elem)) * inv_rhoCp * vol(elem)/ nb_face_elem;
             }
         }
-      faces_ssz = 0;		// init with no flag (all faces are unchecked)
     }
+
   if(CL_c_.non_nul())
     {
       for (int poly = 0; poly < CL_c_.valeur().nb_elem_tot(); poly++)
         {
           int elem = CL_c_.valeur()(poly);
-          for (int f = 0; f < la_zone_VEF.valeur().zone().nb_faces_elem(0); ++f)
+          int nb_face_elem = la_zone_.valeur().zone().nb_faces_elem(0);
+          for (int f = 0; f < nb_face_elem; ++f)
             {
-              int face = la_zone_VEF.valeur().elem_faces(elem, f);
-              if(!faces_ssz(face))
-                {
-                  resu(face) += eval_f(ir_(face), ip_(face))* inv_rhoCp * volumes_(face);
-                  faces_ssz(face) = 1;		// marquer comme deja traite
-                }
+              int face = la_zone_.valeur().elem_faces(elem, f);
+              resu(face) += eval_f(ir_(elem), ip_(elem))* inv_rhoCp * vol(elem)/ nb_face_elem;
             }
         }
-      faces_ssz = 0;		// init with no flag (all faces are unchecked)
     }
 
-  // Source = 0 with N2
   return resu;
 }
 

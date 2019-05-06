@@ -76,6 +76,7 @@ protected :
   Champ_Fonc diffu_;		// champ de diffusion 'effective' de l'espece
   Champ_Fonc D_i_naf_;		// champ de diffusion de l'espece
   Champ_Fonc N_i_naf_;		// champ de flux de diffusion de l'espece
+  //Champ_Fonc ch_S_;			// champ de source Sa_i = Da_i*gamma_CL/e_naf (Ceq_i - C_i)
 
   REF(Equation_base) ref_equation_;
   const Equation_base& equation() const

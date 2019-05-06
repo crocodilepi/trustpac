@@ -23,9 +23,9 @@
 #define Source_Term_Diffusion_Multiespeces_included
 
 #include <Source_base.h>
-#include <Ref_Zone_VEF.h>
-#include <Ref_Zone_Cl_VEF.h>
+#include <Ref_Zone_VF.h>
 #include <Ref_Domaine.h>
+#include <Ref_Sous_Zone.h>
 #include <Param.h>
 #include <DoubleTab.h>
 
@@ -54,11 +54,7 @@ public :
   void completer();
   void set_param(Param& param);
 protected :
-  void remplir_volumes();
-
-  REF(Zone_VEF) la_zone_VEF;
-  REF(Zone_Cl_VEF) la_zcl_VEF;
-  DoubleVect volumes_;
+  REF(Zone_VF) la_zone_;
 
   Nom nom_pb_X2_;			// pb de dissous X2 = O2/H2 dans Nafion
   Nom nom_pb_H2O_;			// pb de dissous X2 = O2/H2 dans Nafion
@@ -68,9 +64,9 @@ protected :
   Nom nom_champ_S_N2_;		    // champ source couple
 
   REF(Domaine) dom_;			// domaine
-  REF(Champ_base) ch_S_X2_;		// champ source couple P0 pour VDF, P1NC pour VEF
-  REF(Champ_base) ch_S_H2O_;	// champ source couple P0 pour VDF, P1NC pour VEF
-  REF(Champ_base) ch_S_N2_;		// champ source couple P0 pour VDF, P1NC pour VEF
+  REF(Champ_base) ch_S_X2_;		// champ source couple P0
+  REF(Champ_base) ch_S_H2O_;	// champ source couple P0
+  REF(Champ_base) ch_S_N2_;		// champ source couple P0
 
   DoubleTab S_;			// 3 composants, stockage de valeurs interpoles depuis ch_S_X2, ch_S_vap, ch_S_N2_
 

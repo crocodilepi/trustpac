@@ -92,16 +92,22 @@ void Loi_Fermeture_transport_ionique::discretiser( const Discretisation_base& di
 
   dis.discretiser_champ("champ_elem",equation().zone_dis().valeur(),"Erev","unit", 1 , 0. , ch_erev_);
   champs_compris_.ajoute_champ(ch_erev_);
+
   dis.discretiser_champ("champ_elem",equation().zone_dis().valeur(),"eta","unit", 1 , 0. , ch_eta_);
   champs_compris_.ajoute_champ(ch_eta_);
+
   dis.discretiser_champ("champ_elem",equation().zone_dis().valeur(),"io","unit", 1 , 0. , ch_io_);
   champs_compris_.ajoute_champ(ch_io_);
+
   dis.discretiser_champ("champ_elem",equation().zone_dis().valeur(),"ir","unit", 1 , 0. , ch_ir_);
   champs_compris_.ajoute_champ(ch_ir_);
+
   dis.discretiser_champ("champ_elem",equation().zone_dis().valeur(),"ip","unit", 1 , 0. , ch_ip_);
   champs_compris_.ajoute_champ(ch_ip_);
+
   dis.discretiser_champ("champ_elem",equation().zone_dis().valeur(),"Q_reac","unit", 1 , 0. , ch_q_reac_);
   champs_compris_.ajoute_champ(ch_q_reac_);
+
   dis.discretiser_champ("champ_elem",equation().zone_dis().valeur(),"Q_perm","unit", 1 , 0. , ch_q_perm_);
   champs_compris_.ajoute_champ(ch_q_perm_);
 }
@@ -152,9 +158,9 @@ inline void Loi_Fermeture_transport_ionique::mettre_a_jour(double temps)
 
   // interpolation vers P0
   ch_T_.valeur().valeur_aux( xp, T_ );			// T
-  ch_C_H2_.valeur().valeur_aux( xp, C_H2_ );		// C_H2
-  ch_C_O2_.valeur().valeur_aux( xp, C_O2_ );		// C_O2
-  ch_C_H20_.valeur().valeur_aux( xp, C_H2O_ );    // C_H2O
+  ch_C_H2_.valeur().valeur_aux( xp, C_H2_ );	// C_H2
+  ch_C_O2_.valeur().valeur_aux( xp, C_O2_ );	// C_O2
+  ch_C_H20_.valeur().valeur_aux( xp, C_H2O_ );  // C_H2O
   ch_psi_.valeur().valeur_aux( xp, psi_ );		// psi
   ch_phi_.valeur().valeur_aux( xp, phi_ );		// phi
 
