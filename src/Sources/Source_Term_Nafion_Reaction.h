@@ -75,8 +75,8 @@ protected :
 
   DoubleTab ir_, ip_;	// P0
 
-  double por_naf_;			// porosite de Nafion
-  double eps_naf_;			// ionomer proportionnel de Nafion
+  Champ_Don por_naf_;			// porosite de Nafion
+  Champ_Don eps_naf_;			// ionomer proportionnel de Nafion
 
 };
 

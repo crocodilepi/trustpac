@@ -124,6 +124,10 @@ void Source_Term_Nafion_Reaction::mettre_a_jour(double temps)
   const DoubleTab& xp=la_zone_.valeur().xp(); // Recuperation des centre de gravite des elements pour P0
   ch_ir_.valeur().valeur_aux( xp, ir_ );			// ir
   ch_ip_.valeur().valeur_aux( xp, ip_ );		    // ip
+
+  Cerr << "Source_Term_Nafion_Reaction::mettre_a_jour" << finl;
+  Cerr << "ch_ir min max " << mp_min_vect(ir_) << " " << mp_max_vect(ir_) << finl;
+  Cerr << "ch_ip min max " << mp_min_vect(ip_) << " " << mp_max_vect(ip_) << finl;
 }
 
 DoubleTab& Source_Term_Nafion_Reaction::calculer(DoubleTab& resu) const
@@ -136,20 +140,22 @@ DoubleTab& Source_Term_Nafion_Reaction::calculer(DoubleTab& resu) const
 DoubleTab& Source_Term_Nafion_Reaction::ajouter(DoubleTab& resu) const
 {
   assert(resu.dimension(0)==la_zone_.valeur().nb_faces());
-  double inv_rhoCp = 1./((1-por_naf_)*eps_naf_);
 
   DoubleVect vol = la_zone_.valeur().volumes();
+  const DoubleTab& por = por_naf_.valeurs();
+  const DoubleTab& eps = eps_naf_.valeurs();
 
   if(CL_a_.non_nul())
     {
       for (int poly = 0; poly < CL_a_.valeur().nb_elem_tot(); ++poly)
         {
           int elem = CL_a_.valeur()(poly);
+          double coeff = (1-por(elem,0))*eps(elem,0);
           int nb_face_elem = la_zone_.valeur().zone().nb_faces_elem(0);
           for (int f = 0; f < nb_face_elem; ++f)
             {
               int face = la_zone_.valeur().elem_faces(elem, f);
-              resu(face) += eval_f(ir_(elem), ip_(elem)) * inv_rhoCp * vol(elem)/ nb_face_elem;
+              resu(face) += eval_f(ir_(elem), ip_(elem)) / coeff * vol(elem)/ nb_face_elem;
             }
         }
     }
@@ -159,11 +165,12 @@ DoubleTab& Source_Term_Nafion_Reaction::ajouter(DoubleTab& resu) const
       for (int poly = 0; poly < CL_c_.valeur().nb_elem_tot(); poly++)
         {
           int elem = CL_c_.valeur()(poly);
+          double coeff = (1-por(elem,0))*eps(elem,0);
           int nb_face_elem = la_zone_.valeur().zone().nb_faces_elem(0);
           for (int f = 0; f < nb_face_elem; ++f)
             {
               int face = la_zone_.valeur().elem_faces(elem, f);
-              resu(face) += eval_f(ir_(elem), ip_(elem))* inv_rhoCp * vol(elem)/ nb_face_elem;
+              resu(face) += eval_f(ir_(elem), ip_(elem)) / coeff * vol(elem)/ nb_face_elem;
             }
         }
     }

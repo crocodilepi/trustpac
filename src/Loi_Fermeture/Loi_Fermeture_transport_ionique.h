@@ -32,6 +32,7 @@
 #include <Ref_Operateur_base.h>
 #include <DoubleTab.h>
 #include <Ref_Sous_Zone.h>
+#include <Champ_Don.h>
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -94,9 +95,9 @@ protected :
 
   double T_0_;				// dans le cas T constant
   double C_SO3_;			//
-  double por_naf_;			// porosite de Nafion
-  double eps_naf_;			// ionomer proportionnel de Nafion
-  double tor_naf_;			// tortuosite de Nafion
+  Champ_Don por_naf_;			// porosite de Nafion
+  Champ_Don eps_naf_;			// ionomer proportionnel de Nafion
+  Champ_Don tor_naf_;			// tortuosite de Nafion
   REF(Equation_base) ref_equation_;
   REF(Sous_Zone) CL_a_;						// sous_zone anode
   REF(Sous_Zone) CL_c_;						// sous_zone cathode
@@ -119,7 +120,7 @@ protected :
   DoubleTab psi_;		// P0 pour VDF, P1NC pour VEF
   DoubleTab phi_;		// P0 pour VDF, P1NC pour VEF
 
-  inline double f_kappa(double T, double C) const;
+  inline double f_kappa(double T, double C, double por, double eps, double tor) const;
   inline  double f_Henry_H2(double T);		// Constante de Henry H2 dans Nafion
   inline  double f_Henry_O2(double T);		// Constante de Henry O2 dans Nafion
   inline  double f_Henry_N2(double T);		// Constante de Henry N2 dans Nafion
@@ -146,7 +147,8 @@ const int n_a = 2;						// n_c Nombre d''electrons echanges a l''anode'
 const int n_c = 2;						// n_c Nombre d''electrons echanges a la cathode
 const double kB = 1.38064852e-23;	 	// Boltzman constant [J/K]
 const double s0 = 6.41e-20;				// average Pt surface per reaction site [m2]
-const double gamma_CL = 1.67e7;			// specific surface [m2/m3]
+const double gamma_CL_a = 1.67e7;			// specific surface [m2/m3]
+const double gamma_CL_c = 2.5e7;
 const double NA = 6.022140857e23;		// Avogadro constant [/mol]
 const double h  = 6.62607015e-34;		// Planck constant [Js]
 const double R = 8.314;					// gas constant J/mol/K
@@ -187,13 +189,13 @@ const double Cp_N2 = 30.2; 		// [J/mol/K]
 const double Cp_vap = 34.474; 	// [J/mol/K]
 const double Cp_liq = 75.38;	 // [J/mol/K]
 
-inline double Loi_Fermeture_transport_ionique::f_kappa(double T, double C) const
+inline double Loi_Fermeture_transport_ionique::f_kappa(double T, double C, double por, double eps, double tor) const
 {
   double ld = C / C_SO3_;
   double ad = 0.5139*ld-0.326;
   double ad_lim = max(ad,1.e-3);
   double k0 = exp(1268*(1./303.-1./T))*ad_lim;
-  return k0*(1-por_naf_)*eps_naf_/(tor_naf_*tor_naf_);
+  return k0*(1-por)*eps/(tor*tor);
 }
 
 inline double Loi_Fermeture_transport_ionique::f_Henry_H2(double T)

@@ -44,10 +44,10 @@ Entree& Op_Diff_VEF_Face_transport_ie::readOn( Entree& is )
       const Champ_base& diffu=equation().probleme().get_champ(diffu_name_);
       associer_diffusivite ( diffu );
     }
-  else
-    {
-      associer_diffusivite(equation().milieu().diffusivite());
-    }
+//  else
+//    {
+//      associer_diffusivite(equation().milieu().diffusivite());
+//    }
 
   return is;
 }
@@ -76,7 +76,7 @@ void Op_Diff_VEF_Face_transport_ie::remplir_nu(DoubleTab& nu) const
     }
 
   Cerr << "Op_Diff_VEF_Face_transport_ie::remplir_nu" << finl;
-  //Cerr << "nu min max " << mp_min_vect(nu) << " " << mp_max_vect(nu) << finl;
+  Cerr << "nu min max " << mp_min_vect(nu) << " " << mp_max_vect(nu) << finl;
 }
 
 void Op_Diff_VEF_Face_transport_ie::mettre_a_jour(double temps)

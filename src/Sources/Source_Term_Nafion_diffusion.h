@@ -32,6 +32,7 @@
 #include <Discretisation_base.h>
 #include <Ref_Zone_VF.h>
 #include <Ref_Champ_Inc.h>
+#include <Champ_Don.h>
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -86,9 +87,9 @@ protected :
   REF(Champ_base)  ch_ci_cathode_;			// Champ concentration de  diffusion des multi-especes -> couple
   REF(Champ_base)  ch_ci_anode_;			// Champ concentration de  diffusion des multi-especes -> couple
 
-  double eps_naf_;					// ionomer proportion
-  double por_naf_; 					// porosity
-  double gamma_CL_; 				// specific surface m2/m3
+  Champ_Don eps_naf_;					// ionomer proportion
+  Champ_Don por_naf_; 					// porosity
+  Champ_Don gamma_CL_; 				    // specific surface m2/m3
   double T_0_;
   double C_SO3_;
 
@@ -101,8 +102,8 @@ protected :
 
   Champ_Fonc ch_S_;			// champ de terme source P0
 
-  double eval_f(double diffu, double Ci, double ci, double T) const;
-  double eval_derivee_f(double diffu) const;
+  double eval_f(double diffu, double Ci, double ci, double T, double por, double eps, double gamma) const;
+  double eval_derivee_f(double diffu, double por, double eps, double gamma) const;
 
   inline double f_nd(double C) const;
   inline double f_Psat(double T) const;

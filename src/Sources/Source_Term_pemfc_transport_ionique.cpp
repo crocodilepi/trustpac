@@ -95,11 +95,13 @@ void Source_Term_pemfc_transport_ionique::mettre_a_jour(double temps)
   // mettre a jour 4 tableaux de valeurs du champ couple
   ch_ir_.valeur().mettre_a_jour(temps);
   ch_ip_.valeur().mettre_a_jour(temps);
-  //ch_cdl_.valeur().mettre_a_jour(temps);
   // interpolation vers P0
   ch_ir_.valeur().valeur_aux( xp, ir_ );			// ir
   ch_ip_.valeur().valeur_aux( xp, ip_ );		    // ip
-  //ch_cdl_.valeur().valeur_aux( xp, cdl_ );		// ip
+
+  Cerr << "Source_Term_pemfc_transport_ionique::mettre_a_jour" << finl;
+  Cerr << "ch_ir min max " << mp_min_vect(ir_) << " " << mp_max_vect(ir_) << finl;
+  Cerr << "ch_ip min max " << mp_min_vect(ip_) << " " << mp_max_vect(ip_) << finl;
 }
 
 

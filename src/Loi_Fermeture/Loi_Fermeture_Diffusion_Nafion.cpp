@@ -53,14 +53,7 @@ Entree& Loi_Fermeture_Diffusion_Nafion::readOn( Entree& is )
       Cerr <<" unknown species in the list "<<finl;
       Process::exit();
     }
-//  T_0_ = 353.15;				// dans le cas T constant
-//  CSO3_ = 2036.;				// au cas ou "H2O" ou "vap"
-//  por_naf_ = 0.47;			// porosite de Nafion
-//  eps_naf_ = 0.2;			// ionomer proportionnel de Nafion
-//  tor_naf_ = 1.;
 
-//  T_.resize(0, 1);			// scalaire
-//  C_.resize(0, 1);			// scalaire
   I_.resize(0, dimension);	// vectoriel
   equation().zone_dis().zone().creer_tableau_elements(T_);
   T_ = T_0_;
@@ -139,10 +132,13 @@ void Loi_Fermeture_Diffusion_Nafion::mettre_a_jour(double temps)
 
   // mettre a jour le champ diffusivite "effective"
   DoubleTab& diffu = diffu_.valeurs();
+  DoubleTab& por = por_naf_.valeurs();
+  DoubleTab& eps = eps_naf_.valeurs();
+  DoubleTab& tor = tor_naf_.valeurs();
   int nb_elem = diffu.dimension(0);
   for (int elem = 0; elem < nb_elem; ++elem)
     {
-      diffu(elem) = eval_diffu_(T_(elem), C_(elem));
+      diffu(elem) = eval_D_i_eff(T_(elem), C_(elem), por(elem,0), eps(elem,0), tor(elem,0));
     }
 
   // mettre a jour le champ D_i_naf
@@ -180,14 +176,14 @@ void Loi_Fermeture_Diffusion_Nafion::mettre_a_jour(double temps)
           double nd = 1.0 + 0.0028*ld + 0.0026*ld*ld;
           for (int j=0; j<dimension; j++)
             {
-              N_i_naf(elem,j) = nd/F*I_(elem, j) - nu(elem)*grad(elem,0,j);	// flux N_H2O = -nd/F*I_i - D_w.grad(C)
+              N_i_naf(elem,j) = nd/F*I_(elem, j) - nu(elem)*grad(elem,0,j);	// flux N_H2O = nd/F*I_i - D_w.grad(C)
             }
         }
     }
 
 
   Cerr << "Loi_Fermeture_Diffusion_Nafion::mettre_a_jour" << finl;
-  //Cerr << "diffu min max " << mp_min_vect(diffu)<< " " <<mp_max_vect(diffu) << finl;
+  Cerr << "diffu min max " << mp_min_vect(diffu) << " " << mp_max_vect(diffu) << finl;
 }
 
 void Loi_Fermeture_Diffusion_Nafion::set_param(Param& param)
@@ -232,13 +228,13 @@ double Loi_Fermeture_Diffusion_Nafion::eval_D_i_naf(double T, double C)
   return 0.;
 }
 
-double Loi_Fermeture_Diffusion_Nafion::eval_diffu_(double T, double C)
+double Loi_Fermeture_Diffusion_Nafion::eval_D_i_eff(double T, double C, double por, double eps, double tor)
 {
   if (nom_espece_ == "H2O" || nom_espece_ == "vap")
     {
       return eval_D_i_naf(T,C);
     }
 
-  double coef = (1. - por_naf_)*eps_naf_ / (tor_naf_*tor_naf_);
+  double coef = (1. - por)*eps / (tor*tor);
   return eval_D_i_naf(T,C)*coef;
 }

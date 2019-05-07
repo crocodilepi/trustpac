@@ -33,6 +33,7 @@
 #include <Ref_Champ_Inc.h>
 #include <Champ_base.h>
 #include <Champ_Inc.h>
+#include <Champ_Don.h>
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -70,8 +71,8 @@ protected :
   REF(Champ_base) ch_I_;
   REF(Champ_Inc) ch_C_;
   DoubleTab I_, C_;
-  double por_naf_;			// porosite de Nafion
-  double eps_naf_;			// ionomer proportionnel de Nafion
+  Champ_Don por_naf_;			// porosite de Nafion
+  Champ_Don eps_naf_;			// ionomer proportionnel de Nafion
   inline double f_nd(double C) const;
 };
 

@@ -29,6 +29,7 @@
 #include <Ref_Equation_base.h>
 #include <DoubleTab.h>
 #include <Param.h>
+#include <Champ_Don.h>
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -92,9 +93,9 @@ protected :
   Nom nom_champ_I_;			// nom du champ de courant ionique I_i = -kappa.grad(phi)
   double T_0_;				// dans le cas T constant
   double CSO3_;				// au cas ou "H2O" ou "vap"
-  double por_naf_;			// porosite de Nafion
-  double eps_naf_;			// ionomer proportionnel de Nafion
-  double tor_naf_;			// tortuosite de Nafion
+  Champ_Don por_naf_;		// porosite de Nafion
+  Champ_Don eps_naf_;		// ionomer proportionnel de Nafion
+  Champ_Don tor_naf_;		// tortuosite de Nafion
 
   REF(Champ_base) ch_T_;		// champ reference pour temperature (optionnel)
   REF(Champ_base) ch_I_;		// champ reference pour le courant ionique I = -kappa.grad(phi) (optionnel)
@@ -103,7 +104,7 @@ protected :
   DoubleTab T_, C_, I_;			// tableau des valeurs du champ T, C, I (P0)
 
   double eval_D_i_naf(double T, double C);
-  double eval_diffu_(double T, double C);
+  double eval_D_i_eff(double T, double C, double por, double eps, double tor);
 };
 
 #endif /* Loi_Fermeture_Diffusion_Nafion_included */

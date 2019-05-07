@@ -24,6 +24,7 @@
 
 #include <Op_Diff_VEF_Face.h>
 #include <Param.h>
+#include <Champ_Don.h>
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -49,8 +50,8 @@ public :
   void mettre_a_jour(double);
 protected :
   Nom diffu_name_;
-  double por_naf_;			// porosite de Nafion
-  double eps_naf_;			// ionomer proportionnel de Nafion
+  Champ_Don por_naf_;			// porosite de Nafion
+  Champ_Don eps_naf_;			// ionomer proportionnel de Nafion
 };
 
 #endif /* Op_Diff_VEF_Face_PEMFC_Nafion_included */

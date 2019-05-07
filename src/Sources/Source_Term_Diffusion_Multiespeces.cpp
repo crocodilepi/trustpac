@@ -77,7 +77,6 @@ DoubleTab& Source_Term_Diffusion_Multiespeces::calculer(DoubleTab& resu) const
 
 void Source_Term_Diffusion_Multiespeces::mettre_a_jour(double temps)
 {
-  Cerr << " Source_Term_Diffusion_Multiespeces::mettre_a_jour " << finl ;
   // mettre a jour les champs couples
   ch_S_X2_.valeur().mettre_a_jour(temps);
   ch_S_H2O_.valeur().mettre_a_jour(temps);
@@ -97,11 +96,13 @@ void Source_Term_Diffusion_Multiespeces::mettre_a_jour(double temps)
   int nb_elem = la_zone_.valeur().nb_elem();
   for (int elem = 0; elem < nb_elem; ++elem)
     {
-      S_(elem, 0) = S_X2(elem);
-      S_(elem, 1) = S_vap(elem);
-      S_(elem, 2) = S_N2(elem);
+      S_(elem, 0) = -S_X2(elem);
+      S_(elem, 1) = -S_vap(elem);
+      S_(elem, 2) = -S_N2(elem);
     }
 
+  Cerr << "Source_Term_Diffusion_Multiespeces::mettre_a_jour" << finl;
+  Cerr << "champ de source de diffusion Sa_i min max " << mp_min_vect(S_) << " " << mp_max_vect(S_) << finl;
 }
 
 void Source_Term_Diffusion_Multiespeces::associer_zones(const Zone_dis& zone_dis, const Zone_Cl_dis& zcl_dis)

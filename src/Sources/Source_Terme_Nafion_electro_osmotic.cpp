@@ -47,31 +47,28 @@ Entree& Source_Terme_Nafion_electro_osmotic::readOn( Entree& is )
   return is;
 }
 
+// integrale surfacique de (nd/F*I*n*dS)/((1-por)*eps)
 DoubleTab& Source_Terme_Nafion_electro_osmotic::ajouter(DoubleTab& resu) const
 {
   // ajouter un terme source de type: -nd/F*I_i
-  double inv_rhoCp = 1./((1-por_naf_)*eps_naf_);
-  IntTab faces_ssz;	// faces belong to the sous_zone -> flag = 1, if not, flag = 0
-  la_zone_VEF.valeur().creer_tableau_faces(faces_ssz);
-  faces_ssz = 0;	// init with no flag (all faces are unchecked)
-
   const DoubleTab& face_norm = la_zone_VEF.valeur().face_normales();
+  const DoubleTab& por = por_naf_.valeurs();
+  const DoubleTab& eps = eps_naf_.valeurs();
+
   for (int elem = 0; elem < la_zone_VEF.valeur().nb_elem(); elem++)
     {
-      for (int f = 0; f < la_zone_VEF.valeur().zone().nb_faces_elem(0); ++f)
+      double coef = (1-por(elem,0))*eps(elem,0);
+      int nb_face_elem = la_zone_VEF.valeur().zone().nb_faces_elem(0);		// 3 pour triangle, 4 pour tetrahedre
+      for (int f = 0; f < nb_face_elem; ++f)
         {
           int face = la_zone_VEF.valeur().elem_faces(elem, f);
-          if(!faces_ssz(face))
+          double face_surf = la_zone_VEF.valeur().face_surfaces(face);
+          double res = 0;
+          for (int j = 0; j < dimension; ++j)
             {
-              double face_surf = la_zone_VEF.valeur().face_surfaces(face);
-              double res = 0;
-              for (int j = 0; j < dimension; ++j)
-                {
-                  res += I_(elem, j)*face_norm(face,j);
-                }
-              resu(face) +=  -f_nd(C_(face))/F * res * face_surf * inv_rhoCp ;			// A VERIFIER
-              faces_ssz(face) = 1;
+              res += I_(elem, j)*face_norm(face,j);							// produit scalaire I*norma
             }
+          resu(face) +=  f_nd(C_(face))/F * res * face_surf / coef ;	     // A VERIFIER
         }
     }
   return resu;
@@ -91,6 +88,9 @@ void Source_Terme_Nafion_electro_osmotic::mettre_a_jour(double temps)
   //ch_I_.valeur().mettre_a_jour(temps);
   const DoubleTab& xp = la_zone_VEF.valeur().xp(); // centre de gravite des elements pour P0
   ch_I_.valeur().valeur_aux( xp, I_ );
+
+  Cerr << "Source_Terme_Nafion_electro_osmotic::mettre_a_jour" << finl;
+  Cerr << "champ de flux d'eau ch_I min max " << mp_min_vect(I_) << " " << mp_max_vect(I_) << finl;
 }
 
 void Source_Terme_Nafion_electro_osmotic::associer_zones(const Zone_dis& zone_dis, const Zone_Cl_dis& zcl_dis)

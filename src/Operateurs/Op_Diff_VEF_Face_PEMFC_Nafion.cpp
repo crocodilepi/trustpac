@@ -22,6 +22,7 @@
 #include <Op_Diff_VEF_Face_PEMFC_Nafion.h>
 #include <Champ_base.h>
 #include <Probleme_base.h>
+#include <Champ_Uniforme.h>
 
 Implemente_instanciable( Op_Diff_VEF_Face_PEMFC_Nafion, "Op_Diff_VEFNAFION_const_P1NC", Op_Diff_VEF_Face ) ;
 
@@ -58,10 +59,32 @@ void Op_Diff_VEF_Face_PEMFC_Nafion::completer()
 void Op_Diff_VEF_Face_PEMFC_Nafion::remplir_nu(DoubleTab& nu) const
 {
   Op_Diff_VEF_base::remplir_nu(nu);
-  double inv_rhoCp = 1./((1-por_naf_)*eps_naf_);
-  nu *= inv_rhoCp;
+  const DoubleTab& por = por_naf_.valeurs();
+  const DoubleTab& eps = eps_naf_.valeurs();
+
+  if(sub_type(Champ_Uniforme, por_naf_))
+    {
+      nu /= 1.-por(0,0);
+    }
+  else
+    {
+      DoubleTab subpor(por);
+      subpor *= -1.;
+      subpor += 1.;		// 1-por_naf
+      tab_divide_any_shape(nu,subpor);
+    }
+
+  if(sub_type(Champ_Uniforme, eps_naf_))
+    {
+      nu /= eps(0,0);
+    }
+  else
+    {
+      tab_divide_any_shape(nu,eps);
+    }
+
   Cerr << "Op_Diff_VEF_Face_PEMFC_Nafion::remplir_nu" << finl;
-  //Cerr << "nu min max " << mp_min_vect(nu) << " " << mp_max_vect(nu) << finl;
+  Cerr << "nu min max " << mp_min_vect(nu) << " " << mp_max_vect(nu) << finl;
 }
 
 void Op_Diff_VEF_Face_PEMFC_Nafion::mettre_a_jour(double temps)

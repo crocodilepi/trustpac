@@ -132,7 +132,7 @@ void Source_Term_Nafion_diffusion::discretiser(const Discretisation_base& dis)
   champs_compris_.ajoute_champ(ch_S_);
 }
 
-double Source_Term_Nafion_diffusion::eval_f(double diffu, double Ci, double ci, double T) const
+double Source_Term_Nafion_diffusion::eval_f(double diffu, double Ci, double ci, double T, double por, double eps, double gamma) const
 {
   double Ceq;
   if (nom_espece_ == "H2O" || nom_espece_ == "vap")
@@ -160,15 +160,15 @@ double Source_Term_Nafion_diffusion::eval_f(double diffu, double Ci, double ci, 
         }
       Ceq = ci * R * T * H;
     }
-  double e_naf = (1-por_naf_)*eps_naf_ / gamma_CL_;
-  return diffu * gamma_CL_ / e_naf * (Ceq - Ci);
+  double e_naf = (1-por)*eps / gamma;
+  return diffu * gamma / e_naf * (Ceq - Ci);
 }
 
-double Source_Term_Nafion_diffusion::eval_derivee_f(double diffu) const
+double Source_Term_Nafion_diffusion::eval_derivee_f(double diffu, double por, double eps, double gamma) const
 {
   // expression_derivee_par_rapport_inconnue
-  double e_naf = (1-por_naf_)*eps_naf_ / gamma_CL_;
-  return (- diffu * gamma_CL_ / e_naf);
+  double e_naf = (1-por)*eps/gamma;
+  return (- diffu * gamma / e_naf);
 }
 
 DoubleTab& Source_Term_Nafion_diffusion::calculer(DoubleTab& resu) const
@@ -236,12 +236,16 @@ void Source_Term_Nafion_diffusion::mettre_a_jour(double temps)
 
   // mettre a jour ch_S (P0)
   DoubleTab& val_S = ch_S_.valeurs();
+  DoubleTab& por = por_naf_.valeurs();
+  DoubleTab& eps = eps_naf_.valeurs();
+  DoubleTab& gamma = gamma_CL_.valeurs();
+
   if(CL_a_.non_nul())
     {
       for (int poly = 0; poly < CL_a_.valeur().nb_elem_tot(); poly++)
         {
           int elem = CL_a_.valeur()(poly);
-          val_S(elem) = eval_f(diffu_(elem), C_(elem), ci_(elem), T_(elem));
+          val_S(elem) = eval_f(diffu_(elem), C_(elem), ci_(elem), T_(elem), por(elem,0), eps(elem, 0), gamma(elem,0));
         }
     }
 
@@ -250,12 +254,12 @@ void Source_Term_Nafion_diffusion::mettre_a_jour(double temps)
       for (int poly = 0; poly < CL_c_.valeur().nb_elem_tot(); poly++)
         {
           int elem = CL_c_.valeur()(poly);
-          val_S(elem) = eval_f(diffu_(elem), C_(elem), ci_(elem), T_(elem));
+          val_S(elem) = eval_f(diffu_(elem), C_(elem), ci_(elem), T_(elem), por(elem,0), eps(elem, 0), gamma(elem,0));
         }
     }
 
   Cerr << "Source_Term_Nafion_diffusion::mettre_a_jour" << finl;
-  //Cerr << "val ch_S min max " << mp_min_vect(val_S)<< " " <<mp_max_vect(val_S) << finl;
+  Cerr << "champ de source de diffusion ch_S min max " << mp_min_vect(val_S) << " " << mp_max_vect(val_S) << finl;
 }
 
 void Source_Term_Nafion_diffusion::completer()
@@ -293,9 +297,12 @@ void Source_Term_Nafion_diffusion::completer()
 DoubleTab& Source_Term_Nafion_diffusion::ajouter(DoubleTab& resu) const
 {
   assert(resu.dimension(0)==la_zone_.valeur().nb_faces());
-  double inv_rhoCp = 1./((1-por_naf_)*eps_naf_);
+  //double inv_rhoCp = 1./((1-por_naf_)*eps_naf_);
   // mettre a jour ch_S (P0)
   const DoubleTab& val_S = ch_S_.valeurs();
+  const DoubleTab& por = por_naf_.valeurs();
+  const DoubleTab& eps = eps_naf_.valeurs();
+
   DoubleVect vol = la_zone_.valeur().volumes();
 
   if(CL_a_.non_nul())
@@ -303,6 +310,7 @@ DoubleTab& Source_Term_Nafion_diffusion::ajouter(DoubleTab& resu) const
       for (int poly = 0; poly < CL_a_.valeur().nb_elem_tot(); poly++)
         {
           int elem = CL_a_.valeur()(poly);
+          double inv_rhoCp = 1./((1-por(elem,0))*eps(elem,0));
           int nb_face_elem = la_zone_.valeur().zone().nb_faces_elem(0);
           for (int f = 0; f < nb_face_elem; ++f)
             {
@@ -317,6 +325,7 @@ DoubleTab& Source_Term_Nafion_diffusion::ajouter(DoubleTab& resu) const
         for (int poly = 0; poly < CL_c_.valeur().nb_elem_tot(); poly++)
           {
             int elem = CL_c_.valeur()(poly);
+            double inv_rhoCp = 1./((1-por(elem,0))*eps(elem,0));
             int nb_face_elem = la_zone_.valeur().zone().nb_faces_elem(0);
             for (int f = 0; f < nb_face_elem; ++f)
               {
@@ -332,19 +341,22 @@ DoubleTab& Source_Term_Nafion_diffusion::ajouter(DoubleTab& resu) const
 
 void Source_Term_Nafion_diffusion::contribuer_a_avec(const DoubleTab& inco, Matrice_Morse& mat) const
 {
-  double inv_rhoCp = 1./((1-por_naf_)*eps_naf_);
   DoubleVect vol = la_zone_.valeur().volumes();
+  const DoubleTab& por = por_naf_.valeurs();
+  const DoubleTab& eps = eps_naf_.valeurs();
+  const DoubleTab& gamma = gamma_CL_.valeurs();
 
   if(CL_a_.non_nul())
     {
       for (int poly = 0; poly < CL_a_.valeur().nb_elem_tot(); poly++)
         {
           int elem = CL_a_.valeur()(poly);
+          double inv_rhoCp = 1./((1-por(elem,0))*eps(elem,0));
           int nb_face_elem = la_zone_.valeur().zone().nb_faces_elem(0);
           for (int f = 0; f < nb_face_elem; ++f)
             {
               int face = la_zone_.valeur().elem_faces(elem, f);
-              mat.coef(face,face) +=  eval_derivee_f(diffu_(elem)) * vol(elem) / nb_face_elem * inv_rhoCp;
+              mat.coef(face,face) +=  eval_derivee_f(diffu_(elem), por(elem,0), eps(elem,0), gamma(elem,0)) * vol(elem) / nb_face_elem * inv_rhoCp;
             }
         }
     }
@@ -354,11 +366,12 @@ void Source_Term_Nafion_diffusion::contribuer_a_avec(const DoubleTab& inco, Matr
         for (int poly = 0; poly < CL_c_.valeur().nb_elem_tot(); poly++)
           {
             int elem = CL_c_.valeur()(poly);
+            double inv_rhoCp = 1./((1-por(elem,0))*eps(elem,0));
             int nb_face_elem = la_zone_.valeur().zone().nb_faces_elem(0);
             for (int f = 0; f < nb_face_elem; ++f)
               {
                 int face = la_zone_.valeur().elem_faces(elem, f);
-                mat.coef(face,face) +=  eval_derivee_f(diffu_(elem)) * vol(elem) / nb_face_elem * inv_rhoCp;
+                mat.coef(face,face) +=  eval_derivee_f(diffu_(elem), por(elem,0), eps(elem,0), gamma(elem,0)) * vol(elem) / nb_face_elem * inv_rhoCp;
               }
           }
       }

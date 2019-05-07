@@ -166,10 +166,13 @@ inline void Loi_Fermeture_transport_ionique::mettre_a_jour(double temps)
 
   // mettre a jour le champ kappa (seul membrane) P0
   DoubleTab& kappa = ch_kappa_.valeurs();
+  DoubleTab& por = por_naf_.valeurs();
+  DoubleTab& eps = eps_naf_.valeurs();
+  DoubleTab& tor = tor_naf_.valeurs();
   int nb_elem = kappa.dimension(0);
   for (int elem = 0; elem < nb_elem; ++elem)
     {
-      kappa(elem) = f_kappa(T_(elem), C_H2O_(elem));
+      kappa(elem) = f_kappa(T_(elem), C_H2O_(elem), por(elem, 0), eps(elem,0), tor(elem,0));
     }
 
   // mettre a jour le champ I_i_ P0
@@ -261,13 +264,14 @@ inline void Loi_Fermeture_transport_ionique::mettre_a_jour(double temps)
 
     }
 
-  // DEBUG
-  //Cerr << "champ_erev" << val_erev_ << finl;
-  //Cerr << "champ_psi" << psi_ << finl;
-  //Cerr << "champ_phi" << phi_ << finl;
-  //Cerr << "champ_eta" << val_eta << finl;
-
   Cerr << "Loi_Fermeture_transport_ionique::mettre_a_jour" << finl;
+  Cerr << "champ E_rev [Volt] min max " << mp_min_vect(val_erev) << " " << mp_max_vect(val_erev) << finl;
+  Cerr << "champ eta [Volt] min max " << mp_min_vect(val_eta) << " " << mp_max_vect(val_eta) << finl;
+  Cerr << "champ i0 [A/m2] min max " << mp_min_vect(val_i0) << " " << mp_max_vect(val_i0) << finl;
+  Cerr << "champ ir [A/m3] min max " << mp_min_vect(val_ir) << " " << mp_max_vect(val_ir) << finl;
+  Cerr << "champ ip [A/m3] min max " << mp_min_vect(val_ip) << " " << mp_max_vect(val_ip) << finl;
+  Cerr << "champ q_reac [W/m3] min max " << mp_min_vect(val_q_reac) << " " << mp_max_vect(val_q_reac) << finl;
+  Cerr << "champ q_perm [W/m3] min max " << mp_min_vect(val_q_perm) << " " << mp_max_vect(val_q_perm) << finl;
 }
 
 // -dG/(n*F)-R*T*log(a_X2_lim^nu_H2*a_H^nu_H_a)/(n*F)
@@ -348,7 +352,7 @@ double Loi_Fermeture_transport_ionique::eval_ir_anode(double io, double eta, dou
   if (x2>50)
     x2=50;													// VERIFIER
   res -= exp(x2);
-  res *= io * gamma_CL;
+  res *= io * gamma_CL_a;
   return res;
 }
 
@@ -364,7 +368,7 @@ double Loi_Fermeture_transport_ionique::eval_ir_cathode(double io, double eta, d
   if (x2>50)
     x2=50;													// VERIFIER
   res -= exp(x2);
-  res *= io * gamma_CL;
+  res *= io * gamma_CL_c;
   return res;
 }
 
