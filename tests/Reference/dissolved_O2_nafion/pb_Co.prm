@@ -1,0 +1,114 @@
+parameters
+{
+   title "PEMFC cas test dissous de Oxygen dans Nafion (MB+CLc)"
+   description "Ce cas test a pour l'objectif de tester le modele de dissolution de gaz Oxygen dans Nafion"
+   description "Hypothese: les champs couplage sont constants: temperature T, concentration Oxygen"
+   description "Dimension "
+   description "Largeur 20e-6 m"
+   description "Hauteur MB: 25e-6m"
+   description "Hauteur CLa=CLc: 10e-6m"
+   description "Hauteur MPLa=MPLc: 40e-6m"
+   description "Hauteur GDLa=GDLc: 200e-6 m"
+   author "Van quang DINH"
+   testcase .    pb_Co.data
+   testcase . PAR_pb_Co.data 2   
+}
+
+chapter
+{
+   title "Resultat pb_Co"
+   description "Profil de concentration dissous Co (autrement note C_O2) "
+   
+   Visu {
+	Title "Champ de concentration dissous Co aux sommets [mol/m3] "
+	pseudocolor pb_Co.lata dom_C_O2 TEMPERATURE SOM
+	cycles -1
+	width 15cm
+   }
+   
+   Figure {
+	Title "Champ de concentration dissous Co coupe au plan milieu [mol/m3]"
+	Dimension 2
+	LabelX x
+	LabelY V
+        include_description_curves 0
+	width 12cm
+	
+	Curve {
+		legend pb_Co
+		segment pb_Co CO_SEG
+		Style lines
+    }	
+    Curve {
+		legend PAR_pb_Co
+		segment PAR_pb_Co CO_SEG
+		Style lines
+    }	
+   }
+
+   
+   Visu {
+	Title "Coefficient de diffusion effective 'diffusion_nafion' Da_O2_eff"
+	pseudocolor pb_Co.lata dom_C_O2 DIFFUSION_NAFION ELEM
+	cycles -1
+	width 15cm
+   }
+   
+   Visu {
+	Title "Coefficient de diffusion normal 'Da_O2_naf'"
+	pseudocolor pb_Co.lata dom_C_O2 D_I_NAF ELEM
+	cycles -1
+	width 15cm
+   }
+   
+   Visu {
+	Title "Approximation de Terme Source aux centres d'element Sa_O2"
+	pseudocolor pb_Co.lata dom_C_O2 S ELEM
+	cycles -1
+	width 15cm
+   }
+   
+   Visu {
+	Title "Approximation de concentration dissouse equivalent Ceq aux sommets"
+	pseudocolor pb_Co.lata dom_C_O2 CEQ SOM
+	cycles -1
+	width 15cm
+   }
+   
+   Visu {
+	Title "Terme Source de diffusion Sa_O2"
+	pseudocolor pb_Co.lata dom_C_O2 SA_O2 ELEM
+	cycles -1
+	width 15cm
+   }
+   
+   Visu {
+	Title "Terme Source de reaction S_O2"
+	pseudocolor pb_Co.lata dom_C_O2 S_O2 ELEM
+	cycles -1
+	width 15cm
+   }
+   
+   Figure {
+	Title "convergence du solveur"
+	Dimension 2
+	LabelX t
+	LabelY res
+	logy
+        include_description_curves 0
+	width 12cm
+	Curve {
+		legend pb_Co
+		file pb_Co.dt_ev
+		columns $1 $4
+		Style lines
+   }
+   Curve {
+		legend PAR_pb_Co
+		file PAR_pb_Co.dt_ev
+		columns $1 $4
+		Style lines
+   }
+  }
+  
+}

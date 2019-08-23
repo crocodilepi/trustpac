@@ -1,0 +1,2 @@
+meddir=$project_directory/share/Prepro/ExampleMedFiles/ChannelCut23kElements
+tar xzf $meddir/medfiles.tgz

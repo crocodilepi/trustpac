@@ -1,0 +1,305 @@
+parameters
+{
+   title "PEMFC Couplage phi+psi non conforme"
+   description "Ce cas test a pour l'objectif de tester le couplage de transport ionique et electrique sur un maillage non conforme."
+   description "Le couplage utilise une interpolation pour recuperer les champs couplage sur les zones chevauches de deux domaines: domaine de transport ionique et domaine de transport electrique"
+   description "Hypothese: diffusion isotrope pour les deux physiques: phi et psi"
+   description "Dimension "
+   description "Largeur 20e-6 m"
+   description "Hauteur MB: 25e-6m"
+   description "Hauteur CLa=CLc: 10e-6m"
+   description "Hauteur MPLa=MPLc: 40e-6m"
+   description "Hauteur GDLa=GDLc: 200e-6 m"
+   author "Van quang DINH"
+   testcase .    phi_psi_coupling.data
+   testcase . PAR_phi_psi_coupling.data 2   
+   testcase . cdl_1e3.data
+}
+
+chapter
+{
+   title "Resultat Phi_Psi_Coupling"
+   description "Profil de potential ionique (phi) et electrique (psi) "
+   
+   Visu {
+	Title "Champ de potentiel ionique(phi) aux sommets "
+	pseudocolor phi_psi_coupling.lata dom_phi TEMPERATURE SOM
+	cycles -1
+	width 15cm
+   }
+   
+   Visu {
+	Title "Champ de potentiel electrique(psi) aux sommets"
+	pseudocolor phi_psi_coupling.lata dom_psi TEMPERATURE SOM
+	cycles -1
+	width 15cm
+   }
+   
+   Visu {
+	Title "Densite de courant de la reaction Jr A/m3 au centre des elements"
+	pseudocolor phi_psi_coupling.lata dom_phi IR ELEM
+	cycles -1
+	width 15cm
+   }
+   
+    Figure {
+	Title "Champ de potentiel ionique(Phi) coupe au plan milieu"
+	Dimension 2
+	LabelX x
+	LabelY V
+        include_description_curves 0
+	width 12cm
+	
+	Curve {
+		legend phi_psi_coupling
+		segment phi_psi_coupling PHI_SEG
+		Style lines
+    }	
+    Curve {
+		legend PAR_phi_psi_coupling
+		segment PAR_phi_psi_coupling PHI_SEG
+		Style lines
+    }	
+   }
+   
+   Figure {
+	Title "Champ de potentiel electrique(Psi) coupe au plan milieu au cote cathode"
+	Dimension 2
+	LabelX x
+	LabelY V
+        include_description_curves 0
+	width 12cm
+	
+	Curve {
+		legend phi_psi_coupling
+		segment phi_psi_coupling PSI_C_SEG
+		Style lines
+    }	
+    Curve {
+		legend PAR_phi_psi_coupling
+		segment PAR_phi_psi_coupling PSI_C_SEG
+		Style lines
+    }	
+   }
+   
+   Figure {
+	Title "Champ de potentiel electrique(Psi) coupe au plan milieu au cote anode"
+	Dimension 2
+	LabelX x
+	LabelY V
+        include_description_curves 0
+	width 12cm
+	
+	Curve {
+		legend phi_psi_coupling
+		segment phi_psi_coupling PSI_A_SEG
+		Style lines
+    }
+    Curve {
+		legend PAR_phi_psi_coupling
+		segment PAR_phi_psi_coupling PSI_A_SEG
+		Style lines
+    }	
+   }
+   
+   Figure {
+	Title "Densite de Courant de reaction coupe au plan milieu Jr A/m3 "
+	Dimension 2
+	LabelX x
+	LabelY A/m3
+	width 12cm
+	
+	Curve {
+		legend phi_psi_coupling
+		segment phi_psi_coupling IR_SEG
+		Style lines
+    }	
+    Curve {
+		legend PAR_phi_psi_coupling
+		segment PAR_phi_psi_coupling IR_SEG
+		Style lines
+    }	
+   }
+   
+   Visu {
+	Title "Erev potentiel"
+	pseudocolor phi_psi_coupling.lata dom_phi EREV ELEM
+	cycles -1
+	width 15cm
+   }
+   
+   Visu {
+	Title "Conductivite ionique 'kappa'"
+	pseudocolor phi_psi_coupling.lata dom_phi KAPPA ELEM
+	cycles -1
+	width 15cm
+   }
+   
+   Visu {
+	Title "Conductivite electrique 'sigma'"
+	pseudocolor phi_psi_coupling.lata dom_psi CONDUCTIVITE ELEM
+	cycles -1
+	width 15cm
+   }
+   
+   Visu {
+	Title "Source Terme ionique +ie/Cdl"
+	pseudocolor phi_psi_coupling.lata dom_phi S_I ELEM
+	cycles -1
+	width 15cm
+   }
+   
+   Visu {
+	Title "Source Terme electrique -ie/Cdl"
+	pseudocolor phi_psi_coupling.lata dom_psi S_E ELEM
+	cycles -1
+	width 15cm
+   }
+   
+   Visu {
+	Title "Source de chaleur veant de la reaction Qreac W/m3"
+	pseudocolor phi_psi_coupling.lata dom_phi Q_REAC ELEM
+	cycles -1
+	width 15cm
+   }
+   
+   Visu {
+	Title "Source de chaleur veant de la permeation Qperm W/m3"
+	pseudocolor phi_psi_coupling.lata dom_phi Q_PERM ELEM
+	cycles -1
+	width 15cm
+   }
+   
+   
+   Figure {
+	Title "convergence du solveur"
+	Dimension 2
+	LabelX t
+	LabelY res
+	logy
+        include_description_curves 0
+	width 12cm
+	Curve {
+		legend phi_psi_coupling
+		file phi_psi_coupling.dt_ev
+		columns $1 $4
+		Style lines
+   }
+   Curve {
+		legend PAR_phi_psi_coupling
+		file PAR_phi_psi_coupling.dt_ev
+		columns $1 $4
+		Style lines
+   }
+  }
+
+}
+
+chapter
+{
+   title "Compare Cdl 1(phi_psi_coupling.data) vs 1e-3 (cdl_1e3.data)"
+   description "Comparaison deux cas de Cdl"
+   
+   
+   Figure {
+	Title "Champ de potentiel ionique(Phi) coupe au plan milieu"
+	Dimension 2
+	LabelX x
+	LabelY V
+        include_description_curves 0
+	width 12cm
+	
+	Curve {
+		legend cdl_1
+		segment phi_psi_coupling PHI_SEG
+		Style lines
+    }	
+    Curve {
+		legend cdl_1e3
+		segment cdl_1e3 PHI_SEG
+		Style lines
+    }	
+   }
+   
+   Figure {
+	Title "Champ de potentiel electrique(Psi) coupe au plan milieu au cote cathode"
+	Dimension 2
+	LabelX x
+	LabelY V
+        include_description_curves 0
+	width 12cm
+	
+	Curve {
+		legend cdl_1
+		segment phi_psi_coupling PSI_C_SEG
+		Style lines
+    }	
+    Curve {
+		legend cdl_1e3
+		segment cdl_1e3 PSI_C_SEG
+		Style lines
+    }	
+   }
+   
+   Figure {
+	Title "Champ de potentiel electrique(Psi) coupe au plan milieu au cote anode"
+	Dimension 2
+	LabelX x
+	LabelY V
+        include_description_curves 0
+	width 12cm
+	
+	Curve {
+		legend cdl_1
+		segment phi_psi_coupling PSI_A_SEG
+		Style lines
+    }
+    Curve {
+		legend cdl_1e3
+		segment cdl_1e3 PSI_A_SEG
+		Style lines
+    }	
+   }
+   
+   Figure {
+	Title "Densite de Courant de reaction coupe au plan milieu Jr A/m3 "
+	Dimension 2
+	LabelX x
+	LabelY A/m3
+	width 12cm
+	
+	Curve {
+		legend cdl_1
+		segment phi_psi_coupling IR_SEG
+		Style lines
+    }	
+    Curve {
+		legend cdl_1e3
+		segment cdl_1e3 IR_SEG
+		Style lines
+    }	
+   }
+   
+   
+   Figure {
+	Title "convergence du solveur"
+	Dimension 2
+	LabelX t
+	LabelY res
+	logy
+        include_description_curves 0
+	width 12cm
+	Curve {
+		legend cdl
+		file phi_psi_coupling.dt_ev
+		columns $1 $4
+		Style lines
+   }
+   Curve {
+		legend cdl_1e3
+		file cdl_1e3.dt_ev
+		columns $1 $4
+		Style lines
+   }
+  }
+}

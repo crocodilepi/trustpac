@@ -1,0 +1,374 @@
+# PARALLEL OK 2 #
+
+dimension 2
+
+domaine dom_phi         # domaine transport ionique phi CL_c-MB-CL_a #
+
+domaine dom_psi         # domaine transport electrique psi GDLc-MPLc-CLc et CLa-MPLc-GDLa #
+
+# BEGIN MESH #
+Mailler dom_phi
+{
+    Pave Cavite1
+	{
+		Origine 0. -10.
+		Nombre_de_Noeuds  21 46
+		Longueurs 2 45
+	}
+	{
+		Bord Gauche X = 0.	-10 <= Y <= 35    
+		Bord Droit  X = 2	-10 <= Y <= 35    
+		Bord Haut   Y = 35	 0. <= X <= 2    
+		Bord Bas    Y = -10  0. <= X <= 2    
+	}
+}
+Transformer dom_phi x*1e-5 y*1e-6
+Trianguler_H dom_phi
+
+Sous_zone CLa_phi
+associer CLa_phi dom_phi
+Lire CLa_phi { fonction_sous_zone (y_GE_(-10.e-6))_AND_(y_LE_(0.0)) }
+
+Sous_zone CLc_phi
+associer CLc_phi dom_phi
+Lire CLc_phi { fonction_sous_zone (y_GE_(25.e-6))_AND_(y_LE_(35.e-6)) }
+
+Mailler dom_psi
+{
+	Pave Cavite2
+		{
+		Origine 0. 25.
+		Nombre_de_Noeuds  11 251
+		Longueurs 2 250
+		}
+		{
+		Bord Gauche         X = 0.	25. <= Y <= 275    
+		Bord Droit          X = 2	25. <= Y <= 275    
+		Bord Haut           Y = 275	0.  <= X <= 2    
+		Bord I_MB_CL_c      Y = 25 	0.  <= X <= 2    
+		}
+, 	
+    Pave Cavite3
+		{
+		Origine 0. -250
+		Nombre_de_Noeuds  5 51
+		Longueurs 2 250
+		}
+		{
+		Bord Gauche X = 0.	  -250 <= Y <= 0    
+		Bord Droit  X = 2	  -250 <= Y <= 0    
+		Bord Bas    Y = -250	0. <= X <= 2    
+		Bord I_MB_CL_a    Y = 0	0. <= X <= 2    
+		}
+}
+Transformer dom_psi x*1e-5 y*1e-6
+Trianguler_H dom_psi
+
+Sous_zone GDLa_psi
+associer GDLa_psi dom_psi
+Lire GDLa_psi { fonction_sous_zone (y_LE_(-50.e-6)) }
+
+Sous_zone GDLc_psi
+associer GDLc_psi dom_psi
+Lire GDLc_psi { fonction_sous_zone (y_GE_(75.e-6)) }
+
+Sous_zone MPLa_psi
+associer MPLa_psi dom_psi
+Lire MPLa_psi { fonction_sous_zone ((y_GE_(-50.e-6))_AND_(y_LE_(-10.e-6))) }
+
+Sous_zone MPLc_psi
+associer MPLc_psi dom_psi
+Lire MPLc_psi { fonction_sous_zone ((y_GE_(35.e-6))_AND_(y_LE_(75.e-6))) }
+
+Sous_zone CLa_psi
+associer CLa_psi dom_psi
+Lire CLa_psi { fonction_sous_zone (y_GE_(-10.e-6))_AND_(y_LE_(0.0)) }
+
+Sous_zone CLc_psi
+associer CLc_psi dom_psi
+Lire CLc_psi { fonction_sous_zone (y_GE_(25.e-6))_AND_(y_LE_(35.e-6)) }
+
+# END MESH #
+
+# BEGIN PARTITION
+Partition dom_phi
+{
+	Partition_tool tranche { tranches 2 1 }
+	Larg_joint 1
+	zones_name dom_phi
+}
+Partition dom_psi
+{
+	Partition_tool tranche { tranches 2 1 }
+	Larg_joint 1
+	zones_name dom_psi
+}
+End
+END PARTITION #
+
+# BEGIN SCATTER
+Scatter dom_phi.Zones dom_phi
+Sous_Zone CLa_phi
+Associate CLa_phi dom_phi
+Read CLa_phi { Fichier CLa_phi.ssz }
+Sous_Zone CLc_phi
+Associate CLc_phi dom_phi
+Read CLc_phi { Fichier CLc_phi.ssz }
+
+Scatter dom_psi.Zones dom_psi
+Sous_Zone GDLa_psi
+Associate GDLa_psi dom_psi
+Read GDLa_psi { Fichier GDLa_psi.ssz }
+Sous_Zone GDLc_psi
+Associate GDLc_psi dom_psi
+Read GDLc_psi { Fichier GDLc_psi.ssz }
+Sous_Zone MPLa_psi
+Associate MPLa_psi dom_psi
+Read MPLa_psi { Fichier MPLa_psi.ssz }
+Sous_Zone MPLc_psi
+Associate MPLc_psi dom_psi
+Read MPLc_psi { Fichier MPLc_psi.ssz }
+Sous_Zone CLa_psi
+Associate CLa_psi dom_psi
+Read CLa_psi { Fichier CLa_psi.ssz }
+Sous_Zone CLc_psi
+Associate CLc_psi dom_psi
+Read CLc_psi { Fichier CLc_psi.ssz }
+END SCATTER #
+
+
+
+
+# equation dphi/dt = 1/Cdl.div(-kappa.grad(phi)) + 1/Cdl.Si avec Si = ir #
+Pb_Conduction pb_phi
+
+# equation dpsi/dt = 1/Cdl.div(-sigma.grad(psi)) + 1/Cdl.Se avec Se = -ir #
+Pb_Conduction pb_psi
+
+# schema discretisation #
+VEFPrep1B dis
+
+Scheme_euler_implicit sch
+Read sch
+{
+	tinit 0
+	tmax 0.001
+	nb_pas_dt_max 10000
+	dt_impr 0.001
+	dt_sauv 0.2
+	seuil_statio 1e-9
+	max_iter_implicite 50
+    solveur implicite {          
+         # solveur  petsc gmres { Precond diag { } seuil 1e-12 } # # ATTENTION: NOT CONVERGENCE #
+	     solveur  petsc bicgstab { seuil 1e-12 impr precond  pilut { level 30 epsilon 0.01   } }
+	     # solveur  petsc cholesky { } #
+	     seuil_convergence_implicite 1000.
+    }
+    facsec 1e10
+    # facsec_max 1e4 #
+}
+
+# proprietaire pour le transport ionique #
+Solide prop_phi
+Read prop_phi
+{
+    rho     champ_uniforme 1 1.
+    Cp      champ_uniforme 1 1.
+    lambda  champ_uniforme_morceaux dom_phi 1 { defaut 12. CLa_phi 1.5 CLc_phi 1.5 }    # negliger l'anisotropie # 
+    # lambda doit etre remplace par kappa <- Loi_Fermeture_transport_ionique #
+}
+
+# couplage de conductivite kappa, courant Ii = kappa.gradT, laplacien Di = div(kappa.gradT) avec T,  C_H2O #
+Loi_Fermeture_transport_ionique loi_trans_ion
+associer pb_phi loi_trans_ion
+
+# proprietaire pour le transport electrique #
+Solide prop_psi
+Read prop_psi
+{
+    rho     champ_uniforme 1 1.
+    Cp      champ_uniforme 1 1.
+    lambda  champ_uniforme_morceaux dom_psi 1 { defaut 20 GDLa_psi 23. GDLc_psi 23. MPLa_psi 200. MPLc_psi 200. }    # negliger l'anisotropie #
+}
+
+Associate pb_phi dom_phi
+Associate pb_phi prop_phi
+
+Associate pb_psi dom_psi
+Associate pb_psi prop_psi
+
+Probleme_Couple pbc
+Associate pbc pb_phi
+Associate pbc pb_psi
+
+Associate pbc sch
+
+Discretize pbc dis
+
+Read loi_trans_ion
+{
+   por_naf champ_uniforme_morceaux dom_phi 1 { defaut 0.0 CLa_phi 0.47 CLc_phi 0.47 }	# porosite de Nafion : CL 0.47, MB 0 #
+   eps_naf champ_uniforme_morceaux dom_phi 1 { defaut 1. CLa_phi 0.2 CLc_phi 0.2	}	# ionomer proportionnel de Nafion: CA 0.2, MB 1 #
+   tor_naf champ_uniforme_morceaux dom_phi 1 { defaut 1. CLa_phi 1.5 CLc_phi 1.3	}		# tortuosite de Nafion # 
+   nom_ssz_CLc CLc_phi
+   nom_ssz_CLa CLa_phi
+   # nom_pb_T 	pb_T
+   nom_champ_T 	temperature
+   nom_pb_C_H2 pb_C_H2
+   nom_champ_C_H2 temperature
+   nom_pb_C_O2 pb_C_O2 
+   nom_champ_C_O2 temperature
+   nom_pb_C_H2O pb_C_H2O
+   nom_champ_C_H2O temperature #
+   temperature champ_Uniforme 1 353.15
+   Co champ_uniforme_morceaux dom_phi 1 { defaut 1.16*y/25e-6 CLc_phi 1.16 } # dissolved concentration of O2 mol/m3 #
+   Ch champ_uniforme_morceaux dom_phi 1 { defaut 23.7-23.7*y/25e-6 CLa_phi 23.7 } # dissolved concentration of H2 mol/m3 #
+   Ce champ_uniforme_morceaux dom_phi 1 { defaut 14000.+(15200.-14000.)/(25e-6)*y CLa_phi 15200. CLc_phi 14000.	} # dissolved concentration of H2O mol/m3 #
+   nom_pb_psi pb_psi
+   nom_champ_psi temperature
+   nom_pb_phi pb_phi
+   nom_champ_phi temperature
+}
+
+Read pb_phi
+{
+	Conduction
+	{
+	    equation_non_resolue 0
+		diffusion 
+		{ 
+			transport_ie 
+			{ 
+			    diffusivity_fieldname kappa             # kappa <- loi_fermeture_transport_ionique #
+			    Cdl champ_uniforme_morceaux dom_phi 1 { defaut 1. CLa_phi 10. CLc_phi 10. }  # Cdl tres petit -> a voir #
+			} 
+		}
+		# the ionic potential is treated such as the temperature #
+		initial_conditions { temperature Champ_Uniforme 1 0. }          # ??? #
+		
+		boundary_conditions {
+			Gauche  paroi_adiabatique
+			Droit   paroi_adiabatique
+			Haut    paroi_adiabatique
+			Bas     paroi_adiabatique
+		}
+	
+		sources {  
+		    # couplage phi avec psi, T, C_H2, C_O2, C_H2O #
+		    Source_Term_pemfc_transport_ionique {
+		        nom_ssz_CLc CLc_phi
+		        nom_ssz_CLa CLa_phi
+		        nom_pb_phi pb_phi
+		        nom_champ_ir ir
+		        nom_champ_ip ip
+		        nom_champ_dir_dphi dirdphi
+		        sign 1.
+		        Cdl champ_uniforme_morceaux dom_phi 1 { defaut 1. CLa_phi 10. CLc_phi 10. }
+		    }
+	    }
+    }
+    
+	Post_processing
+	{
+	    Probes {
+	        phi_seg temperature periode 1e-12 segment 46 10e-6 -10e-6 10e-6 35e-6
+	        phi_pts temperature periode 1e-12 points 1 10e-6 0
+	        ir_seg ir periode 1e-12 segment 46 10e-6 -10e-6 10e-6 35e-6
+	    }
+	    Definition_champs 
+	    {
+	        diff_i operateur_eqn { numero_op 0 source refchamp {  pb_champ pb_phi temperature } }
+		    s_i operateur_eqn { numero_source 0 source refchamp {  pb_champ pb_phi temperature } }
+        }	
+		Format lata
+		fields dt_post 1e-3
+		{
+		    TEMPERATURE som	# ionic potential #	
+		    s_i elem            # source #
+		    diff_i elem         # diffusion #
+	        kappa elem
+	        I_i elem
+	        Erev elem
+	        eta elem
+	        io elem
+	        ir elem
+	        Q_reac elem
+	        Q_perm elem    
+		}
+	}
+	
+}
+
+
+Read pb_psi
+{
+	
+	Conduction {
+	    equation_non_resolue 0
+		diffusion 
+		{ 
+			transport_ie 
+			{
+			    Cdl champ_uniforme_morceaux dom_psi 1 { defaut 1. CLa_psi 10. CLc_psi 10. }
+			} 
+		}
+		
+		initial_conditions {
+			# temperature Champ_Uniforme 1 0.7 #
+			temperature champ_uniforme_morceaux dom_psi 1 { defaut 0. GDLc_psi 0.7 MPLc_psi 0.7 CLc_psi 0.7 }
+		}
+		boundary_conditions {
+			Gauche    paroi_adiabatique
+			Droit     paroi_adiabatique
+			Haut      paroi_temperature_imposee Champ_Front_Uniforme 1 0.7
+			Bas       paroi_temperature_imposee Champ_Front_Uniforme 1 0.
+		 	I_MB_CL_c paroi_adiabatique
+		 	I_MB_CL_a paroi_adiabatique
+		}
+	    sources { 
+		    # couplage psi avec: phi, T, C_H2, C_O2, C_H2O #  # TO-DO #
+		    Source_Term_pemfc_transport_ionique {
+		        nom_ssz_CLc CLc_psi
+		        nom_ssz_CLa CLa_psi
+		        nom_pb_phi pb_phi
+		        nom_champ_ir ir
+		        nom_champ_ip ip
+		        nom_champ_dir_dphi dirdphi
+		        sign -1.
+		        Cdl champ_uniforme_morceaux dom_psi 1 { defaut 1. CLa_psi 10. CLc_psi 10. }
+		    }
+	    }
+	}
+
+	Post_processing
+	{
+	Probes {
+	        psi_c_seg temperature periode 1e-12 segment 251 10.e-6 25.e-6 10.e-6 275.e-6
+	        psi_a_seg temperature periode 1e-12 segment 251 10e-6 -250e-6 10e-6 0
+	        psi_a_pts temperature periode 1e-12 points 1 10e-6 25e-6
+	    }
+	
+	    Definition_champs 
+	    {
+            diff_e operateur_eqn { numero_op 0 source refchamp {  pb_champ pb_psi temperature } }
+		    s_e operateur_eqn { numero_source 0 source refchamp {  pb_champ pb_psi temperature } }
+	    }
+		Format lata
+		fields dt_post 1e-3
+		{
+		    TEMPERATURE som		# electric potential #
+		    s_e elem
+		    diff_e elem
+		    conductivite elem
+		}
+	}
+	
+}
+
+Solve pbc
+
+End
+
+
+
+

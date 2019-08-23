@@ -1,0 +1,219 @@
+dimension 2
+
+domaine dom_C_H2O        # domaine dissou H2O CL_c-MB-CL_a # 
+
+# BEGIN MESH #
+Mailler dom_C_H2O
+{
+    Pave Cavite
+	{
+		Origine 0. -10.
+		Nombre_de_Noeuds  21 46
+		Longueurs 2 45
+	}
+	{
+		Bord Gauche X = 0.	-10 <= Y <= 35    
+		Bord Droit  X = 2	-10 <= Y <= 35    
+		Bord Haut   Y = 35	 0. <= X <= 2   
+		Bord Bas    Y = -10  0. <= X <= 2   
+	}
+}
+Transformer dom_C_H2O x*1e-5 y*1e-6
+Trianguler_H dom_C_H2O
+
+Sous_zone CLa_C_H2O
+associer CLa_C_H2O dom_C_H2O
+Lire CLa_C_H2O { fonction_sous_zone (y_GE_(-10.e-6))_AND_(y_LE_(0.0)) }
+
+Sous_zone CLc_C_H2O
+associer CLc_C_H2O dom_C_H2O
+Lire CLc_C_H2O { fonction_sous_zone (y_GE_(25.e-6))_AND_(y_LE_(35.e-6)) }
+# END MESH #
+
+# BEGIN PARTITION
+Partition dom_C_H2O
+{
+	Partition_tool metis { Nb_parts 2 }
+	Larg_joint 1
+	zones_name dom_C_H2O
+}
+End
+END PARTITION #
+
+# BEGIN SCATTER
+Scatter dom_C_H2O.Zones dom_C_H2O
+Sous_Zone CLa_C_H2O
+Associate CLa_C_H2O dom_C_H2O
+Read CLa_C_H2O { Fichier CLa_C_H2O.ssz }
+Sous_Zone CLc_C_H2O
+Associate CLc_C_H2O dom_C_H2O
+Read CLc_C_H2O { Fichier CLc_C_H2O.ssz }
+END SCATTER #
+
+# equation: dC_H2O/dt + 1/(1-por_naf)eps_naf.div(-D_w.grad(C)) = 1/(1-por_naf)eps_naf.(Sd_H2O + S_H2O + Sosmotic_H2O) #
+Pb_Conduction pb_C_H2O
+
+# schema discretisation #
+VEFPrep1B dis
+
+Scheme_euler_implicit sch
+Read sch
+{
+	tinit 0
+	tmax 200.
+	dt_impr 0.001
+	dt_sauv 2.
+	nb_pas_dt_max 5000
+	seuil_statio 1e-4
+    solveur implicite {          
+         # solveur  petsc gmres { Precond diag { } seuil 1e-12 } #
+	     solveur  petsc bicgstab { seuil 1e-12 impr precond  pilut { level 30 epsilon 0.01   } }
+	     # solveur  petsc cholesky { } #
+    }
+    facsec 100
+}
+
+# Nafion H2O #
+Solide prop_C_H2O
+Read prop_C_H2O
+{
+	rho     champ_uniforme 1 1.
+	Cp      champ_uniforme 1 1.
+	lambda  champ_uniforme 1 1.e-9 # D_H2O = (6.707e-8*10000./2036.+6.387e-7)*exp(-2416./353.15) = 1.035e-09 #
+}
+
+# champ de diffusion effective diffusion_nafion, normal D_i_naf, flux N_i_naf #
+Loi_Fermeture_Diffusion_Nafion loi_nafion_H2O
+associate pb_C_H2O loi_nafion_H2O
+
+Associate pb_C_H2O dom_C_H2O
+Associate pb_C_H2O prop_C_H2O
+
+Associate pb_C_H2O sch
+
+Discretize pb_C_H2O dis
+
+# champ de diffusion effective  H20 diffusion_nafion, normal D_i_naf, flux N_i_naf #
+Read loi_nafion_H2O
+{
+   nom_espece H2O
+   por_naf 	champ_uniforme_morceaux dom_C_H2O 1 { defaut 0. CLa_C_H2O 0.47 CLc_C_H2O 0.47 }		# porosite de Nafion #
+   eps_naf 	champ_uniforme_morceaux dom_C_H2O 1 { defaut 1. CLa_C_H2O 0.2 CLc_C_H2O 0.2 }		# ionomer proportionnel de Nafion #
+   tor_naf 	champ_uniforme_morceaux dom_C_H2O 1 { defaut 1. CLa_C_H2O 1.5 CLc_C_H2O 1.3 }		# tortuosite de Nafion # 
+   # nom_pb_T pb_T
+   nom_champ_T temperature #
+   temperature Champ_Uniforme 1 353.15
+}
+
+# dissous concentration H2O dans Nafion #
+read pb_C_H2O
+{
+   Conduction
+	{
+	    equation_non_resolue 0
+	
+		diffusion { nafion { 
+		    diffusivity_fieldname diffusion_nafion 
+		    por_naf 	champ_uniforme_morceaux dom_C_H2O 1 { defaut 0. CLa_C_H2O 0.47 CLc_C_H2O 0.47 }		# porosite de Nafion #
+            eps_naf 	champ_uniforme_morceaux dom_C_H2O 1 { defaut 1. CLa_C_H2O 0.2 CLc_C_H2O 0.2 }		# ionomer proportionnel de Nafion #
+		    } 
+		}
+		
+# 		initial_conditions { temperature Champ_fonc_reprise prerun_variant_pb_C_H2O.xyz pb_C_H2O temperature last_time } # 
+        # Psat = exp(23.1961-3816.44/(353.15-46.13)) = 47358.85813833323 # 
+        # a = cRT/Psat = 8*8.314*353.15/Psat = 0.4959729546559264 #
+        # ld = 0.043+17.81*a-39.85*a*a+36*a*a*a = 3.465752975925316 -> C = CSO3*ld = 7056.27 # 
+		initial_conditions { temperature champ_uniforme 1 7056.27 }
+		initial_conditions { temperature Champ_Uniforme 1 1e-3 }
+		
+		boundary_conditions {
+			Gauche  paroi_adiabatique
+			Droit   paroi_adiabatique
+			Haut    paroi_adiabatique
+			Bas     paroi_adiabatique
+		}
+	
+		sources {     
+		    # source term S comming from the electrochemical reactions in CL #
+		    Source_term_nafion_reaction
+		    {
+		        nom_espece H2O
+		        nom_CLc CLc_C_H2O
+		        nom_CLa CLa_C_H2O
+		        # nom_pb_phi pb_phi
+		        nom_champ_ir ir
+		        nom_champ_ip ip #
+		        reacCurrent champ_uniforme_morceaux dom_C_H2O 1 { defaut 0.0 CLa_C_H2O -2e8 CLc_C_H2O 3e8 }	# current density of the reaction A/m3 #
+		        permCurrent champ_uniforme 1 0.
+		        
+		        por_naf 	champ_uniforme_morceaux dom_C_H2O 1 { defaut 0. CLa_C_H2O 0.47 CLc_C_H2O 0.47 }		# porosite de Nafion #
+                eps_naf 	champ_uniforme_morceaux dom_C_H2O 1 { defaut 1. CLa_C_H2O 0.2 CLc_C_H2O 0.2 }		# ionomer proportionnel de Nafion #
+		    }
+		    # puissance_thermique Champ_Uniforme_Morceaux dom_C_H2O 1 { defaut 0 CLa_C_H2O 0 CLc_C_H2O 2000 } #
+		    , 
+		    Source_Term_Nafion_diffusion 
+		    {
+		        nom_espece H2O           # in the list of H2 O2 N2 vap #
+		        nom_domaine dom_C_H2O
+		        nom_CLc CLc_C_H2O
+		        nom_CLa CLa_C_H2O
+		        por_naf 	champ_uniforme_morceaux dom_C_H2O 1 { defaut 0. CLa_C_H2O 0.47 CLc_C_H2O 0.47 }		# porosite de Nafion #
+                eps_naf 	champ_uniforme_morceaux dom_C_H2O 1 { defaut 1. CLa_C_H2O 0.2 CLc_C_H2O 0.2 }		# ionomer proportionnel de Nafion #
+		        gamma_CL champ_uniforme_morceaux dom_C_H2O 1 { defaut 0.0 CLa_C_H2O 1.67e7 CLc_C_H2O 2.5e7 }
+		        nom_pb_C pb_C_H2O
+		        nom_champ_C temperature
+		        nom_champ_D D_i_naf # champ de diffusion #
+		        
+		        /* nom_pb_T pb_T
+		        nom_champ_T temperature
+		        nom_pb_ci_cathode pb_ci_cathode         # ATTENTION: with H2O need both CL_a and CL_c #
+		        nom_champ_ci_cathode concentration      # H2O dans la liste multi-especes O2 vap N2 #
+		        nom_pb_ci_anode pb_ci_anode             # ATTENTION: with H2O need both CL_a and CL_c #
+		        nom_champ_ci_anode concentration        # H2O dans la liste multi-especes H2 vap N2 #
+		        */
+		        temperature Champ_Uniforme 1 353.15
+		        concentration Champ_Uniforme_Morceaux dom_C_H2O 1 { defaut 0.0 CLa_C_H2O 6. CLc_C_H2O 8. }
+		    }	    
+		    /* ,
+		    Source_terme_Nafion_electro_osmotic
+		    {
+		        # nom_pb_phi pb_phi
+                nom_champ_I I_i #
+                ionicCurrent champ_uniforme_morceaux dom_C_H2O 2 { defaut 0. 2000. CLa_C_H2O 0. 2000.*(y-35e-6)/(-10e-6) CLc_C_H2O 0. 2000+2000.*y/10e-6 }
+                por_naf champ_uniforme_morceaux dom_C_H2O 1 { defaut 0.0 CLa_C_H2O 0.47 CLc_C_H2O 0.47 }	# porosite de Couche Active : 0.47, MB: 0 #
+                eps_naf champ_uniforme_morceaux dom_C_H2O 1 { defaut 1. CLa_C_H2O 0.2 CLc_C_H2O 0.2	}	# ionomer proportionnel de Nafion: CA 0.2, MB: 1 #
+		    } */
+        }	
+    }
+    Post_processing
+	{
+	    probes {
+	         Ce_seg temperature periode 1e-3 segment 46 10e-6 -10e-6 10e-6 35e-6
+	         Ce_pts temperature periode 1e-3 points 1 10e-6 12.5e-6
+	    }
+	    Definition_champs 
+	    {
+		    Diffusion_H2O operateur_eqn { numero_op 0 source refchamp { pb_champ pb_C_H2O temperature } }
+		    S_H2O  operateur_eqn { numero_source 0 source refchamp {  pb_champ pb_C_H2O temperature } }
+		    Sd_H2O  operateur_eqn { numero_source 1 source refchamp {  pb_champ pb_C_H2O temperature } }
+		    /* Sosmotic_H2O  operateur_eqn { numero_source 2 source refchamp {  pb_champ pb_C_H2O temperature } } */
+	    }
+        format lata
+        fields dt_post 1e-2
+		{
+		    temperature elem
+		    diffusion_nafion elem
+		    D_i_naf elem
+		    S elem
+		    Diffusion_H2O elem
+		    S_H2O elem
+		    Sd_H2O elem
+		    /* Sosmotic_H2O elem */
+		    Ceq elem
+		}
+	}
+}
+
+Solve pb_C_H2O
+
+End

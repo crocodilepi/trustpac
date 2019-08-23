@@ -1,0 +1,194 @@
+dimension 2
+
+domaine dom_C_H2         # domaine dissou H2 MB-CLa #
+
+# BEGIN MESH #
+Mailler dom_C_H2
+{
+	Pave Cavite
+	{
+		Origine 0. -10.
+		Nombre_de_Noeuds 21 36
+		Longueurs 2 35
+	}
+	{
+		Bord Gauche X = 0.	-10 <= Y <= 25    
+		Bord Droit  X = 2	-10 <= Y <= 25    
+		Bord Haut   Y = 25	 0. <= X <= 2   
+		Bord Bas    Y = -10  0. <= X <= 2   
+	}
+}
+Transformer dom_C_H2 x*1e-5 y*1e-6
+Trianguler_H dom_C_H2
+
+Sous_zone CLa_C_H2 
+associer CLa_C_H2 dom_C_H2
+Lire CLa_C_H2 { fonction_sous_zone (y_GE_(-10.e-6))_AND_(y_LE_(0.0)) }
+# END MESH #
+
+# BEGIN PARTITION
+Partition dom_C_H2
+{
+	Partition_tool tranche { tranches 2 1 }
+	Larg_joint 1
+	zones_name dom_C_H2
+}
+End
+END PARTITION #
+
+# BEGIN SCATTER
+Scatter dom_C_H2.Zones dom_C_H2
+Sous_Zone CLa_C_H2
+Associate CLa_C_H2 dom_C_H2
+Read CLa_C_H2 { Fichier CLa_C_H2.ssz }
+END SCATTER #
+
+# equation: dC_H2/dt + 1/(1-por_naf)eps_naf.div(-D_H2_eff.grad(C_H2)) = 1/(1-por_naf)eps_naf.(Sa_H2 + S_H2) #
+Pb_Conduction pb_C_H2
+
+# schema discretisation #
+VEFPrep1B dis
+
+Scheme_euler_implicit sch
+Read sch
+{
+	tinit 0
+	tmax 2.
+	dt_impr 0.001
+	dt_sauv 2.
+	nb_pas_dt_max 500
+	seuil_statio 1e-5
+	max_iter_implicite 50
+    solveur implicite {          
+         # solveur  petsc gmres { Precond diag { } seuil 1e-12 } #
+	     solveur  petsc bicgstab { seuil 1e-12 impr precond  pilut { level 30 epsilon 0.01   } }
+	     # solveur  petsc cholesky { } #
+    }
+    facsec 30
+}
+
+# Nafion H2 #
+Solide prop_C_H2
+Read prop_C_H2
+{
+	rho     champ_uniforme 1 1.
+	Cp      champ_uniforme 1 1.
+	lambda  champ_uniforme 1 1.e-10 # D_H2 = 4.1e-7*exp(-2602./353.15) = 2.59e-10 # 
+}
+
+# coefficient de diffusion effective diffusion_nafion, diffusion normal D_i_naf #
+Loi_Fermeture_Diffusion_Nafion loi_nafion_H2 
+associate pb_C_H2 loi_nafion_H2
+
+Associate pb_C_H2 dom_C_H2
+Associate pb_C_H2 prop_C_H2
+
+Associate pb_C_H2 sch
+
+Discretize pb_C_H2 dis
+
+# champ de diffusion effective de H2 diffusion_nafion, normal D_i_naf, flux N_i_naf #
+Read loi_nafion_H2
+{
+   nom_espece H2
+   por_naf champ_uniforme_morceaux dom_C_H2 1 { defaut 0.0 CLa_C_H2 0.47 }	# porosite de Nafion : CL 0.47, MB 0 #
+   eps_naf champ_uniforme_morceaux dom_C_H2 1 { defaut 1. CLa_C_H2 0.2	}	# ionomer proportionnel de Nafion: CA 0.2, MB 1 #
+   tor_naf champ_uniforme_morceaux dom_C_H2 1 { defaut 1. CLa_C_H2 1.5	}	# tortuosite de Nafion # 
+   # nom_pb_T pb_T
+   nom_champ_T temperature #
+   temperature Champ_Uniforme 1 353.15
+}
+
+# dissous concentration H2 dans Nafion #
+read pb_C_H2
+{
+   Conduction
+	{
+	    # operateur diffusion: div(-D_eff*gradC) / ((1-por)eps) #
+		diffusion { nafion { 
+		    diffusivity_fieldname diffusion_nafion 
+		    por_naf champ_uniforme_morceaux dom_C_H2 1 { defaut 0.0 CLa_C_H2 0.47 }	# porosite de Couche Active : 0.47, MB: 0 #
+            eps_naf champ_uniforme_morceaux dom_C_H2 1 { defaut 1. CLa_C_H2 0.2	}	# ionomer proportionnel de Nafion: CA 0.2, MB: 1 #
+		    } 
+		}
+		
+		# initial_conditions { temperature Champ_fonc_reprise prerun_variant_pb_C_H2.xyz pb_C_H2 temperature last_time } #
+		# H_O2 = 7.03e-5 , C_O2 = c_O2.R.T.H = 9*8.314*298*7.03e-5 = 1.6 #
+		initial_conditions { temperature Champ_Uniforme 1 1.6 }
+		initial_conditions { temperature Champ_Uniforme 1 1e-3 }
+		
+		boundary_conditions {
+			Gauche  paroi_adiabatique
+			Droit   paroi_adiabatique
+			Haut    paroi_temperature_imposee Champ_Front_Uniforme 1 0. # C_H2 at I_MB_CLc = 0 #
+			Bas     paroi_adiabatique
+		}
+	
+		sources { 
+		    # source term S comming from the electrochemical reactions in CL: S_i /((1-por)eps) #
+		    Source_term_nafion_reaction
+		    {
+		        nom_espece H2
+		        nom_CLa CLa_C_H2
+		        # nom_pb_phi pb_phi
+		        nom_champ_ir ir
+		        nom_champ_ip ip #
+		        reacCurrent champ_uniforme_morceaux dom_C_H2 1 { defaut 0.0 CLa_C_H2 -2e8 }	# current density of the reaction A/m3 #
+		        permCurrent champ_uniforme 1 0.
+		        
+		        por_naf champ_uniforme_morceaux dom_C_H2 1 { defaut 0.0 CLa_C_H2 0.47 }	# porosite de Couche Active : 0.47, MB: 0 #
+                eps_naf champ_uniforme_morceaux dom_C_H2 1 { defaut 1. CLa_C_H2 0.2	}	# ionomer proportionnel de Nafion: CA 0.2, MB: 1 #
+		    }		    
+		    # puissance_thermique Champ_Uniforme_Morceaux dom_C_H2 1 { defaut 0 CLa_C_H2 -2000 } #
+		    ,
+		    Source_Term_Nafion_diffusion 
+		    {
+		        nom_espece H2           # in the list of H2 O2 N2 vap #
+		        nom_domaine dom_C_H2
+		        nom_CLa CLa_C_H2
+		        por_naf champ_uniforme_morceaux dom_C_H2 1 { defaut 0.0 CLa_C_H2 0.47 }	# porosite de Couche Active : 0.47, MB: 0 #
+                eps_naf champ_uniforme_morceaux dom_C_H2 1 { defaut 1. CLa_C_H2 0.2	}	# ionomer proportionnel de Nafion: CA 0.2, MB: 1 #
+		        gamma_CL champ_uniforme_morceaux dom_C_H2 1 { defaut 0.0 CLa_C_H2 1.67e7 }
+		        nom_pb_C pb_C_H2
+		        nom_champ_C temperature
+		        nom_champ_D D_i_naf # champ de diffusion #
+		        # nom_pb_T pb_T
+		        nom_champ_T temperature
+		        nom_pb_ci_anode pb_ci_anode
+		        nom_champ_ci_anode concentration # 
+		        temperature Champ_Uniforme 1 353.15
+		        concentration Champ_Uniforme_Morceaux dom_C_H2 1 { defaut 0.0 CLa_C_H2 30. }
+		    }
+		    		   
+        }	
+    }
+    Post_processing
+	{
+	    probes {
+	         Ch_seg temperature periode 1e-6 segment 36 10e-6 -10e-6 10e-6 25e-6
+	         Ch_pts temperature periode 1e-6 points 1 10e-6 12.5e-6
+	    }
+	    Definition_champs 
+	    {
+		    Diffusion_H2 operateur_eqn { numero_op 0 source refchamp { pb_champ pb_C_H2 temperature } }
+		    S_H2  operateur_eqn { numero_source 0 source refchamp {  pb_champ pb_C_H2 temperature } }
+		    Sa_H2  operateur_eqn { numero_source 1 source refchamp {  pb_champ pb_C_H2 temperature } }
+	    }
+        format lata
+        fields dt_post 1e-3
+		{
+		    temperature som
+		    diffusion_nafion elem
+		    D_i_naf elem
+		    Diffusion_H2 elem
+		    S_H2 elem
+		    Sa_H2 elem
+		    S elem
+		    Ceq elem
+		}
+	}
+}
+
+Solve pb_C_H2
+
+End
