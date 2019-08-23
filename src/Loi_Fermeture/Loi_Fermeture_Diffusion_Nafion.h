@@ -76,11 +76,11 @@ public :
 protected :
   Champ_Fonc diffu_;		// champ de diffusion 'effective' de l'espece
   Champ_Fonc D_i_naf_;		// champ de diffusion de l'espece
-  Champ_Fonc N_i_naf_;		// champ de flux de diffusion de l'espece
+  //Champ_Fonc N_i_naf_;		// champ de flux de diffusion de l'espece
   //Champ_Fonc ch_S_;			// champ de source Sa_i = Da_i*gamma_CL/e_naf (Ceq_i - C_i)
 
   REF(Equation_base) ref_equation_;
-  const Equation_base& equation() const
+  Equation_base& equation()
   {
     return ref_equation_.valeur();
   } ;
@@ -89,19 +89,24 @@ protected :
   Nom nom_espece_;			// dans la liste { H2, O2, N2, H2O , vap}
   Nom nom_pb_T_;			// nom du probleme de chaleur
   Nom nom_champ_T_;			// defaut temperature
-  Nom nom_pb_phi_;			// nom du probleme de transport ionique
-  Nom nom_champ_I_;			// nom du champ de courant ionique I_i = -kappa.grad(phi)
-  double T_0_;				// dans le cas T constant
-  double CSO3_;				// au cas ou "H2O" ou "vap"
+  //Nom nom_pb_phi_;			// nom du probleme de transport ionique
+  //Nom nom_champ_I_;			// nom du champ de courant ionique I_i = -kappa.grad(phi)
+  Nom nom_champ_Ceq_;			// nom du champ Ceq associe a l'equation
+
+  //double CSO3_;				// au cas ou "H2O" ou "vap"
   Champ_Don por_naf_;		// porosite de Nafion
   Champ_Don eps_naf_;		// ionomer proportionnel de Nafion
   Champ_Don tor_naf_;		// tortuosite de Nafion
+  Champ_Don temperature_;
 
   REF(Champ_base) ch_T_;		// champ reference pour temperature (optionnel)
-  REF(Champ_base) ch_I_;		// champ reference pour le courant ionique I = -kappa.grad(phi) (optionnel)
-  REF(Champ_Inc) ch_C_;			// champ reference du champ inconnu C (equation associee)
+  //REF(Champ_base) ch_I_;		// champ reference pour le courant ionique I = -kappa.grad(phi) (optionnel)
+  REF(Champ_Inc) ch_C_;			// champ reference du champ de concentration dissous (champ inconnu Ci)
+  REF(Champ_base)  ch_Ceq_;		// Champ concentration de  diffusion des multi-especes -> couple
 
-  DoubleTab T_, C_, I_;			// tableau des valeurs du champ T, C, I (P0)
+  DoubleTab T_;
+  DoubleTab C_;
+  //DoubleTab I_;			// tableau des valeurs du champ T, C, I (P0)
 
   double eval_D_i_naf(double T, double C);
   double eval_D_i_eff(double T, double C, double por, double eps, double tor);

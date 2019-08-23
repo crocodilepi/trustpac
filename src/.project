@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>pemfc</name>
+	<name>baltik_pemfc</name>
 	<comment></comment>
 	<projects>
 		<project>TRUST-1.7.7</project>

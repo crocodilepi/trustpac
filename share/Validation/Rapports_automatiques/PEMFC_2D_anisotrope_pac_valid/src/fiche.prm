@@ -2,10 +2,16 @@ parameters
 {
    title "Anisotropic pac"
    description "Put here the description of the validation form. Here is only an example of a validation form."
-   description "Validation forms are important to maintain non-regression because it contains some explanations about the physical phenomenon studied."
+   # description "Validation forms are important to maintain non-regression because it contains some explanations about the physical phenomenon studied."
+   description "The description of this validation form is detailed in the file description.pdf."
    author "Van quang DINH"
    testcase .    PEMFC_2D_anisotrope_pac.data
 }
+
+#Chapter { 
+#Title Description
+#Description \latex_(\input{\orig/description}\latex_)
+#}
 
 chapter
 {
@@ -51,6 +57,23 @@ chapter
     }
 }
 
+chapter {
+   title "Gradient of Temperature"
+   description "Gradient of Temperature"
+   Visu {
+	Title "Flux field located at vertices"
+	pseudocolor PEMFC_2D_anisotrope_pac.lata dom GRADT_X SOM
+	cycles -1
+	width 15cm
+    }
+    Visu {
+	Title "Flux field located at vertices"
+	pseudocolor PEMFC_2D_anisotrope_pac.lata dom GRADT_Y SOM
+	cycles -1
+	width 15cm
+    }
+}
+
 
 chapter
 {
@@ -65,14 +88,14 @@ chapter
       curve
       {
         legend "TRUST"
-	file trust_sonde.txt
+	file trust_temperature_sur_diagonal.txt
 	columns $1 $2
 	style linespoints
       }
       curve
       {
         legend "Comsol"
-	file comsol_sonde.txt
+	file comsol_temperature_sur_diagnonal.txt
 	columns $1 $2
 	style linespoints
       }
@@ -81,8 +104,28 @@ chapter
 
 chapter
 {
-    title "More information"
-    description "Helpful information to create validation forms can be found here : "
-    description "TRUST_ROOT/Validation/Outils/Genere_courbe/doc/manuel.xhtml"
-    description "This page is to open with a web browser"
+   title "Comparison of flux between Comsol and TRUST  on boundary Haut"
+   figure {
+      title "Flux au bord Haut"
+      dimension 2
+      include_description_curves 0
+      labelx "x"
+      labely "flux"
+      width  12cm
+      curve
+      {
+        legend "TRUST"
+	file trust_flux_bord_haut.txt
+	columns $1 $4
+	style linespoints
+      }
+      curve
+      {
+        legend "Comsol"
+	file comsol_flux_sur_surface_bord_haut.txt
+	columns $1 $2
+	style linespoints
+      }
+   }
 }
+

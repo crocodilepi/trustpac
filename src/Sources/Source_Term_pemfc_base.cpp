@@ -148,7 +148,7 @@ double Source_Term_pemfc_base::eval_f(double diffu, double Ci, double ci, double
         {
           H = f_Henry_H2(T);
         }
-      else if (nom_espece_ == "02")
+      else if (nom_espece_ == "O2")
         {
           H = f_Henry_O2(T);
         }

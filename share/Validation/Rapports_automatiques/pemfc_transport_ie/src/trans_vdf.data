@@ -1,0 +1,347 @@
+# Thermohydraulique 2D couplee a conduction 2D #
+# PARALLEL NOT #
+dimension 2
+
+# BEGIN MESH #
+Domaine dom
+
+Mailler dom
+{
+	Pave Cavite1
+	{
+	    Origine 0. 0. 
+	    Nombre_de_Noeuds 2 26	
+	    Longueurs 1.0 25.0
+	}
+	{
+	    Bord Gauche    X = 0.   0.  <= Y <= 25.0
+	    Bord Droit     X = 1.   0.  <= Y <= 25.0
+	}
+,
+  	Pave Cavite2
+	{
+	    Origine 0. 25.
+        Nombre_de_Noeuds 2 11
+     	Longueurs 1.0 10.0
+	}
+	{
+	    Bord Gauche      X = 0.   25. <= Y <= 35.0	
+	    Bord Droit       X = 1.   25. <= Y <= 35.0
+	}
+, 
+	Pave Cavite3
+	{
+		Origine 0. 35.
+        Nombre_de_Noeuds 2 41
+		Longueurs 1.0 40.0
+	}
+	{
+		Bord Gauche       X = 0.   35.  <= Y <= 75.0
+		Bord Droit        X = 1.   35. <= Y <= 75.0
+	}
+, 
+	Pave Cavite4
+	{
+		Origine 0. 75.
+        Nombre_de_Noeuds 2 201
+		Longueurs 1.0 200.0
+	}
+	{
+		Bord Gauche X = 0.    75.  <= Y <= 275.0
+		Bord Droit  X = 1.    75.  <= Y <= 275.0
+		Bord Haut   Y = 275.0  0.  <= X <= 1.0
+	}
+,
+  	Pave Cavite5
+	{
+	    Origine 0. -10.
+        Nombre_de_Noeuds 2 11
+     	Longueurs 1.0 10.0
+	}
+	{
+	    Bord Gauche      X = 0.   -10.  <= Y <= 0.0	
+	    Bord Droit       X = 1.   -10.  <= Y <= 0.0
+	}
+,
+	Pave Cavite6
+	{
+		Origine 0. -50.
+        Nombre_de_Noeuds 2 41
+		Longueurs 1.0 40.0
+	}
+	{
+		Bord Gauche       X = 0.    -50.  <= Y <= -10.0
+		Bord Droit        X = 1.    -50.  <= Y <= -10.0
+	}
+, 
+	Pave Cavite7
+	{
+		Origine 0. -250.
+        Nombre_de_Noeuds 2 201
+		Longueurs 1.0 200.0
+	}
+	{
+		Bord Gauche       X = 0.     -250.  <= Y <= -50.0
+		Bord Droit        X = 1.     -250.  <= Y <= -50.0
+		Bord Bas          Y = -250.0    0.  <= X <= 1.0
+	}
+}
+Transformer dom x*2e-3 y*1e-6
+
+Sous_zone elec
+associer elec dom
+Lire elec { 
+  fonction_sous_zone (y_GE_(25.e-6)_OR_(y_LE_(0.0)))
+}
+
+Sous_zone ion 
+associer ion dom
+Lire ion { 
+  fonction_sous_zone (y_LE_(35.e-6)_AND_(y_GE_(-10.0e-6)))
+}
+
+Domaine dom_electrique
+Create_domain_from_sous_zone { domaine_final dom_electrique domaine_init dom par_sous_zone elec }
+
+Domaine dom_ionique
+Create_domain_from_sous_zone { domaine_final dom_ionique domaine_init dom par_sous_zone ion }
+
+Sous_zone GDL 
+associer GDL dom_electrique
+Lire GDL { fonction_sous_zone (y_GE_(75.e-6)_OR_(y_LE_(-50.e-6))) }
+
+Sous_zone MPL 
+associer MPL dom_electrique
+Lire MPL { fonction_sous_zone ((y_GE_(35.e-6))_AND_(y_LE_(75.e-6)))_OR_((y_GE_(-50.e-6))_AND_(y_LE_(-10.e-6))) }
+
+Sous_zone CL_electrique 
+associer CL_electrique dom_electrique
+Lire CL_electrique { fonction_sous_zone ((y_GE_(25.e-6))_AND_(y_LE_(35.e-6)))_OR_((y_GE_(-10.e-6))_AND_(y_LE_(0.0))) }
+
+Sous_zone CL_ionique 
+associer CL_ionique dom_ionique
+Lire CL_ionique { fonction_sous_zone ((y_GE_(25.e-6))_AND_(y_LE_(35.e-6)))_OR_((y_GE_(-10.e-6))_AND_(y_LE_(0.0))) }
+
+Sous_zone MB 
+associer MB dom_ionique
+Lire MB { fonction_sous_zone (y_GE_(0.0)_OR_(y_LE_(25.e-6))) }
+
+postraiter_domaine { domaines { dom dom_electrique dom_ionique } format lata }
+# END MESH #
+
+/* 
+# BEGIN MESH #
+Read_med family_names_from_group_names dom mesh2D mesh2D_innerbound.med 
+Read_file dom_ssz.geo ;
+# VerifierCoin dom {  } #
+
+domaine dom_electrique
+domaine dom_ionique 
+
+Create_domain_from_sous_zone { domaine_final dom_electrique par_sous_zone elec domaine_init dom }
+Create_domain_from_sous_zone { domaine_final dom_ionique par_sous_zone ion domaine_init dom }
+
+Sous_zone GDL 
+associer GDL dom_electrique
+Lire GDL { fonction_sous_zone (y_GE_(75.e-6)_OR_(y_LE_(-50.e-6))) }
+
+Sous_zone MPL 
+associer MPL dom_electrique
+Lire MPL { fonction_sous_zone ((y_GE_(35.e-6))_AND_(y_LE_(75.e-6)))_OR_((y_GE_(-50.e-6))_AND_(y_LE_(-10.e-6))) }
+
+Sous_zone CL_electrique 
+associer CL_electrique dom_electrique
+Lire CL_electrique { fonction_sous_zone ((y_GE_(25.e-6))_AND_(y_LE_(35.e-6)))_OR_((y_GE_(-10.e-6))_AND_(y_LE_(0.0))) }
+
+Sous_zone CL_ionique 
+associer CL_ionique dom_ionique
+Lire CL_ionique { fonction_sous_zone ((y_GE_(25.e-6))_AND_(y_LE_(35.e-6)))_OR_((y_GE_(-10.e-6))_AND_(y_LE_(0.0))) }
+
+Sous_zone MB 
+associer MB dom_ionique
+Lire MB { fonction_sous_zone (y_GE_(0.0)_OR_(y_LE_(25.e-6))) }
+
+Postraiter_domaine { format lata fichier dom.lata domaines { dom_electrique dom_ionique } }
+ */
+# END MESH #
+
+# BEGIN PARTITION
+Partition dom_ionique
+{
+	Partition_tool tranche { tranches 3 1 }
+	Larg_joint 1
+	zones_name DOM1
+}
+Partition dom_electrique
+{
+	Partition_tool tranche { tranches 3 1 }
+	Larg_joint 1
+	zones_name DOM2
+}
+End
+END PARTITION #
+
+# BEGIN SCATTER
+Scatter DOM1.Zones dom_ionique
+Scatter DOM2.Zones dom_electrique
+END SCATTER #
+
+Scheme_euler_implicit sch
+Read sch
+{
+	tinit 0.
+	tmax 1.
+	dt_min 1.e-20
+	dt_max 1.
+	dt_impr 0.001
+	dt_sauv 400.
+	seuil_statio 1.e-9
+    solveur implicite { solveur  gmres { diag seuil -1 nb_it_max 5 } seuil_convergence_implicite 100. }
+    facsec 1e4
+    facsec_max 1e4
+}
+
+Pb_conduction pb_electrique
+Pb_conduction pb_ionique
+
+VDF dis
+
+Solide prop_electrique
+Read prop_electrique
+{
+	rho Champ_Uniforme 1 1.
+	Cp Champ_Uniforme 1 1.
+	lambda champ_uniforme_morceaux dom_electrique 1 { defaut 65.  CL_electrique 20. MPL 10. }
+}
+
+Solide prop_ionique
+Read prop_ionique
+{
+	rho Champ_Uniforme 1 1.
+	Cp Champ_Uniforme 1 1.
+	lambda champ_uniforme_morceaux dom_ionique 1 { defaut 12.  CL_ionique 1.5  }
+}
+
+Associate pb_ionique dom_ionique
+Associate pb_ionique prop_ionique
+
+Associate pb_electrique dom_electrique
+Associate pb_electrique prop_electrique
+
+Probleme_Couple pbc
+Associate pbc pb_ionique
+Associate pbc pb_electrique
+Associate pbc sch
+Discretize pbc dis
+
+Read pb_ionique
+{
+	Conduction
+	{
+		diffusion { }
+		# the ionic potential treated such as the temperature #
+		initial_conditions { temperature Champ_Uniforme 1 0. }
+		
+		boundary_conditions {
+			Gauche     paroi_adiabatique
+			Droit      paroi_adiabatique
+			Couture_0 paroi_adiabatique
+		}
+	
+		sources { 
+		    puissance_thermique Champ_couplage_transport_ie 
+		    {
+		        nom_pb_electrique pb_electrique 
+		        nom_dom_electrique dom_electrique 
+		        nom_szz_electrique CL_electrique 
+		        nom_pb_ionique pb_ionique 
+		        nom_dom_ionique dom_ionique 
+		        nom_szz_ionique CL_ionique 
+		        nom_pb pb_ionique
+		    }
+	    }
+    }	
+	Post_processing
+	{
+	    Definition_champs 
+	    {
+	        psi_inter interpolation { localisation elem domaine dom_ionique sources { refchamp { pb_champ pb_electrique temperature } } }
+	        diff operateur_eqn { numero_op 0 source refchamp {  pb_champ pb_ionique temperature } }
+		    s operateur_eqn { numero_source 0 source refchamp {  pb_champ pb_ionique temperature } }
+        }	
+	    Probes
+	    {
+	        T temperature periode 1e-20 points 1 1000.e-6 30e-6
+		    P puissance_volumique periode 1e-20 points 1 1000.e-6 30e-6	
+            phi grav temperature periode 1 segment 100  0.001  -10e-6 0.001 35e-6 # grav = value to centre of the nearest cell #
+            Pseg grav  puissance_volumique  periode 1 segment 100  0.001  25e-6 0.001 35e-6
+        }
+		Format lata
+		fields dt_post 10.
+		{
+	        psi_inter
+		    TEMPERATURE ELEM	# ionic potential #
+		    puissance_volumique elem	
+		    S 
+		    diff
+	        conductivite elem
+		}
+	}
+}
+
+
+Read pb_electrique
+{
+	
+	Conduction {
+		diffusion { }
+		initial_conditions {
+			temperature Champ_Uniforme 1 0.7
+		}
+		boundary_conditions {
+			Gauche    paroi_adiabatique
+			Droit     paroi_adiabatique
+			Haut      paroi_temperature_imposee Champ_Front_Uniforme 1 0.7
+			Bas       paroi_temperature_imposee Champ_Front_Uniforme 1 0.
+		 	Couture_0 paroi_adiabatique
+		}
+	    sources { 
+	        puissance_thermique Champ_couplage_transport_ie 
+	        {
+		        nom_pb_electrique pb_electrique 
+		        nom_dom_electrique dom_electrique 
+		        nom_szz_electrique CL_electrique 
+		        nom_pb_ionique pb_ionique 
+		        nom_dom_ionique dom_ionique 
+		        nom_szz_ionique CL_ionique 
+		        nom_pb pb_electrique
+		    }
+	    }
+	}
+
+	Post_processing
+	{
+	    Definition_champs 
+	    {
+	        phi_inter interpolation { localisation elem domaine dom_electrique sources  {  refchamp  { pb_champ pb_ionique temperature } } } 
+	    }
+	    Probes
+	    {
+	        T2 temperature periode 1e-20 points 1 0.001 30e-6
+            PsiC grav temperature periode 1 segment 250  0.001  25e-6 0.001 275e-6
+            PsiA grav temperature periode 1 segment 250  0.001  -250e-6 0.001 0.
+	    }
+		Format lata
+		fields dt_post 10.
+		{
+		    TEMPERATURE ELEM		# electric potential #
+		    puissance_volumique elem
+		    conductivite elem
+		}
+	}
+}
+
+Solve pbc
+
+End
+

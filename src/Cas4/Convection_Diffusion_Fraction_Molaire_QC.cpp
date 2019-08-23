@@ -206,24 +206,27 @@ void Convection_Diffusion_Fraction_Molaire_QC::completer()
   for (int i=0; i<nb; i++)
     {
       // pour chaque condlim on recupere le champ_front et on met 1
-      // meme si la cond lim est un flux (dans ce cas la convection restera
-      // nullle.)
+      // meme si la cond lim est un flux (dans ce cas la convection restera nullle.)
       if (sub_type(Neumann_sortie_libre,condlims[i].valeur()))
         {
+          Cerr << "On modifie cond_lim pour (Op_Conv) de type Neumann_sortie_libre pour le bord=" << condlims[i].frontiere_dis().le_nom()<< finl;
           ref_cast(Neumann_sortie_libre,condlims[i].valeur()).tab_ext()=1;
-          EChaine toto("T_ext Champ_front_uniforme 2 1 1");
+          //EChaine toto("T_ext Champ_front_uniforme 2 1 1");
           //          toto>> condlims[i].valeur();
         }
       if (sub_type(Dirichlet,condlims[i].valeur()))
         {
+          Cerr << "On modifie cond_lim (pour Op_Conv) la cond_lim de type Dirichlet pour le bord=" << condlims[i].frontiere_dis().le_nom()<< finl;
           const Frontiere_dis_base& frdis=condlims[i].valeur().frontiere_dis();
           EChaine toto(" Champ_front_uniforme 2  1 1");
           toto>> condlims[i].valeur();
           condlims[i].valeur().associer_fr_dis_base(frdis);
         }
-      DoubleTab& T=condlims[i].valeur().champ_front().valeurs();
+      Champ_front& ch = condlims[i].valeur().champ_front();
+      DoubleTab& T=ch.valeur().valeurs_au_temps(0.);
       T=1.;
     }
+
 }
 
 // Description:
@@ -253,7 +256,7 @@ void Convection_Diffusion_Fraction_Molaire_QC::discretiser()
   //On utilise temperature pour la directive car discretisation identique
   dis.discretiser_champ("temperature",zone_dis(),"Fraction_Molaire","sans_dimension", nb_compo /* nb_composantes */,nb_valeurs_temp,temps,l_inco_ch);
   l_inco_ch->fixer_nature_du_champ(multi_scalaire);
-
+  champs_compris_.ajoute_champ(l_inco_ch);
 
   Equation_base::discretiser();
   Cerr << "Convection_Diffusion_Fraction_Molaire_QC::discretiser() ok" << finl;
@@ -369,7 +372,7 @@ DoubleTab& Convection_Diffusion_Fraction_Molaire_QC::derivee_en_temps_inco(Doubl
 
   int nb_c=derivee.dimension(1);
   int ndl=derivee.dimension(0);
-  Cerr<< " iiii" << inconnue().valeurs()(1050,nb_c-1)<<finl;
+  //Cerr<< " iiii" << inconnue().valeurs()(1050,nb_c-1)<<finl;
   for (int f=0; f<3; f++)
     {
       DoubleTab& mod_inco=inconnue().futur(f);

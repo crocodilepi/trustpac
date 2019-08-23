@@ -585,8 +585,8 @@ double Loi_Etat_Melange_GP_Fraction_Molaire::calculer_masse_volumique_case(doubl
 void Loi_Etat_Melange_GP_Fraction_Molaire::calculer_mu0()
 {
 
-  throw;
-  /*
+  //throw;	// dvq 13/06/19: Viscosite melange gaz phi_i_j = 1/sqrt(8*(1+M1/M2))*(1+sqrt(mu1/mu2*sqrt(M2/M1)))^2
+
   Champ_Don& mu = le_fluide->viscosite_dynamique();
   DoubleTab& tab_mu = mu.valeurs();
   int size;
@@ -626,7 +626,7 @@ void Loi_Etat_Melange_GP_Fraction_Molaire::calculer_mu0()
             (liste_Y(i).valeur().valeurs()(elem)*liste_especes(i).valeur().viscosite_dynamique().valeurs()(0,0))/(liste_Y(i).valeur().valeurs()(elem)+phi(elem));
         }
     }
-  */
+
 }
 
 

@@ -126,6 +126,8 @@ read pb
 	}
 }
 
+imprimer_flux dom { Haut Bas }
+
 # solve the problem #
 solve pb
 

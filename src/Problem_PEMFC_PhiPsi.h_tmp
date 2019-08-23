@@ -1,0 +1,33 @@
+#ifndef Problem_PEMFC_PhiPsi_included
+#define Problem_PEMFC_PhiPsi_included
+
+#include <Probleme_Couple.h>
+class Problem_PEMFC_PhiPsi : Probleme_Couple
+{
+  Declare_instanciable(Problem_PEMFC_PhiPsi);
+public:
+  // We reimplement this to use a special coupling scheme
+  bool iterateTimeStep(bool& converged);
+  void associer_sch_tps_base (Schema_Temps_base &)
+
+protected:
+  bool initialization();
+  void ComputePhiPsi();
+
+  SolveurSys solver_;
+  SolveurSys solverPhiPsi_; // matrix solver for the coupled phi/psi problem
+  bool already_initialized_;
+  Matrice the_matrix_;
+
+  Noms pb_names_;
+
+  MD_Vector_composite mdc_;
+  MD_Vector md_;
+
+  DoubleVect rhs_global_ ;
+  DoubleVect unknown_global_ ;
+
+  int nb_pbs_ ;
+
+};
+#endif

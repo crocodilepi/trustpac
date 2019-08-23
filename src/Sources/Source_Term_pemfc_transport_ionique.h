@@ -24,11 +24,15 @@
 
 #include <Source_base.h>
 #include <Ref_Zone_VF.h>
+#include <Ref_Zone_VEF.h>
+#include <Ref_Zone_Cl_VEF.h>
 #include <Ref_Domaine.h>
 #include <Ref_Sous_Zone.h>
 #include <Param.h>
 #include <DoubleTab.h>
+#include <Champ_Fonc.h>
 #include <Champ_Don.h>
+#include <Discretisation_base.h>
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -39,6 +43,14 @@
 // avec:
 // + ie = ir+ip 	pour CA
 // + ie = 0 		pour MB
+// Les champs suivants sont associes avec:
+// + E_rev 	champ de potentiel standard
+// + eta 	psi - phi - E_rev
+// + i0 	exchange current density (formula dans CA anode et cathode est different)
+// + ir		terme source de reaction (le courant de reaction total a la surface du catalyseur, <0 a la cathode)
+// + ip		terme source de permeation (le courant de permeation)
+// + Q_reac Chaleur liee a la reaction
+// + Q_perm Chaleur liee au courant de permeation
 // <Description of class Source_Term_pemfc_transport_ionique>
 //
 /////////////////////////////////////////////////////////////////////////////
@@ -51,6 +63,7 @@ class Source_Term_pemfc_transport_ionique : public Source_base
 public :
   DoubleTab& ajouter(DoubleTab& ) const;
   DoubleTab& calculer(DoubleTab& ) const;
+  void contribuer_a_avec(const DoubleTab&, Matrice_Morse&) const;
   void mettre_a_jour(double temps);
   void associer_zones(const Zone_dis& ,const Zone_Cl_dis& );
   void associer_pb(const Probleme_base& );
@@ -68,14 +81,17 @@ protected :
   Nom nom_champ_cdl_;
   double sign_;
   Champ_Don ch_cdl_;
+  Nom nom_champ_dir_dphi_;
 
   REF(Domaine) dom_;		// domaine de transport ionique (CL_c + MB + CL_a)
   REF(Sous_Zone) CL_a_;		// sous_zone anode
   REF(Sous_Zone) CL_c_;		// sous_zone cathode
   REF(Champ_base) ch_ir_;
   REF(Champ_base) ch_ip_;
+  REF(Champ_base) ch_dir_dphi_;
 
-  DoubleTab ir_, ip_;
+
+  DoubleTab ir_, ip_, dir_dphi_;
 };
 
 #endif /* Source_Term_pemfc_transport_ionique_included */

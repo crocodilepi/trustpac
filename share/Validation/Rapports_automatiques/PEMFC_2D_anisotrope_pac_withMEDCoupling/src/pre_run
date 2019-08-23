@@ -1,0 +1,10 @@
+source $TRUST_ROOT/exec/lata2dx_install/env.sh
+
+trust gradT.data &> .pre_run.out
+if [ $? = 0 ]
+then
+  echo "gradT ok"
+else
+  echo "there was a problem during the run of gradT. See .gradT.out file"
+fi
+python MEDCoupling_matrix_aniso.py

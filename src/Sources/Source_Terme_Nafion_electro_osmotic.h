@@ -71,15 +71,22 @@ protected :
   REF(Champ_base) ch_I_;
   REF(Champ_Inc) ch_C_;
   DoubleTab I_, C_;
+
+  Champ_Don ionicCurrent_;
   Champ_Don por_naf_;			// porosite de Nafion
   Champ_Don eps_naf_;			// ionomer proportionnel de Nafion
+
+  //Champ_Fonc nd_;
   inline double f_nd(double C) const;
 };
 
+const double a_lim = 1e-3;
 const double C_SO3 = 2036.; 	// [mol/m^3], Concentration en sites sulfones dans le Nafion
 const double F = 96500;			// Faraday constant C/mol
 inline double Source_Terme_Nafion_electro_osmotic::f_nd(double C) const
 {
+  //double C_lim = max(C, a_lim);
+  //double ld = C_lim / C_SO3;
   double ld = C / C_SO3;
   return 1. + 0.0028*ld + 0.0026*ld*ld;
 }

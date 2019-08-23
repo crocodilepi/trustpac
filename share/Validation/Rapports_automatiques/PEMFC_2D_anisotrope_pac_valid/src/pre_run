@@ -1,3 +1,5 @@
+pdflatex description.tex &> .pdflatex
+pdflatex description.tex &> .pdflatex
 trust prepare_coeff.data &> .pre_run.out
 if [ $? = 0 ]
 then

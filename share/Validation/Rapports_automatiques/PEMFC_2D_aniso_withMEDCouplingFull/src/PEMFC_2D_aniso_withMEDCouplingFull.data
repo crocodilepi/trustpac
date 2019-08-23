@@ -1,0 +1,135 @@
+# PARALLEL OK #
+# Heat Conduction 2D anisotrope #
+dimension 2
+
+# domain name #
+domaine dom
+
+#  physic problem: heat conduction  #
+pb_conduction pb
+
+# BEGIN MESH #
+Lire_med family_names_from_group_names dom Mesh_1 Mesh_1.med
+# END MESH #
+
+# BEGIN PARTITION
+Partition dom
+{
+    /* Choose Nb_parts so to have ~ 25000 cells per processor */
+	Partition_tool metis { nb_parts 2 }
+	Larg_joint 2
+	zones_name dom
+}
+End
+END PARTITION #
+
+# BEGIN SCATTER
+Scatter dom.Zones dom
+END SCATTER #
+
+# discretisation VDF for the domain 2D #
+vefprep1b dis
+
+# time scheme #
+Scheme_euler_implicit sch
+Read sch
+{
+  # Time step #
+  # Initial time [s] #
+  tinit 0
+  # Min time step #
+  # dt_min 1e-9 #
+  # Max time step #
+  # dt_max 1. #
+  # facsec maximal possible value for the heat transfer #
+  facsec 1000
+  facsec_max 5000
+  # .out files printing period #
+  dt_impr 1e-3 # Note: small value to print at each time step #
+  # .sauv files printing period #
+  dt_sauv 1e-3
+  # Stop if one of the following criteria is checked: #
+  # End time [s] #
+  tmax 10.0
+  # Max number of time steps #
+  # nb_pas_dt_max 10 #
+  # max number of implicit solver #
+  max_iter_implicite 50 
+  # Convergence threshold (see .dt_ev file) #
+  seuil_statio_relatif_deconseille 1
+  seuil_statio 1e-5
+  Solveur Implicite
+  {
+      Solveur petsc cholesky { quiet }
+  }
+}
+
+# physics properties of medium  #
+solide sol
+read sol
+{
+	rho champ_uniforme 4 1. 1. 1. 1.
+	lambda champ_fonc_med last_time conduc2d.med Mesh_1 CONDUCTIVITY_ELEM_dom elem 0
+	Cp champ_uniforme 4 1. 1. 1. 1.
+}
+
+
+# associate the physic problem with the geometry, the time sch and the physic properties #
+associate pb dom
+associate pb sch
+associate pb sol
+
+# meshing the geometry with the given discretisation method #
+discretize pb dis
+
+# definition of the physic problem: heat conduction #
+read pb
+{
+	# Resolution of the laplacien equation modifying the heat equation #
+	conduction
+	{
+		diffusion { Tensor }
+		initial_conditions {
+			temperature champ_uniforme 1 0.0
+			# temperature champ_fonc_med last_time prepare_0000.med dom temperature elem 0 #
+		}
+		boundary_conditions {
+			Gauche paroi_flux_impose champ_front_uniforme 1 0.
+			Droit paroi_flux_impose champ_front_uniforme 1 0.
+			Haut paroi_echange_externe_impose h_imp champ_front_fonc_xyz 1 (x[4.)*0.+(x>4.)*(x<6.)*10.*0.5*(1.+SIN(0.5*Pi*(x-5.)))+(x]6.)*(10.) T_ext champ_front_uniforme 1 1.
+			Bas paroi_temperature_imposee champ_front_uniforme 1 0.
+		}
+	}
+
+	# post traitement  #
+	post_processing
+	{
+		definition_champs 
+		{
+			# gradient of temperature grad(u) = [ux uy]^T #
+			gradT gradient {
+				source refchamp { Pb_champ pb temperature }
+			}
+		}
+		probes { 
+			sonde_temperature temperature periode 0.01 segment 501 0. 1. 10. 0.
+		}
+		format lata 		# lata for VisIt tool #
+		fields dt_post 0.1 # warning small value #
+		{
+			temperature elem
+			temperature som
+			gradT som
+			diffusivite_thermique elem
+			capacite_calorifique elem
+			masse_volumique elem
+		}
+	}
+}
+
+imprimer_flux dom { Haut Bas } 
+
+# solve the problem #
+solve pb
+
+end

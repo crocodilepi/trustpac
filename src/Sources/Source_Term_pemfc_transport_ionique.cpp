@@ -25,6 +25,8 @@
 #include <Interprete.h>
 #include <Domaine.h>
 #include <Zone_VF.h>
+#include <Matrice_Morse.h>
+#include <Champ_Don.h>
 
 Implemente_instanciable( Source_Term_pemfc_transport_ionique, "Source_Term_pemfc_transport_ionique_VEF_P1NC", Source_base ) ;
 
@@ -47,7 +49,43 @@ Entree& Source_Term_pemfc_transport_ionique::readOn( Entree& is )
   CL_c_ = dom_.valeur().ss_zone(nom_ssz_CLc_);
   dom_.valeur().creer_tableau_elements(ir_);
   dom_.valeur().creer_tableau_elements(ip_);
+  if(nom_champ_dir_dphi_ != "??")
+    dom_.valeur().creer_tableau_elements(dir_dphi_);
   return is;
+}
+
+void Source_Term_pemfc_transport_ionique::contribuer_a_avec( const DoubleTab& inco, Matrice_Morse& mat) const
+{
+  if(!ch_dir_dphi_.non_nul())
+    return;
+
+  DoubleTab Cdl = ch_cdl_.valeurs();
+
+  DoubleVect vol = la_zone_.valeur().volumes();
+  for (int poly = 0; poly < CL_a_.valeur().nb_elem_tot(); ++poly)
+    {
+      int elem = CL_a_.valeur()(poly);
+      int nb_face_elem = la_zone_.valeur().zone().nb_faces_elem(0);
+      double dir_dphi_face = dir_dphi_(elem)/Cdl(elem,0) * vol(elem) / nb_face_elem;
+
+      for (int f = 0; f < nb_face_elem; ++f)
+        {
+          int face = la_zone_.valeur().elem_faces(elem, f);
+          mat(face, face) += - dir_dphi_face;
+        }
+    }
+  for (int poly = 0; poly < CL_c_.valeur().nb_elem_tot(); ++poly)
+    {
+      int elem = CL_c_.valeur()(poly);
+      int nb_face_elem = la_zone_.valeur().zone().nb_faces_elem(0);
+      double dir_dphi_face = dir_dphi_(elem)/Cdl(elem,0) * vol(elem) / nb_face_elem;
+
+      for (int f = 0; f < nb_face_elem; ++f)
+        {
+          int face = la_zone_.valeur().elem_faces(elem, f);
+          mat(face, face) += - dir_dphi_face;
+        }
+    }
 }
 
 void Source_Term_pemfc_transport_ionique::set_param(Param& param)
@@ -58,7 +96,8 @@ void Source_Term_pemfc_transport_ionique::set_param(Param& param)
   param.ajouter("nom_pb_phi", &nom_pb_phi_, Param::REQUIRED);
   param.ajouter("nom_champ_ir", &nom_champ_ir_, Param::REQUIRED);
   param.ajouter("nom_champ_ip", &nom_champ_ip_, Param::REQUIRED);
-  param.ajouter("sign", &sign_, Param::REQUIRED);
+  param.ajouter("nom_champ_dir_dphi", &nom_champ_dir_dphi_, Param::OPTIONAL);
+  param.ajouter("sign", &sign_, Param::REQUIRED);						// sign = +1 -> potentiel ionique, sign = -1 -> potentiel electrique
   param.ajouter("Cdl", &ch_cdl_, Param::REQUIRED);
 }
 
@@ -78,8 +117,11 @@ void Source_Term_pemfc_transport_ionique::completer()
   assert(ch_ir_.valeur().que_suis_je().find("P0") !=-1);
   ch_ip_ = pb_phi.get_champ(nom_champ_ip_);
   assert(ch_ip_.valeur().que_suis_je().find("P0") !=-1);
-  //ch_cdl_ = pb_phi.get_champ(nom_champ_cdl_);
-  //assert(ch_cdl_.valeur().que_suis_je().find("P0") !=-1);
+  if(nom_champ_dir_dphi_ != "??")
+    {
+      ch_dir_dphi_ = pb_phi.get_champ(nom_champ_dir_dphi_);
+      assert(ch_dir_dphi_.valeur().que_suis_je().find("P0") !=-1);
+    }
 }
 
 void Source_Term_pemfc_transport_ionique::associer_zones(
@@ -90,6 +132,7 @@ void Source_Term_pemfc_transport_ionique::associer_zones(
 
 void Source_Term_pemfc_transport_ionique::mettre_a_jour(double temps)
 {
+  Cerr << "Source_Term_pemfc_transport_ionique::mettre_a_jour " << equation().probleme().le_nom() << finl;
   const DoubleTab& xp=la_zone_.valeur().xp(); // Recuperation des centre de gravite des elements pour P0
 
   // mettre a jour 4 tableaux de valeurs du champ couple
@@ -98,8 +141,15 @@ void Source_Term_pemfc_transport_ionique::mettre_a_jour(double temps)
   // interpolation vers P0
   ch_ir_.valeur().valeur_aux( xp, ir_ );			// ir
   ch_ip_.valeur().valeur_aux( xp, ip_ );		    // ip
+  ir_.echange_espace_virtuel();
+  ip_.echange_espace_virtuel();
 
-  Cerr << "Source_Term_pemfc_transport_ionique::mettre_a_jour" << finl;
+  if(ch_dir_dphi_.non_nul())
+    {
+      ch_dir_dphi_.valeur().mettre_a_jour(temps);
+      ch_dir_dphi_.valeur().valeur_aux( xp, dir_dphi_ );		    // dir_dphi
+      dir_dphi_.echange_espace_virtuel();
+    }
   Cerr << "ch_ir min max " << mp_min_vect(ir_) << " " << mp_max_vect(ir_) << finl;
   Cerr << "ch_ip min max " << mp_min_vect(ip_) << " " << mp_max_vect(ip_) << finl;
 }

@@ -23,6 +23,8 @@
 #include <Probleme_base.h>
 #include <Discretisation_base.h>
 #include <Equation_base.h>
+#include <Param.h>
+#include <Interprete.h>
 
 Implemente_instanciable( Loi_Fermeture_PEMFC_Cas2, "Loi_Fermeture_PEMFC_Cas2", Loi_Fermeture_PEMFC_base ) ;
 // XD loi_fermeture_pemfc_cas2 loi_fermeture_base loi_fermeture_pemfc_cas2 -1 Loi for test only
@@ -36,6 +38,7 @@ Sortie& Loi_Fermeture_PEMFC_Cas2::printOn( Sortie& os ) const
 Entree& Loi_Fermeture_PEMFC_Cas2::readOn( Entree& is )
 {
   Loi_Fermeture_PEMFC_base::readOn( is );
+
   return is;
 }
 
@@ -44,10 +47,62 @@ void Loi_Fermeture_PEMFC_Cas2::discretiser(const Discretisation_base& dis)
   Loi_Fermeture_PEMFC_base::discretiser(dis);
   ref_equation_=mon_probleme().get_equation_by_name("Convection_diffusion_Concentration");
 
-  dis.discretiser_champ("champ_elem",equation().zone_dis().valeur(),"pemfc_cas2","unit", equation().inconnue().valeur().nb_comp()*equation().inconnue().valeur().nb_comp(),0.,diffu_);
+  int nb_comp = equation().inconnue().valeur().nb_comp();
+
+  dis.discretiser_champ("champ_elem",equation().zone_dis().valeur(),"pemfc_cas2","unit", nb_comp*nb_comp, 0., diffu_);
   champs_compris_.ajoute_champ(diffu_);
   diffu_.valeur().fixer_nature_du_champ(multi_scalaire);
 
-// READON optionel
-//  status_ = READON_FAIT;
+  dis.discretiser_champ("champ_elem",equation().zone_dis().valeur(),"Ni","mol/m2/s",nb_comp*dimension,0.,Ni_);
+  Ni_->fixer_nature_du_champ(multi_scalaire);
+  champs_compris_.ajoute_champ(Ni_);
+
+  dis.discretiser_champ("champ_elem",equation().zone_dis().valeur(),"ud","m/s", dimension,0.,ud_);
+  ud_->fixer_nature_du_champ(vectoriel);
+  champs_compris_.ajoute_champ(ud_);
+
+  // vitesse (GDL)
+  dis.discretiser_champ("vitesse",equation().zone_dis().valeur(),"ug","m/s", dimension,1 /* une case en temps */,0.,ug_gdl_);
+  ug_gdl_->fixer_nature_du_champ(vectoriel);
+  champs_compris_.ajoute_champ(ug_gdl_);
+  ug_gdl_.associer_eqn(equation());
+
+  dis.discretiser_champ("temperature",equation().zone_dis().valeur(),"cg","mol/m3",1,1 /* une case en temps */,0.,cg_gdl_);
+  cg_gdl_->fixer_nature_du_champ(scalaire);
+  champs_compris_.ajoute_champ(cg_gdl_);
+  cg_gdl_.associer_eqn(equation());
+
+  // fraction molaire (GDL)
+  dis.discretiser_champ("temperature",equation().zone_dis().valeur(),"Xi","sans_dimension", nb_comp,1 /* une case en temps */,0.,Xi_gdl_);
+  Xi_gdl_->fixer_nature_du_champ(multi_scalaire);
+  champs_compris_.ajoute_champ(Xi_gdl_);
+  Xi_gdl_.associer_eqn(equation());
+  //Cerr << "DEBUG valeur Xi_GDL apres discretisation " << Xi_gdl_.valeurs() << finl;
+
+  // Flux surfacique de concentration sortant (GDL)
+  dis.discretiser_champ("temperature",equation().zone_dis().valeur(),"Ns","mol/s", nb_comp,1 /* une case en temps */,0.,Ns_gdl_);
+  Ns_gdl_->fixer_nature_du_champ(multi_scalaire);
+  champs_compris_.ajoute_champ(Ns_gdl_);
+  Ns_gdl_.associer_eqn(equation());
+}
+
+void Loi_Fermeture_PEMFC_Cas2::set_param(Param& param)
+{
+  Loi_Fermeture_PEMFC_base::set_param(param);
+  param.ajouter("Nom_pb_T",&nom_pb_T_, Param::OPTIONAL); // XD_ADD_P string pb_T nom du probleme de conduction thermique (inconnu Temperature)
+  param.ajouter("por",&ch_por_, Param::OPTIONAL);		// XD_ADD_P champ_base champ de porosite
+  param.ajouter("tor",&ch_tor_, Param::OPTIONAL);		// XD_ADD_P champ_base champ de tortuosite
+  param.ajouter("Rp",&ch_Rp_, Param::OPTIONAL);			// XD_ADD_P champ_base pore radius [m]
+  param.ajouter("K",&ch_K_, Param::OPTIONAL);			// XD_ADD_P champ_base permeabilite [m2]
+  param.ajouter("masses_molaires",&Mi_,Param::REQUIRED);  // XD_ADD_P list masses molaires [kg/mol]
+}
+
+void Loi_Fermeture_PEMFC_Cas2::completer()
+{
+  Loi_Fermeture_PEMFC_base::completer();
+}
+
+void Loi_Fermeture_PEMFC_Cas2::mettre_a_jour(double temps)
+{
+  Loi_Fermeture_PEMFC_base::mettre_a_jour(temps);
 }

@@ -1,0 +1,2 @@
+source $TRUST_ROOT/exec/lata2dx_install/env.sh
+python MEDCoupling_matrix_aniso.py

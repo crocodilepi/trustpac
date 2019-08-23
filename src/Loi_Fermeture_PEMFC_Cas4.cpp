@@ -70,8 +70,10 @@ void Loi_Fermeture_PEMFC_Cas4::preparer_calcul()
 void Loi_Fermeture_PEMFC_Cas4::set_param(Param& param)
 {
   Loi_Fermeture_PEMFC_base::set_param(param);
-  param.ajouter("VGDL",&VGDL_); // XD_ADD_P list  VGDL pour verification
-  param.ajouter("eps_sur_tau2",&eps_sur_tau2_); // XD_ADD_P field_base eps/tau/tau
+  //param.ajouter("VGDL",&VGDL_); // XD_ADD_P list  VGDL pour verification
+  //param.ajouter("eps_sur_tau2",&eps_sur_tau2_); // XD_ADD_P field_base eps/tau/tau
+  param.ajouter("por",&ch_por_, Param::OPTIONAL);		// XD_ADD_P champ_base champ de porosite
+  param.ajouter("tor",&ch_tor_, Param::OPTIONAL);		// XD_ADD_P champ_base champ de tortuosite
 }
 
 
@@ -80,10 +82,12 @@ void Loi_Fermeture_PEMFC_Cas4::discretiser(const Discretisation_base& dis)
   Loi_Fermeture_PEMFC_base::discretiser(dis);
   ref_equation_=mon_probleme().get_equation_by_name("Convection_Diffusion_fraction_molaire_QC");
 
-  dis.discretiser_champ("champ_elem",equation().zone_dis().valeur(),"pemfc_cas4","unit", equation().inconnue().valeur().nb_comp()*equation().inconnue().valeur().nb_comp(),0.,diffu_);
+  int nb_comp = equation().inconnue().valeur().nb_comp();
+
+  dis.discretiser_champ("champ_elem",equation().zone_dis().valeur(),"pemfc_cas4","unit",nb_comp*nb_comp,0.,diffu_);
   champs_compris_.ajoute_champ(diffu_);
 
-  dis.discretiser_champ("champ_elem",equation().zone_dis().valeur(),"Ni","unit", equation().inconnue().valeur().nb_comp()*dimension,0.,Ni_);
+  dis.discretiser_champ("champ_elem",equation().zone_dis().valeur(),"Ni","unit",nb_comp*dimension,0.,Ni_);
   Ni_->fixer_nature_du_champ(multi_scalaire);
   champs_compris_.ajoute_champ(Ni_);
 
@@ -95,7 +99,13 @@ void Loi_Fermeture_PEMFC_Cas4::discretiser(const Discretisation_base& dis)
   Um_->fixer_nature_du_champ(vectoriel);
   champs_compris_.ajoute_champ(Um_);
 
-// READON optionel
-//  status_ = READON_FAIT;
+  dis.discretiser_champ("temperature",equation().zone_dis().valeur(),"ci","mol/m3", nb_comp,1 /* une case en temps */,0.,ci_ch_);
+  ci_ch_->fixer_nature_du_champ(multi_scalaire);
+  champs_compris_.ajoute_champ(ci_ch_);
+  ci_ch_.associer_eqn(equation());
 
+  dis.discretiser_champ("temperature",equation().zone_dis().valeur(),"Ns","mol/s", nb_comp,1 /* une case en temps */,0.,Ns_ch_);
+  Ns_ch_->fixer_nature_du_champ(multi_scalaire);
+  champs_compris_.ajoute_champ(Ns_ch_);
+  Ns_ch_.associer_eqn(equation());
 }

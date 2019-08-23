@@ -1,0 +1,124 @@
+parameters
+{
+   title "Anisotropic pac with medcoupling"
+   description "The cas test for modelling the anisotropic conduction in the GDL of PEMFC"
+   description "PreRequis: need to initialize salome before running the validation file (> salome context)"
+   author "Van quang DINH"
+   testcase .    PEMFC_2D_aniso_withMEDCouplingFull.data
+}
+
+chapter
+{
+   title "Thermal diffusivity"
+   description "Here is the visualization of all components of the thermal diffusivity located at elements."
+   Visu {
+	Title "component 0"
+	pseudocolor PEMFC_2D_aniso_withMEDCouplingFull.lata dom DIFFUSIVITE_THERMIQUE_0 ELEM
+	cycles -1
+	width 10cm
+    }
+   Visu {
+	Title "component 1"
+	pseudocolor PEMFC_2D_aniso_withMEDCouplingFull.lata dom DIFFUSIVITE_THERMIQUE_1 ELEM
+	cycles -1
+	width 10cm
+    }
+   Visu {
+	Title "component 2"
+	pseudocolor PEMFC_2D_aniso_withMEDCouplingFull.lata dom DIFFUSIVITE_THERMIQUE_2 ELEM
+	cycles -1
+	width 10cm
+    }
+   Visu {
+	Title "component 3"
+	pseudocolor PEMFC_2D_aniso_withMEDCouplingFull.lata dom DIFFUSIVITE_THERMIQUE_3 ELEM
+	cycles -1
+	width 10cm
+    }
+    
+    description "the matrix of conductivity (2D) is a 2x2 sysmetric matrix"
+}
+
+chapter
+{
+   title "Temperature"
+   description "Here is the visualization of the temperature."
+      Visu {
+	Title "Temperature field located at vertices"
+	pseudocolor PEMFC_2D_aniso_withMEDCouplingFull.lata dom TEMPERATURE SOM
+	cycles -1
+	width 10cm
+    }
+}
+
+chapter {
+   title "Gradient of Temperature"
+   description "Gradient of Temperature"
+   Visu {
+	Title "Flux field located at vertices - composant x"
+	pseudocolor PEMFC_2D_aniso_withMEDCouplingFull.lata dom GRADT_X SOM
+	cycles -1
+	width 10cm
+    }
+    Visu {
+	Title "Flux field located at vertices - composant y"
+	pseudocolor PEMFC_2D_aniso_withMEDCouplingFull.lata dom GRADT_Y SOM
+	cycles -1
+	width 10cm
+    }
+}
+
+
+chapter
+{
+   title "Comparison of temperature (TRUST) with and without the correction of conductivity magnitude on the segment [P1,P2] with P1=(0;1) and P2=(10;0) "
+   figure
+   {
+      dimension 2
+      include_description_curves 0
+      labelx "Position"
+      labely "Temperature"
+      width  12cm
+      curve
+      {
+        legend "TRUST_medcoupling"
+	file trust_sonde_withMEDCoupling.txt
+	columns $1 $2
+	style linespoints
+      }
+      curve
+      {
+        legend "TRUST_postprocessing"
+	file trust_sonde_postprocessing.txt
+	columns $1 $2
+	style linespoints
+      }
+   }
+}
+
+chapter
+{
+   title "Comparison of flux between (TRUST) with and without the correction of conductivity magnitude on boundary Haut"
+   figure {
+      title "Flux au bord Haut"
+      dimension 2
+      include_description_curves 0
+      labelx "x"
+      labely "flux"
+      width  12cm
+      curve
+      {
+        legend "TRUST_withMEDCoupling"
+	file trust_flux_bord_withMEDCoupling.txt
+	columns $1 $5
+	style linespoints
+      }
+      curve
+      {
+        legend "TRUST_postprocessing"
+	file trust_flux_bord_postprocessing.txt
+	columns $1 $5
+	style linespoints
+      }
+	}
+}

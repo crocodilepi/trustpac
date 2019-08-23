@@ -55,11 +55,16 @@ public :
   void associer_pb(const Probleme_base& );
   void completer();
   void set_param(Param& param);
+  void contribuer_a_avec(const DoubleTab& inco, Matrice_Morse& mat) const;
+  double eval_df_anode( const int& elem ) const;
+  double eval_df_cathode( const int& elem ) const;
 protected :
-  double eval_f(double jr, double jp) const;
+  double eval_f_anode(double jr, double jp) const;
+  double eval_f_cathode(double jr, double jp) const;
 
   REF(Zone_VF) la_zone_;
 
+  double F_ ;			// constant Faraday = 96500 C/mol
   Nom nom_espece_;
   Nom nom_ssz_CLc_;			// le sous zone situant le terme source
   Nom nom_ssz_CLa_;			// le sous zone situant le terme source
@@ -73,10 +78,17 @@ protected :
   REF(Champ_base) ch_ir_;
   REF(Champ_base) ch_ip_;
 
+  REF(Champ_base) ch_DirDcO2_;
+  REF(Champ_base) ch_DirDcH2O_;
+  REF(Champ_base) ch_DirDcH2_;
+
   DoubleTab ir_, ip_;	// P0
+  DoubleTab DirDcO2_, DirDcH2O_, DirDcH2_ ;
 
   Champ_Don por_naf_;			// porosite de Nafion
   Champ_Don eps_naf_;			// ionomer proportionnel de Nafion
+  Champ_Don reacCurrent_;	// ir
+  Champ_Don permCurrent_;	// ip
 
 };
 

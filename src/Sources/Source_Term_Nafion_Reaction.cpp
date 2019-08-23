@@ -25,6 +25,7 @@
 #include <Interprete.h>
 #include <Domaine.h>
 #include <Zone_VF.h>
+#include <Matrice_Morse.h>
 
 Implemente_instanciable( Source_Term_Nafion_Reaction, "Source_Term_Nafion_Reaction_VEF_P1NC", Source_base ) ;
 
@@ -55,6 +56,7 @@ Entree& Source_Term_Nafion_Reaction::readOn( Entree& is )
     }
 
   dom_ = equation().probleme().domaine();
+  assert(!(nom_pb_phi_!="??" && reacCurrent_.non_nul() && permCurrent_.non_nul()));	// either coupling either independence
 
   if(nom_espece_ == "H2")
     {
@@ -78,6 +80,16 @@ Entree& Source_Term_Nafion_Reaction::readOn( Entree& is )
 
   dom_.valeur().creer_tableau_elements(ir_);
   dom_.valeur().creer_tableau_elements(ip_);
+  dom_.valeur().creer_tableau_elements(DirDcH2_);
+  dom_.valeur().creer_tableau_elements(DirDcO2_);
+  dom_.valeur().creer_tableau_elements(DirDcH2O_);
+  if(reacCurrent_.non_nul())
+    {
+      assert(permCurrent_.non_nul());
+      DirDcH2_ = 0;
+      DirDcO2_ = 0;
+      DirDcH2O_ = 0;
+    }
   return is;
 }
 
@@ -85,6 +97,20 @@ void Source_Term_Nafion_Reaction::associer_pb(const Probleme_base& pb)
 {
   Cerr << " Source_Term_Nafion_Reaction::associer_pb " << finl ;
   assert(pb.que_suis_je() == "Pb_Conduction");
+//  int ok = 0;
+//  const Equation_base& eqn = pb.equation(0);
+//  assert(eqn.que_suis_je() == "Conduction");
+//  if  (eqn.que_suis_je() == "Conduction")
+//    {
+//      associer_zones(eqn.zone_dis(),eqn.zone_Cl_dis());
+//      ok = 1;
+//    }
+//  if (!ok)
+//    {
+//      Cerr << "Erreur TRUST dans Source_Term_Nafion_Reaction::associer_pb()" << finl;
+//      Cerr << "On ne trouve pas d'equation de conduction dans le probleme" << finl;
+//      exit();
+//    }
 }
 
 void Source_Term_Nafion_Reaction::associer_zones(const Zone_dis& zone_dis, const Zone_Cl_dis& zcl_dis)
@@ -94,38 +120,81 @@ void Source_Term_Nafion_Reaction::associer_zones(const Zone_dis& zone_dis, const
 
 void Source_Term_Nafion_Reaction::set_param(Param& param)
 {
-  param.ajouter("nom_espece",&nom_espece_,Param::REQUIRED);
-  //param.ajouter("nom_domaine",&nom_domaine_,Param::REQUIRED);		// pas necessaire ? dom_ = equation().problem().domaine() ?
-  param.ajouter("nom_CLa",&nom_ssz_CLa_,Param::OPTIONAL);					// requis pour H2, N2, H20, sauf O2
-  param.ajouter("nom_CLc",&nom_ssz_CLc_,Param::OPTIONAL);					// requis pour O2, N2, H20, sauf H2
-  param.ajouter("nom_pb_phi", &nom_pb_phi_, Param::REQUIRED);
-  param.ajouter("nom_champ_ir", &nom_champ_ir_, Param::REQUIRED);
-  param.ajouter("nom_champ_ip", &nom_champ_ip_, Param::REQUIRED);
+  param.ajouter("nom_espece",&nom_espece_,Param::REQUIRED);    // XD_ADD_P chaine in list 'O2' 'H2' 'H2O' 'vap' 'N2'
+  param.ajouter("nom_CLa",&nom_ssz_CLa_,Param::OPTIONAL);// XD_ADD_P chaine sub-area where the source exists, required for H2, N2, H2O
+  param.ajouter("nom_CLc",&nom_ssz_CLc_,Param::OPTIONAL);// XD_ADD_P chaine sub-area where the source exists, required for O2, N2, H2O
+  param.ajouter("nom_pb_phi", &nom_pb_phi_, Param::OPTIONAL);
+  param.ajouter("nom_champ_ir", &nom_champ_ir_, Param::OPTIONAL);
+  param.ajouter("nom_champ_ip", &nom_champ_ip_, Param::OPTIONAL);
+  param.ajouter("reacCurrent", &reacCurrent_, Param::OPTIONAL);
+  param.ajouter("permCurrent", &permCurrent_, Param::OPTIONAL);
   param.ajouter("por_naf", &por_naf_, Param::REQUIRED);
   param.ajouter("eps_naf", &eps_naf_, Param::REQUIRED);
 }
 
 void Source_Term_Nafion_Reaction::completer()
 {
+  Cerr << "Source_Term_Nafion_Reaction::completer " << equation().probleme().le_nom() << finl;
   Source_base::completer();
   // get the reference to the coupling fields
   Source_base::completer();
-  Probleme_base& pb_phi = ref_cast(Probleme_base,interprete().objet(nom_pb_phi_));
-  ch_ir_ = pb_phi.get_champ(nom_champ_ir_);
-  assert(ch_ir_.valeur().que_suis_je().find("P0") !=-1);
-  ch_ip_ = pb_phi.get_champ(nom_champ_ip_);
-  assert(ch_ip_.valeur().que_suis_je().find("P0") !=-1);
+  if(nom_pb_phi_ != "??")
+    {
+      Probleme_base& pb_phi = ref_cast(Probleme_base,interprete().objet(nom_pb_phi_));
+      ch_ir_ = pb_phi.get_champ(nom_champ_ir_);
+      assert(ch_ir_.valeur().que_suis_je().find("P0") !=-1);
+      ch_ip_ = pb_phi.get_champ(nom_champ_ip_);
+      assert(ch_ip_.valeur().que_suis_je().find("P0") !=-1);
+
+      ch_DirDcO2_ = pb_phi.get_champ("DirDcO2");
+      ch_DirDcH2_ = pb_phi.get_champ("DirDcH2");
+      ch_DirDcH2O_ = pb_phi.get_champ("DirDcH2O");
+    }
+  F_ = 96500;
 }
 
 void Source_Term_Nafion_Reaction::mettre_a_jour(double temps)
 {
-  ch_ir_.valeur().mettre_a_jour(temps);
-  ch_ip_.valeur().mettre_a_jour(temps);
   const DoubleTab& xp=la_zone_.valeur().xp(); // Recuperation des centre de gravite des elements pour P0
-  ch_ir_.valeur().valeur_aux( xp, ir_ );			// ir
-  ch_ip_.valeur().valeur_aux( xp, ip_ );		    // ip
-
-  Cerr << "Source_Term_Nafion_Reaction::mettre_a_jour" << finl;
+  if(ch_ir_.non_nul())
+    {
+      ch_ir_.valeur().mettre_a_jour(temps);
+      ch_ir_.valeur().valeur_aux( xp, ir_ );			// ir
+      ir_.echange_espace_virtuel();
+    }
+  if(ch_ip_.non_nul())
+    {
+      ch_ip_.valeur().mettre_a_jour(temps);
+      ch_ip_.valeur().valeur_aux( xp, ip_ );		    // ip
+      ip_.echange_espace_virtuel();
+    }
+  if(ch_DirDcO2_.non_nul())
+    {
+      ch_DirDcO2_.valeur( ).mettre_a_jour( temps );
+      ch_DirDcO2_.valeur().valeur_aux( xp, DirDcO2_ );
+      DirDcO2_.echange_espace_virtuel();
+    }
+  if (ch_DirDcH2_.non_nul())
+    {
+      ch_DirDcH2_.valeur( ).mettre_a_jour( temps );
+      ch_DirDcH2_.valeur().valeur_aux( xp, DirDcH2_ );
+      DirDcH2_.echange_espace_virtuel();
+    }
+  if (ch_DirDcH2O_.non_nul())
+    {
+      ch_DirDcH2O_.valeur( ).mettre_a_jour( temps );
+      ch_DirDcH2O_.valeur().valeur_aux( xp, DirDcH2O_ );
+      DirDcH2O_.echange_espace_virtuel();
+    }
+  if(reacCurrent_.non_nul() && permCurrent_.non_nul())
+    {
+      reacCurrent_.valeur().mettre_a_jour(temps);
+      reacCurrent_.valeur().valeur_aux( xp, ir_ );			// ir
+      ir_.echange_espace_virtuel();
+      permCurrent_.valeur().mettre_a_jour(temps);
+      permCurrent_.valeur().valeur_aux( xp, ip_ );		    // ip
+      ip_.echange_espace_virtuel();
+    }
   Cerr << "ch_ir min max " << mp_min_vect(ir_) << " " << mp_max_vect(ir_) << finl;
   Cerr << "ch_ip min max " << mp_min_vect(ip_) << " " << mp_max_vect(ip_) << finl;
 }
@@ -151,11 +220,13 @@ DoubleTab& Source_Term_Nafion_Reaction::ajouter(DoubleTab& resu) const
         {
           int elem = CL_a_.valeur()(poly);
           double coeff = (1-por(elem,0))*eps(elem,0);
+          double S = eval_f_anode(ir_(elem), ip_(elem));
+
           int nb_face_elem = la_zone_.valeur().zone().nb_faces_elem(0);
           for (int f = 0; f < nb_face_elem; ++f)
             {
               int face = la_zone_.valeur().elem_faces(elem, f);
-              resu(face) += eval_f(ir_(elem), ip_(elem)) / coeff * vol(elem)/ nb_face_elem;
+              resu(face) += S / coeff * vol(elem)/ nb_face_elem;
             }
         }
     }
@@ -166,11 +237,13 @@ DoubleTab& Source_Term_Nafion_Reaction::ajouter(DoubleTab& resu) const
         {
           int elem = CL_c_.valeur()(poly);
           double coeff = (1-por(elem,0))*eps(elem,0);
+          double S = eval_f_cathode(ir_(elem), ip_(elem));
+
           int nb_face_elem = la_zone_.valeur().zone().nb_faces_elem(0);
           for (int f = 0; f < nb_face_elem; ++f)
             {
               int face = la_zone_.valeur().elem_faces(elem, f);
-              resu(face) += eval_f(ir_(elem), ip_(elem)) / coeff * vol(elem)/ nb_face_elem;
+              resu(face) += S / coeff * vol(elem)/ nb_face_elem;
             }
         }
     }
@@ -178,24 +251,92 @@ DoubleTab& Source_Term_Nafion_Reaction::ajouter(DoubleTab& resu) const
   return resu;
 }
 
-double Source_Term_Nafion_Reaction::eval_f(double ir, double ip) const
+double Source_Term_Nafion_Reaction::eval_f_anode(double ir, double ip) const
 {
-  double F = 96500;
   if (nom_espece_ == "H2")
     {
-      return - ir / (2. * F);
+      return - ir / (2. * F_);
     }
-  else if (nom_espece_ == "02")
+  return 0.;
+}
+
+double Source_Term_Nafion_Reaction::eval_f_cathode(double ir, double ip) const
+{
+  if (nom_espece_ == "O2")
     {
-      return (ir + ip) / (4. * F);
-    }
-  else if (nom_espece_ == "N2")
-    {
-      return 0.;
+      return (ir + ip) / (4. * F_);
     }
   else if (nom_espece_ == "H2O" || nom_espece_ == "vap")
     {
-      return -(ir + ip)/(2. * F);
+      return -(ir + ip)/(2. * F_);
     }
+
+  return 0.;
+}
+
+void Source_Term_Nafion_Reaction::contribuer_a_avec(const DoubleTab& inco, Matrice_Morse& mat) const
+{
+
+  const DoubleTab& por = por_naf_.valeurs();
+  const DoubleTab& eps = eps_naf_.valeurs();
+
+  DoubleVect vol = la_zone_.valeur().volumes();
+
+  if(CL_a_.non_nul())
+    {
+      for (int poly = 0; poly < CL_a_.valeur().nb_elem_tot(); ++poly)
+        {
+          int elem = CL_a_.valeur()(poly);
+          double coeff = (1-por(elem,0))*eps(elem,0);
+          double S = eval_df_anode( elem );
+
+          int nb_face_elem = la_zone_.valeur().zone().nb_faces_elem(0);
+          for (int f = 0; f < nb_face_elem; ++f)
+            {
+              int face = la_zone_.valeur().elem_faces(elem, f);
+              mat.coef(face,face) += S / coeff * vol(elem)/ nb_face_elem;
+            }
+        }
+    }
+
+  if(CL_c_.non_nul())
+    {
+      for (int poly = 0; poly < CL_c_.valeur().nb_elem_tot(); poly++)
+        {
+          int elem = CL_c_.valeur()(poly);
+          double coeff = (1-por(elem,0))*eps(elem,0);
+          double S = eval_df_cathode( elem );
+
+          int nb_face_elem = la_zone_.valeur().zone().nb_faces_elem(0);
+          for (int f = 0; f < nb_face_elem; ++f)
+            {
+              int face = la_zone_.valeur().elem_faces(elem, f);
+              mat.coef(face,face) += S / coeff * vol(elem)/ nb_face_elem;
+            }
+        }
+    }
+
+}
+
+double Source_Term_Nafion_Reaction::eval_df_anode( const int& elem ) const
+{
+  if (nom_espece_ == "H2")
+    {
+      return  DirDcH2_( elem )/( 2.*F_ ) ;
+    }
+  return 0.;
+}
+
+double Source_Term_Nafion_Reaction::eval_df_cathode( const int& elem ) const
+{
+  if (nom_espece_ == "O2")
+    {
+      return  -DirDcO2_( elem )/(4. * F_);
+    }
+  else if (nom_espece_ == "H2O" || nom_espece_ == "vap")
+    {
+      return DirDcH2O_( elem )/(2. * F_);
+    }
+
   return 0.;
 }

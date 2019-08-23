@@ -522,7 +522,7 @@ void Op_Diff_VEF_Face_Matricial::contribuer_a_avec(const DoubleTab& transporte, 
                                   matrice(j0,n0b)-=val*porosite_eventuelle(num_face);
                                   matrice(j0,j0b)+=val*porosite_eventuelle(j);
 
-                                  abort();
+                                  //abort();//DVQ just for debug
                                   int  n0periob=fac_asso*nb_comp+c2;
                                   matrice(j0,n0periob)-=val*porosite_eventuelle(num_face);
                                 }

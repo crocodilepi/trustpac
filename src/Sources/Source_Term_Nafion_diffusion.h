@@ -90,8 +90,11 @@ protected :
   Champ_Don eps_naf_;					// ionomer proportion
   Champ_Don por_naf_; 					// porosity
   Champ_Don gamma_CL_; 				    // specific surface m2/m3
-  double T_0_;
+  // double T_0_;
   double C_SO3_;
+
+  Champ_Don temperature_;		// if temperature is given by input
+  Champ_Don concentration_;		// if concentration is given by input
 
   DoubleTab diffu_;
   DoubleTab C_;
@@ -101,9 +104,13 @@ protected :
   REF(Zone_VF) la_zone_;
 
   Champ_Fonc ch_S_;			// champ de terme source P0
+  Champ_Fonc ch_Ceq_;		// champ de concentration dissous P1NC
 
-  double eval_f(double diffu, double Ci, double ci, double T, double por, double eps, double gamma) const;
-  double eval_derivee_f(double diffu, double por, double eps, double gamma) const;
+//  double eval_terme_explicit(double diffu, double ci, double T, double por, double eps, double gamma) const;
+//  double eval_terme_implicit(double diffu, double por, double eps, double gamma) const;
+  double f_Ceq(double Ci, double ci, double T) const;
+  double f_Sa(double diffu, double Ci, double ci, double T, double por, double eps, double gamma) const;
+  double f_dSadC(double diffu, double por, double eps, double gamma) const;
 
   inline double f_nd(double C) const;
   inline double f_Psat(double T) const;

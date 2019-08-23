@@ -66,7 +66,26 @@ public :
   void completer();
   void mettre_a_jour(double temps);
   void set_param(Param& param);
+  void compute_ir_DirDpsi(const DoubleTab& psi, const DoubleTab& phi, DoubleTab& ir, DoubleTab& DirDpsi);
+  const ArrOfInt& face_index_psi() const
+  {
+    return face_index_psi_;
+  }
+  const ArrOfInt& face_index_phi() const
+  {
+    return face_index_phi_;
+  }
+  const ArrOfInt& face_index_T() const
+  {
+    return face_index_T_;
+  }
+  const ArrOfInt& face_is_anode() const
+  {
+    return face_is_anode_;
+  }
 protected :
+  void fetch_field(const Nom& pbName, const Nom& fieldName, REF(Champ_base) & refField);
+
   Champ_Fonc ch_kappa_;	// P0 champ de conductivite (scalaire)
   Champ_Fonc ch_Ii_;	// P0 champ de courant (vectoriel)
   Champ_Fonc ch_erev_;	// P0 reference potential
@@ -76,6 +95,27 @@ protected :
   Champ_Fonc ch_ip_;  	// P0 champ electrochemique courant ip = N_H2.2.F/e_CL
   Champ_Fonc ch_q_reac_;// P0 chaleur
   Champ_Fonc ch_q_perm_;// P0 chaleur
+  // This one is optionaly read in the data file:
+  Champ_Don  Erev_field_override_; // if provided, overrides the value computed from activities
+  Champ_Don  i0_field_override_;
+  // Fields discretized like the unknowns:
+  Champ_Fonc Erev_field_;
+  Champ_Fonc i0_field_;
+  Champ_Fonc ir_field_;
+
+  Champ_Fonc ch_dir_dphi_;	// P0 derivee ir par rapport de phi
+  //Champ_Fonc ch_dir_dpsi_;
+
+  Champ_Fonc ch_DirDcH2_;	// P0 derivatives for implicitation
+  Champ_Fonc ch_DirDcH2O_;	// P0 derivatives for implicitation
+  Champ_Fonc ch_DirDcO2_;	// P0 derivatives for implicitation
+
+  Champ_Fonc ch_DQreacDT_;
+
+  Champ_Don temperature_; // temperature if provided
+  Champ_Don Co_;		// dissolved concentration of O2, if provided
+  Champ_Don Ch_;		// dissolved concentration of H2, if provided
+  Champ_Don Ce_;		// dissolved concentration of H2O, if provided
 
   // pour readOn
   Nom nom_ssz_CLa_;
@@ -88,13 +128,13 @@ protected :
   Nom nom_champ_T_;			// defaut temperature
   Nom nom_pb_C_H2_;			// dissolve H2
   Nom nom_champ_C_H2_;		// champ C_H2
-  Nom nom_pb_C_O2_;			// dissolve 02
+  Nom nom_pb_C_O2_;			// dissolve O2
   Nom nom_champ_C_O2_;		// champ C_O2
-  Nom nom_pb_C_H20_;		// dissolve H2O
-  Nom nom_champ_C_H20_;		// champ C_H20
+  Nom nom_pb_C_H2O_;		// dissolve H2O
+  Nom nom_champ_C_H2O_;		// champ C_H2O
 
-  double T_0_;				// dans le cas T constant
-  double C_SO3_;			//
+  //double T_0_;				// dans le cas T constant
+  //double C_SO3_;				//
   Champ_Don por_naf_;			// porosite de Nafion
   Champ_Don eps_naf_;			// ionomer proportionnel de Nafion
   Champ_Don tor_naf_;			// tortuosite de Nafion
@@ -108,8 +148,8 @@ protected :
 
   REF(Champ_base) ch_T_;	// champ temperature (importe depuis pb_conduction_T)
   REF(Champ_base) ch_C_H2_;	// champ concentration absorbe H2 dans Nafion (importe depuis pb_dissolve_H2)
-  REF(Champ_base) ch_C_O2_;	// champ concentration absorbe 02 dans Nafion (importe depuis pb_dissolve_02)
-  REF(Champ_base) ch_C_H20_;// champ concentration absorbe H20 dans Nafion (importe depuis pb_dissolve_H20)
+  REF(Champ_base) ch_C_O2_;	// champ concentration absorbe O2 dans Nafion (importe depuis pb_dissolve_O2)
+  REF(Champ_base) ch_C_H2O_;// champ concentration absorbe H20 dans Nafion (importe depuis pb_dissolve_H2O)
   REF(Champ_base) ch_phi_;	// champ de potentiel ionique
   REF(Champ_base) ch_psi_;	// champ de potentiel electrique
 
@@ -120,25 +160,62 @@ protected :
   DoubleTab psi_;		// P0 pour VDF, P1NC pour VEF
   DoubleTab phi_;		// P0 pour VDF, P1NC pour VEF
 
-  inline double f_kappa(double T, double C, double por, double eps, double tor) const;
-  inline  double f_Henry_H2(double T);		// Constante de Henry H2 dans Nafion
-  inline  double f_Henry_O2(double T);		// Constante de Henry O2 dans Nafion
-  inline  double f_Henry_N2(double T);		// Constante de Henry N2 dans Nafion
-  inline  double f_Psat(double T);			// Pression vapeur saturante
-  inline  double f_lambda(double a);		// lambda en fonction de l'activite
-  inline  double f_lambda_inv(double ld);	// activite en fonction de lambda
+  double newton_threshold_ ;
+  int newton_max_iter_ ;
+  double minimal_perturbation_value_;
+  double relative_perturbation_for_derivatives_ ;
 
-  double eval_erev_anode(double T, double a_H2, double a_H);
-  double eval_erev_cathode(double T, double a_O2, double a_H2O, double a_H);
-  double eval_eta(double psi, double phi, double erev);
-  double eval_i0_anode(double T, double a_H2, double a_H);
-  double eval_i0_cathode(double T, double a_O2, double a_H2O, double a_H);
-  double eval_ir_anode(double io, double eta, double T);
-  double eval_ir_cathode(double io, double eta, double T);
-  double eval_q_reac_anode(double psi, double phi, double ir);
-  double eval_q_reac_cathode(double psi, double phi, double ir);
-  double eval_q_perm_anode(double ip);
-  double eval_q_perm_cathode(double ip);
+  inline double f_kappa(const double& T, const double& C, const double& por, const double& eps, const double& tor) const;
+  inline  double f_Henry_H2(const double& T) const;		// Constante de Henry H2 dans Nafion
+  inline  double f_Henry_O2(const double& T) const ;		// Constante de Henry O2 dans Nafion
+  inline  double f_Henry_N2(const double& T) const ;		// Constante de Henry N2 dans Nafion
+  inline  double f_Psat(const double& T) const ;			// Pression vapeur saturante
+  inline  double f_lambda(const double& a) const ;		// lambda en fonction de l'activite
+  inline  double f_lambda_inv(const double& ld) const ;	// activite en fonction de lambda
+
+  double eval_erev_anode(double T, double a_H2, double a_H) const;
+  double eval_erev_cathode(double T, double a_O2, double a_H2O, double a_H) const;
+  double eval_eta(double psi, double phi, double erev) const;
+  double eval_i0_anode(double T, double a_H2, double a_H) const;
+  double eval_i0_cathode(double T, double a_O2, double a_H2O, double a_H) const;
+  double eval_ir_anode(double io, double eta, double T) const;
+  double eval_ir_cathode(double io, double eta, double T) const;
+  double eval_q_reac_anode(double psi, double phi, double ir) const;
+  double eval_q_reac_cathode(double psi, double phi, double ir) const;
+  double eval_q_perm_anode(double ip) const;
+  double eval_q_perm_cathode(double ip) const;
+
+  // dvq 28/05/19: ajouter le calcul de derive de ir par rapport phi et psi
+  double eval_dirdphi_anode(double io, double eta, double T) const;
+  double eval_dirdpsi_anode(double io, double eta, double T) const;
+  double eval_dirdphi_cathode(double io, double eta, double T) const;
+  double eval_dirdpsi_cathode(double io, double eta, double T) const;
+
+  double compute_perturbation( const double& f, const Nom& info ) const;
+  void eval_derivatives_anode_H2(const int& elem, const double& T,
+                                 const double& C_H2, const double& a_H, double& Dir ) const;
+  void eval_derivatives_cathode_O2(const int& elem, const double& T,
+                                   const double& C_O2, const double& a_H2O, const double& a_H, double& Dir ) const;
+  void eval_derivatives_cathode_H2O(const int& elem, const double& T,
+                                    const double& C_O2, const double& C_H2O, const double& a_O2, const double& a_H, double& Dir ) const;
+
+  // dvq 18/06/19 ajouter le calcul de derivee de ir par rapport T
+  double eval_derevdT_anode(double T, double a_H2, double a_H) const;
+  double eval_derevdT_cathode(double T, double a_O2, double a_H2O, double a_H) const;
+  double eval_dirdT_anode(const double& io, const double& eta, const double& T, const double& dErevdT) const;
+  double eval_dirdT_cathode(const double& io, const double& eta, const double& T, const double& dErevdT) const;
+
+  // For each common unknown between the two domains phi and psi (1 common unknown = 1 line):
+  ArrOfInt face_index_psi_; // index of face in psi domain
+  ArrOfInt face_index_phi_; // index of face in phi domain
+  ArrOfInt face_index_T_; // index of face in temperature domain
+  ArrOfInt face_is_anode_; // 1 if yes, 0 if no.
+  // Control volume associated with the unknowns common to phi/psi.
+  // The control volume only counts the part in the intersection
+  // (eg: for faces on the boundary of phi domain, only the volume inside)
+  // Number of lines in the array = number of lines in face_index_psi_
+  //DoubleTab psi_phi_control_volumes_;
+
 };
 
 const double a_lim = 1e-3;				// Activit minimale en dessous de laquelle son effet est linearise
@@ -159,20 +236,20 @@ const double nu_O2 = -0.5;		// -0.25*n_c Coefficient stoechiometrique de la reac
 const double nu_H2O = 1;		// 0.5*n_c Coefficient stoechiometrique de la reaction pour l''eau
 const double nu_H_c = -2.;		// -n_c Coefficient stoechiometrique de la reaction pour les protons a la cathode
 
-const double Cdl_a = 10.;			// [F/m^2], Capacite de double couche
-const double Cdl_c = 10.;			// [F/m^2], Capacite de double couche
+//const double Cdl_a = 10.;			// [F/m^2], Capacite de double couche
+//const double Cdl_c = 10.;			// [F/m^2], Capacite de double couche
 
 const double alpha_a = 0.5;			// Coefficient de transfert de charge a l''anode
-const double alpha_c = 0.216;		// Nombre d''electrons echanges a la cathode
-const double dHox0_a = 24.36e3;		// [J/mol] Enthalpie de formation du complexe active (dans le sens de l''oxidation)
-const double dSox0_a = -172.3;		// [J/mol/K] Entropie de formation du complexe active (dans le sens de l''oxidation)
-const double dHox0_c = 81.52e3;		// [J/mol] Enthalpie de formation du complexe active (dans le sens de l''oxidation)
-const double dSox0_c = -285.;		// [J/mol/K] Entropie de formation du complexe active (dans le sens de l''oxidation)
+const double alpha_c = 0.5; // 0.216;		// Nombre d''electrons echanges a la cathode
+const double dHox0_a = 25.e3;		// [J/mol] Enthalpie de formation du complexe active (dans le sens de l''oxidation)
+const double dSox0_a = -172;		// [J/mol/K] Entropie de formation du complexe active (dans le sens de l''oxidation)
+const double dHox0_c = 1.679e5;		// [J/mol] Enthalpie de formation du complexe active (dans le sens de l''oxidation)
+const double dSox0_c = -205.6;		// [J/mol/K] Entropie de formation du complexe active (dans le sens de l''oxidation)
 
-const double dH0_a = 25e3;
-const double dS0_a = -172;
-const double dH0_c = 167.9e3;
-const double dS0_c = -205.6;
+const double dH0_a = 0;
+const double dS0_a = -0.104;
+const double dH0_c = -2.858e5;
+const double dS0_c = -163.8;
 
 const double C_SO3 = 2036.; 	// [mol/m^3], Concentration en sites sulfones dans le Nafion
 
@@ -189,40 +266,40 @@ const double Cp_N2 = 30.2; 		// [J/mol/K]
 const double Cp_vap = 34.474; 	// [J/mol/K]
 const double Cp_liq = 75.38;	 // [J/mol/K]
 
-inline double Loi_Fermeture_transport_ionique::f_kappa(double T, double C, double por, double eps, double tor) const
+inline double Loi_Fermeture_transport_ionique::f_kappa(const double& T, const double& C, const double& por, const double& eps, const double& tor) const
 {
-  double ld = C / C_SO3_;
+  double ld = C / C_SO3;
   double ad = 0.5139*ld-0.326;
-  double ad_lim = max(ad,1.e-3);
-  double k0 = exp(1268*(1./303.-1./T))*ad_lim;
+  // double ad_lim = max(ad,1.e-3);
+  // double k0 = exp(1268*(1./303.-1./T))*ad_lim;
+  double k0 = exp(1268*(1./303.-1./T))*ad;
   return k0*(1-por)*eps/(tor*tor);
 }
 
-inline double Loi_Fermeture_transport_ionique::f_Henry_H2(double T)
+inline double Loi_Fermeture_transport_ionique::f_Henry_H2(const double& T) const
 {
   return (1./1.01325e5)*exp(9.05e3/(R*T));
 }
 
-inline double Loi_Fermeture_transport_ionique::f_Henry_O2(double T)
+inline double Loi_Fermeture_transport_ionique::f_Henry_O2(const double& T) const
 {
   return (1/1.01325e5)*exp(5.88e3/(R*T));
 }
 
-inline double Loi_Fermeture_transport_ionique::f_Henry_N2(double T)
+inline double Loi_Fermeture_transport_ionique::f_Henry_N2(const double& T) const
 {
   return 6.4e-6*exp(1300*(1/T-1/298.15));
 }
 
-inline double Loi_Fermeture_transport_ionique::f_lambda(double a)
+inline double Loi_Fermeture_transport_ionique::f_lambda(const double& a) const
 {
   return 0.043 + 17.81*a - 39.85*a*a + 36*a*a*a;
 }
 
-inline double Loi_Fermeture_transport_ionique::f_lambda_inv(double ld)
+inline double Loi_Fermeture_transport_ionique::f_lambda_inv(const double& ld) const
 {
   // using a newton raphson iteration
-  int it,max_iter = 1000;
-  double eps = 1.e-6;
+  int it ;
   double a = -0.043/17.81;
 
   double num = f_lambda(a) - ld;
@@ -230,7 +307,7 @@ inline double Loi_Fermeture_transport_ionique::f_lambda_inv(double ld)
   double da = num/den;
   a -= da;
   it=0;
-  while (da/a>eps && it<max_iter)
+  while (da/a>newton_threshold_ && it<newton_max_iter_)
     {
       num=f_lambda(a) - ld;
       den=17.81 - 2*39.85*a + 3*36*a*a;
@@ -239,7 +316,7 @@ inline double Loi_Fermeture_transport_ionique::f_lambda_inv(double ld)
       it++;
     }
 
-  if (da/a>eps)
+  if (da/a>newton_threshold_)
     {
       Cerr<<"Loi_Fermeture_transport_ionique::f_lambda_inv resolution Newton fail "<<finl;
       Cerr<<"ld="<< ld <<" da="<<da<<" a="<<a<<finl;
@@ -248,7 +325,7 @@ inline double Loi_Fermeture_transport_ionique::f_lambda_inv(double ld)
   return a;
 }
 
-inline double Loi_Fermeture_transport_ionique::f_Psat(double T)
+inline double Loi_Fermeture_transport_ionique::f_Psat(const double& T) const
 {
   return exp(23.1961-3816.44/(T-46.13));
 }

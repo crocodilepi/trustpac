@@ -50,17 +50,16 @@ DoubleTab& Source_Term_Diffusion_Multiespeces::ajouter(DoubleTab& resu) const
   assert(resu.dimension(1)==S_.dimension(1));			// 3 composants
 
   DoubleVect vol = la_zone_.valeur().volumes();
+  int nb_face_elem = la_zone_.valeur().zone().nb_faces_elem(0);
   for (int elem = 0; elem < la_zone_.valeur().nb_elem(); ++elem)
     {
-      int nb_face_elem = la_zone_.valeur().zone().nb_faces_elem(0);
       for (int f = 0; f < nb_face_elem; ++f)
         {
           int face = la_zone_.valeur().elem_faces(elem, f);
 
-          // champ ir doit etre mettre_a_jour() avant ajouter()
           for (int comp = 0; comp < resu.dimension(1); ++comp)
             {
-              resu(face, comp) += - S_(elem, comp) * vol(elem) / nb_face_elem;
+              resu(face, comp) += S_(elem, comp) * vol(elem) / nb_face_elem;
             }
         }
     }
@@ -77,6 +76,7 @@ DoubleTab& Source_Term_Diffusion_Multiespeces::calculer(DoubleTab& resu) const
 
 void Source_Term_Diffusion_Multiespeces::mettre_a_jour(double temps)
 {
+  Cerr << "Source_Term_Diffusion_Multiespeces::mettre_a_jour " << equation().probleme().le_nom() << finl;
   // mettre a jour les champs couples
   ch_S_X2_.valeur().mettre_a_jour(temps);
   ch_S_H2O_.valeur().mettre_a_jour(temps);
@@ -101,8 +101,9 @@ void Source_Term_Diffusion_Multiespeces::mettre_a_jour(double temps)
       S_(elem, 2) = -S_N2(elem);
     }
 
-  Cerr << "Source_Term_Diffusion_Multiespeces::mettre_a_jour" << finl;
-  Cerr << "champ de source de diffusion Sa_i min max " << mp_min_vect(S_) << " " << mp_max_vect(S_) << finl;
+  Cerr << "champ de source de diffusion Sa_X2 min max " << mp_min_vect(S_X2) << " " << mp_max_vect(S_X2) << finl;
+  Cerr << "champ de source de diffusion Sa_vap min max " << mp_min_vect(S_vap) << " " << mp_max_vect(S_vap) << finl;
+  Cerr << "champ de source de diffusion Sa_N2 min max " << mp_min_vect(S_N2) << " " << mp_max_vect(S_N2) << finl;
 }
 
 void Source_Term_Diffusion_Multiespeces::associer_zones(const Zone_dis& zone_dis, const Zone_Cl_dis& zcl_dis)

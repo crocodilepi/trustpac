@@ -1,0 +1,179 @@
+dimension 2
+
+domaine dom_ci_cathode  # domaine diffusion multi-especes concentration O2 vap N2 (cathode) GDLc-MPLc-CLc #
+
+# BEGIN MESH #
+Mailler dom_ci_cathode
+{
+	Pave Cavite2
+		{
+		Origine 0. 25.
+		Nombre_de_Noeuds  5 51
+		Longueurs 2 250
+		}
+		{
+		Bord Gauche         X = 0.	25. <= Y <= 275    
+		Bord Droit          X = 2	25. <= Y <= 275    
+		Bord Haut           Y = 275	0.  <= X <= 2    
+		Bord Bas            Y = 25 	0.  <= X <= 2    
+		}
+}
+Transformer dom_ci_cathode x*1e-5 y*1e-6
+Trianguler_H dom_ci_cathode
+
+Sous_zone MPLc_ci_cathode
+associer MPLc_ci_cathode dom_ci_cathode
+Lire MPLc_ci_cathode { fonction_sous_zone ((y_GE_(35.e-6))_AND_(y_LE_(75.e-6))) }
+
+Sous_zone CLc_ci_cathode
+associer CLc_ci_cathode dom_ci_cathode
+Lire CLc_ci_cathode { fonction_sous_zone ((y_GE_(25.e-6))_AND_(y_LE_(35.e-6))) }
+# END MESH #
+
+# transport multi-especes O2 vap N2 dans cathode #
+Pb_hydraulique_Concentration pb_ci_cathode
+
+# schema discretisation #
+VEFPrep1B dis
+
+Scheme_euler_implicit sch
+Read sch
+{
+	tinit 0
+	dt_min 1.e-12
+	dt_max 1
+	dt_impr 0.001
+	dt_sauv 100
+	nb_pas_dt_max 500000
+	seuil_statio 1e-4
+    solveur implicite { 
+	solveur  petsc bicgstab { seuil 1e-12 impr precond  pilut { level 30 epsilon 0.01   } }
+	solveur  petsc cholesky { } 
+    }
+    facsec 1e8
+    facsec_max 1e8
+}
+
+# proprietaire fluid pour la diffusion multi-especes cathode O2 vap N2 #
+
+Fluide_Incompressible fluide_cathode    # need to re-calcul mu, rho, beta_co for melange gaz O2+vap+N2 #
+Read fluide_cathode
+{
+    mu	Champ_Uniforme 1 1.85e-5	        # Dynamic viscosity kg/m/s #
+    rho	Champ_Uniforme 1 1.17		        # Density kg/m3 #
+    beta_co Champ_Uniforme 3 1e-4 1e-4 1e-4 # Volume expansion coefficient values in concentration #
+}
+/* 
+viscosite cinematique, (mu)
+- viscosite dynamique, (nu)
+- masse volumique, (rho)
+- diffusivite, (alpha)
+- conductivite, (lambda)
+- capacite calorifique, (Cp)
+- dilatabilite thermique du constituant (beta_co) 
+ */
+ 
+# diffusion coefficient pour multi-especes #
+Constituant c_cathode
+Read c_cathode
+{
+  coefficient_diffusion Champ_Uniforme 3 5e-2 5e-2 5e-2     # isotrope ??? # 
+}
+associate pb_ci_cathode c_cathode
+
+# champ de diffusion matriciel multi-scalaire pemfc_cas2  #
+loi_fermeture_pemfc_cas2 loi_diffusion_cathode
+associer pb_ci_cathode loi_diffusion_cathode
+
+Associate pb_ci_cathode dom_ci_cathode
+associate pb_ci_cathode fluide_cathode
+Associate pb_ci_cathode sch
+Discretize pb_ci_cathode dis
+
+read loi_diffusion_cathode 
+{
+    # tortuosite -> anisotropy: need to do #
+    tor champ_uniforme_morceaux dom_ci_cathode 1 { defaut 3. MPLc_ci_cathode 1. CLc_ci_cathode 1.5 }
+    # porosite -> anisotropy: need to do #
+    por champ_uniforme_morceaux dom_ci_cathode 1 { defaut 0.63 MPLc_ci_cathode 1. CLc_ci_cathode 0.47 }
+    # pore radius [m] #
+    Rp  champ_uniforme_morceaux dom_ci_cathode 1 { defaut 1e-5 MPLc_ci_cathode 1.e-6 CLc_ci_cathode 1e-8 }
+    # permeabilite [m2] -> anisotropy: need to do #
+    K  champ_uniforme_morceaux dom_ci_cathode 1 { defaut 4.2e-12 MPLc_ci_cathode 1.e-12 CLc_ci_cathode 1.e-12 }
+    # Masse molaires de gaz melange O2 vap N2 #
+    masses_molaires 3 32e-3 18e-3 28e-3 
+}
+
+# diffusion multi-especes O2 vap N2 dans GDL-MPL-CL cathode #
+read pb_ci_cathode
+{
+    Navier_Stokes_standard
+	{
+	    equation_non_resolue 1
+	 	solveur_pression petsc cholesky { }
+        projection_initiale 0								
+		convection { amont }
+		diffusion { }
+		initial_conditions
+		{
+			vitesse Champ_Uniforme 2 0. 0.
+		}
+		boundary_conditions
+		{
+			Haut    Paroi_fixe
+			Droit	Paroi_fixe
+			Bas	    Paroi_fixe
+			Gauche	Paroi_fixe
+		}
+		
+	}
+	Convection_diffusion_Concentration
+	{
+	    equation_non_resolue 0
+	
+		diffusion { pemfc { diffusivity_fieldname pemfc_cas2 } }
+		convection { negligeable }
+		initial_conditions
+		{
+			concentration Champ_Fonc_XYZ dom_ci_cathode 3 9. 8. 34.
+		}
+		boundary_conditions
+		{
+			   Haut	  Scalaire_impose_paroi Champ_Front_uniforme 3 9. 8. 34.
+			   Droit  Paroi 
+			   Gauche Paroi 
+			   Bas    Paroi # flux null #
+		}
+		Sources
+		{
+		    source_constituant Champ_Uniforme_morceaux dom_ci_cathode 3 { Defaut 0. 0. 0. CLc_ci_cathode -2000 4000 0 }
+		}
+		
+	}
+	Post_processing
+    {
+        probes {
+              concen_X2_seg concentration periode 0.00 segment 12 0 25e-6 20e-6 25e-6
+              concen_X2_pts concentration periode 0.00 points 1 10e-6 25e-6
+        }
+	    Definition_champs 
+	    {
+		    diffusion_matrice_c operateur_eqn { sources { refchamp { pb_champ pb_ci_cathode concentration } } numero_op 0 }
+		    source_multi_c  operateur_eqn { numero_source 0 source refchamp {  pb_champ pb_ci_cathode concentration } }
+	    }
+      	format lata
+        fields dt_post 0.
+        {
+            concentration   elem 
+            pemfc_cas2      elem
+            diffusion_matrice_c elem
+            source_multi_c elem
+	    }
+    }
+	    
+}
+
+Solve pb_ci_cathode
+
+End
+

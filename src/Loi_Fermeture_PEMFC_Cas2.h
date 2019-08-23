@@ -39,6 +39,9 @@ class Loi_Fermeture_PEMFC_Cas2 : public Loi_Fermeture_PEMFC_base
 
 public :
   void discretiser(const Discretisation_base& );
+  void set_param(Param& param);
+  void completer();
+  void mettre_a_jour(double);
 protected :
 
 };
